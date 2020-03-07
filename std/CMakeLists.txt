@@ -5,8 +5,10 @@ cmake_minimum_required (VERSION 2.6)
 if(NOT TARGET torasustd)
 
 	project (torasu-cpp-std)
-	
+
 	include(../core/CMakeLists.txt)
+	
+	set(CMAKE_CXX_STANDARD 20)
 	
 	set(TORASU_STD_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp)

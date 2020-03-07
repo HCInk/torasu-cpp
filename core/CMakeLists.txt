@@ -6,6 +6,8 @@ if(NOT TARGET torasu)
 
 	project (torasu-cpp-core)
 	
+    set(CMAKE_CXX_STANDARD 20)
+
 	set(TORASU_CORE_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-core.cpp)
 	
