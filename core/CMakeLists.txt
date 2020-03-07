@@ -6,7 +6,9 @@ if(NOT TARGET torasu)
 
 	project (torasu-cpp-core)
 	
-	add_library(torasu SHARED ${CMAKE_CURRENT_LIST_DIR}/torasu-cpp-core.cpp)
+	set(TORASU_CORE_SRC "${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-core.cpp")
+	
+	add_library(torasu SHARED ${TORASU_CORE_SRC})
 	
 endif()
 

@@ -8,7 +8,9 @@ if(NOT TARGET torasustd)
 	
 	include(../core/CMakeLists.txt)
 	
-	add_library(torasustd SHARED ${CMAKE_CURRENT_LIST_DIR}/torasu-cpp-std.cpp)
+	set(TORASU_STD_SRC "${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp")
+	
+	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 endif()
 
