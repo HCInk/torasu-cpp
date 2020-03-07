@@ -1,4 +1,5 @@
 #include <iostream>
+#include "torasu.h"
 using namespace std;
 
 int TORASU_check_core() {
