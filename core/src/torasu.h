@@ -19,7 +19,7 @@ class Element;
 class Renderable;
 
 // DOWNSTREAM
-struct RenderInstruction;
+class RenderInstruction;
 typedef std::map<std::string, Element*> RenderContext; // TODO "Real" RenderContext
 class ResultFormatSettings;
 class ResultSegmentSettings;
@@ -69,17 +69,17 @@ public:
 // DOWNSTREAM
 //
 
-class RenderInsturction {
+class RenderInstruction {
 private:
 	RenderContext* rctx;
 	ResultSettings* rs;
 public:
-	inline RenderInsturction(RenderContext* rctx, ResultSettings* rs) {
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs) {
 		this->rctx = rctx;
 		this->rs = rs;
 	}
 
-	~RenderInsturction() {
+	~RenderInstruction() {
 
 	}
 
