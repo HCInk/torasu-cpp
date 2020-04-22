@@ -1,16 +1,25 @@
+cmake_policy(PUSH)
+
 cmake_minimum_required (VERSION 2.6)
 
-project (torasu-cpp-examples)
 
-include(../core/CMakeLists.txt)
+if(NOT TARGET torasu-cpp-examples)
 
-include(../std/CMakeLists.txt)
+	project (torasu-cpp-examples)
 
-set(CMAKE_CXX_STANDARD 20)
-	
-set(TORASU_EXAMPLES_SRC 
-	${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-examples.cpp)
+	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
 
-add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
+	include(${CMAKE_CURRENT_LIST_DIR}/../std/CMakeLists.txt)
 
-target_link_libraries(torasu-cpp-examples torasu torasustd)
+	set(CMAKE_CXX_STANDARD 20)
+		
+	set(TORASU_EXAMPLES_SRC 
+		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-examples.cpp)
+
+	add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
+
+	target_link_libraries(torasu-cpp-examples asan torasu torasustd)
+
+endif()
+
+cmake_policy(POP)

@@ -13,6 +13,8 @@ if(NOT TARGET torasu)
 	
 	add_library(torasu SHARED ${TORASU_CORE_SRC})
 	
+	target_link_libraries(torasu asan json-c)
+	
 endif()
 
 cmake_policy(POP)
