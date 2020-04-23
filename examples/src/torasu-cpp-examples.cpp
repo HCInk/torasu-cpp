@@ -24,6 +24,8 @@ int main(int argc, char **argv) {
     };
 
     DPUniversal dpu(dpJson);
+    
+    std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
 
     DataDump dump = dpu.getData();
 
