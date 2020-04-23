@@ -157,40 +157,40 @@ public:
 //
 
 enum ResultStatus {
-	/*Request wasnt processed at all because it was received as malformed
+	/**Request wasnt processed at all because it was received as malformed
 	 */
 	ResultStatus_MALFORMED = -3,
-	/*Some segments might not be present as requested,
+	/**Some segments might not be present as requested,
 	 * refer to the individual segment-status
 	 */
 	ResultStatus_PARTIAL_ERROR = -2,
-	/*An internal error or undefined behavior
+	/**An internal error or undefined behavior
 	 * occurred during the execution
 	 */
 	ResultStatus_INTERNAL_ERROR = -1,
-	/*Everything went as expected
+	/**Everything went as expected
 	 */
 	ResultStatus_OK = 0,
-	/*Warnings were thrown while running
+	/**Warnings were thrown while running
 	 */
 	ResultStatus_OK_WARN = 2
 };
 
 enum ResultSegmentStatus {
-	/*The given format is not available
+	/**The given format is not available
 	 */
 	ResultSegmentStatus_INVALID_FORMAT = -5,
-	/*The given segment is invalid
+	/**The given segment is invalid
 	 */
 	ResultSegmentStatus_INVALID_SEGMENT = -4,
-	/*An internal error or undefined behavior
+	/**An internal error or undefined behavior
 	 * occurred during the execution
 	 */
 	ResultSegmentStatus_INTERNAL_ERROR = -1,
-	/*Everything went as expected
+	/**Everything went as expected
 	 */
 	ResultSegmentStatus_OK = 0,
-	/*Warnings were thrown while running
+	/**Warnings were thrown while running
 	 */
 	ResultSegmentStatus_OK_WARN = 2
 };
@@ -247,28 +247,50 @@ public:
 // DATA
 //
 
+typedef int (*two_num_operation)(int, int);
+
+union DDDataPointer {
+	unsigned char* b;
+	const char* s;
+};
+
+/**
+ * @brief Defines how the DD
+ */
+enum DDDataPointerType {
+	/**unsigned char*
+	 */
+	DDDataPointerType_BINARY = 0,
+	/**const char*
+	 */
+	DDDataPointerType_CSTR = 1,
+	/**const char* (json conform)
+	 */
+	DDDataPointerType_JSON_CSTR = 2
+};
+
 class DataDump {
+// TODO coditional dereferencing
 private:
-	unsigned char* data;
+	DDDataPointer data;
 	int size;
-	bool mayDelete;
-	bool jsonFormat;
+	DDDataPointerType format;
+	void (*freeFunc)(DataDump* data);
 public:
-	inline DataDump(unsigned char* data, int size, bool mayDelete,
-			bool jsonFormat = false) {
+	inline DataDump(DDDataPointer data, int size, DDDataPointerType format, void (*freeFunc)(DataDump* data)) {
 		this->data = data;
 		this->size = size;
-		this->mayDelete = mayDelete;
-		this->jsonFormat = jsonFormat;
+		this->format = format;
+		this->freeFunc = freeFunc;
 	}
+
 	~DataDump() {
-		if (mayDelete) {
-			// FIXME Is this right?
-			free(data);
+		if (freeFunc != NULL) {
+			freeFunc(this);
 		}
 	}
 
-	inline unsigned char* const getData() {
+	inline DDDataPointer const getData() {
 		return data;
 	}
 
@@ -276,25 +298,22 @@ public:
 		return size;
 	}
 
-	inline bool const isJSONFormat() {
-		return jsonFormat;
+	inline DDDataPointerType getFormat() {
+		return format;
 	}
 
 	inline DataDump* newReference() {
-		return new DataDump(data, size, false, jsonFormat);
+		return new DataDump(data, size, format, freeFunc);
 	}
 };
 
 class DataResource {
 public:
-	DataResource() {
+	DataResource() {}
 
-	}
+	virtual ~DataResource() {}
 
-	virtual ~DataResource() {
-
-	}
-
+	virtual std::string getIdent() = 0;
 	virtual DataDump getData() = 0;
 };
 
