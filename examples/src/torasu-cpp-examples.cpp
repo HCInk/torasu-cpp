@@ -1,6 +1,3 @@
-// System
-#include <iostream>
-
 // Dev Dependencies
 #include <nlohmann/json.hpp>
 
@@ -10,6 +7,10 @@
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
+
+// System
+#include <iostream>
+
 
 using namespace std;
 using namespace torasu;

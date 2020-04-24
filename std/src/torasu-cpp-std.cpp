@@ -1,6 +1,6 @@
-#include <iostream>
-
 #include "../include/torasu/std/torasu_std.hpp"
+
+#include <iostream>
 
 using namespace std;
 

@@ -1,6 +1,6 @@
-#ifndef TORASU_STD_H_
-#define TORASU_STD_H_
+#ifndef STD_INCLUDE_TORASU_STD_TORASU_STD_HPP_
+#define STD_INCLUDE_TORASU_STD_TORASU_STD_HPP_
 
 int TORASU_check_core();
 
-#endif /* TORASU_STD_H_ */
+#endif // STD_INCLUDE_TORASU_STD_TORASU_STD_HPP_

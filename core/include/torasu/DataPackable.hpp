@@ -4,13 +4,13 @@
  *  Created on: Mar 8, 2020
  */
 
-#ifndef DATAPACKABLE_H_
-#define DATAPACKABLE_H_
+#ifndef CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_
+#define CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_
+
+#include <nlohmann/json.hpp>
 
 #include <utility>
 #include <string>
-
-#include <nlohmann/json.hpp>
 
 #include "torasu.hpp"
 
@@ -75,8 +75,8 @@ private:
 	std::optional<std::string> ident;
 
 public:
-	DPUniversal(std::string jsonStripped);
-	DPUniversal(nlohmann::json jsonParsed);
+	explicit DPUniversal(std::string jsonStripped);
+	explicit DPUniversal(nlohmann::json jsonParsed);
 	
 	virtual std::string getIdent();
 	virtual void load();
@@ -86,4 +86,4 @@ public:
 
 } /* namespace torasu */
 
-#endif /* DATAPACKABLE_H_ */
+#endif // CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_

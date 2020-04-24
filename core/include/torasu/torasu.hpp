@@ -4,8 +4,8 @@
  *  Created on: Mar 7, 2020
  */
 
-#ifndef TORASU_H_
-#define TORASU_H_
+#ifndef CORE_INCLUDE_TORASU_TORASU_HPP_
+#define CORE_INCLUDE_TORASU_TORASU_HPP_
 
 #include <string>
 #include <map>
@@ -321,4 +321,4 @@ public:
 
 } /* namespace torasu */
 
-#endif /* TORASU_H_ */
+#endif // CORE_INCLUDE_TORASU_TORASU_HPP_
