@@ -1,14 +1,19 @@
+// System
 #include <iostream>
 
+// Dev Dependencies
 #include <nlohmann/json.hpp>
 
-#include "../../core/src/torasu.h"
-#include "../../core/src/DataPackable.h"
+// TORASU CORE
+#include <torasu/torasu.h>
+#include <torasu/DataPackable.h>
+
+// TORASU STD
+#include <torasu/std/torasu_std.h>
 
 using namespace std;
 using namespace torasu;
 
-int TORASU_check_core();
 int TORASU_check_std();
 
 int main(int argc, char **argv) {

@@ -12,6 +12,8 @@
 #include <set>
 #include <vector>
 
+int TORASU_check_core();
+
 namespace torasu {
 
 // TREE

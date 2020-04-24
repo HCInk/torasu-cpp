@@ -17,6 +17,8 @@ if(NOT TARGET torasustd)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 	
 	target_link_libraries(torasustd asan torasu)
+	
+	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
 
