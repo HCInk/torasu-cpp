@@ -1,0 +1,5 @@
+core/include/torasu/*.hpp
+std/include/torasu/std/*.hpp
+core/src/*.cpp
+std/src/*.cpp
+examples/src/*.cpp

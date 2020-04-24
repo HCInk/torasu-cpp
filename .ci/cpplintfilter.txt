@@ -1,0 +1,8 @@
+-whitespace # we use tabs, not spaces
+-legal/copyright # disables no-copyright-warnings
+-runtime/arrays # disables warnings for runtime-sized arrays
+-readability/todo # disables assignees for todos - re-enable when this is a multi-person-project
+-build/include # disable include infos - since cpplint didnt detected some headers correctly
++build/include_what_you_use # re-endable notice to include every file that has a direct reference
++build/include_order # re-enable info to order the header-includes correctly
+-build/namespaces # disables warning for "using namespace xxx"
