@@ -5,11 +5,11 @@
 #include <nlohmann/json.hpp>
 
 // TORASU CORE
-#include <torasu/torasu.h>
-#include <torasu/DataPackable.h>
+#include <torasu/torasu.hpp>
+#include <torasu/DataPackable.hpp>
 
 // TORASU STD
-#include <torasu/std/torasu_std.h>
+#include <torasu/std/torasu_std.hpp>
 
 using namespace std;
 using namespace torasu;

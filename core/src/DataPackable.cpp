@@ -4,14 +4,14 @@
  *  Created on: Mar 8, 2020
  */
 
-#include "../include/torasu/DataPackable.h"
+#include "../include/torasu/DataPackable.hpp"
 
 #include <iostream>
 #include <utility>
 #include <string>
 #include <nlohmann/json.hpp>
 
-#include "../include/torasu/torasu.h"
+#include "../include/torasu/torasu.hpp"
 
 namespace torasu {
 

@@ -2,7 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include <torasu/torasu.h>
+#include <torasu/torasu.hpp>
 
 using namespace std;
 using json = nlohmann::json;

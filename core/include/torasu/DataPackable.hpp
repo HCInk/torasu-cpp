@@ -12,7 +12,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "torasu.h"
+#include "torasu.hpp"
 
 
 namespace torasu {
