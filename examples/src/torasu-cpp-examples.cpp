@@ -11,11 +11,8 @@
 // System
 #include <iostream>
 
-
 using namespace std;
 using namespace torasu;
-
-int TORASU_check_std();
 
 int main(int argc, char **argv) {
     cout << "Checking core..." << endl;
