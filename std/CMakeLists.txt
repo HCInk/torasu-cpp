@@ -2,22 +2,37 @@ cmake_policy(PUSH)
 
 cmake_minimum_required (VERSION 2.6)
 
-
 if(NOT TARGET torasustd)
+	
+	# Meta / Settings
 
 	project (torasu-cpp-std)
-
-	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
-	
 	set(CMAKE_CXX_STANDARD 20)
 	
+	# Packages
+
+	find_package(nlohmann_json 3.2.0 REQUIRED)
+
+	# TORASU-CORE (local)
+	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
+
+	# Compile
+
 	set(TORASU_STD_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp)
-	
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
+
+	# Link libraries 
+
+	if(APPLE)
+	else()
+		target_link_libraries(torasustd asan)
+	endif()
+
+	target_link_libraries(torasustd torasu nlohmann_json::nlohmann_json)
 	
-	target_link_libraries(torasustd asan torasu)
-	
+	# Includes for others
+
 	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
