@@ -11,7 +11,7 @@ if(NOT TARGET torasu)
 	
 	# Packages
 
-	find_package(nlohmann_json 3.2.0 REQUIRED)
+	#find_package(nlohmann_json 3.2.0 REQUIRED)
 
 	# Compile
 
@@ -27,7 +27,7 @@ if(NOT TARGET torasu)
 		target_link_libraries(torasu asan)
 	endif()
 	
-	target_link_libraries(torasu nlohmann_json::nlohmann_json)
+	#target_link_libraries(torasu nlohmann_json::nlohmann_json)
 	
 	# Includes for others
 

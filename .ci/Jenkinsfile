@@ -1,0 +1,44 @@
+pipeline {
+  agent none
+  options {
+    gitLabConnection('gitlab.com')
+    gitlabBuilds(builds: ['Build', 'cpplint'])
+  }
+  triggers {
+    gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+  }
+  stages {
+    stage('Build') {
+      agent { dockerfile { filename '.ci/Dockerfiles/build' } }
+      steps {
+        sh './build.sh'
+      }
+      post {
+        failure {
+          updateGitlabCommitStatus name: 'Build', state: 'failed'
+        }
+        success {
+          updateGitlabCommitStatus name: 'Build', state: 'success'
+        }
+      }
+    }
+    stage('cpplint') {
+      agent { dockerfile { filename '.ci/Dockerfiles/cpplint' } }
+      steps {
+        sh 'mkdir -p reports/cpplint'
+        sh './lint.sh 2> reports/cpplint/cpplint.txt || true'
+      }
+      post {
+        failure {
+          updateGitlabCommitStatus name: 'cpplint', state: 'failed'
+        }
+        success {
+          updateGitlabCommitStatus name: 'cpplint', state: 'success'
+        }
+        always {
+          recordIssues enabledForFailure: true, tool: cppLint(pattern: 'reports/cpplint/*')
+        }
+      }
+    }
+  }
+}

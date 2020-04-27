@@ -1,0 +1,10 @@
+FROM debian:latest
+
+WORKDIR /app
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -yq \
+    gcc \
+    g++ \
+    cmake \
+    make \
+    nlohmann-json3-dev

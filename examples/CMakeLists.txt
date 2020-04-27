@@ -11,7 +11,7 @@ if(NOT TARGET torasu-cpp-examples)
 
 	# Packages
 	
-	find_package(nlohmann_json 3.2.0 REQUIRED)
+	#find_package(nlohmann_json 3.2.0 REQUIRED)
 
 	# TORASU-CORE (local)
 	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
@@ -31,7 +31,8 @@ if(NOT TARGET torasu-cpp-examples)
 		target_link_libraries(torasu-cpp-examples asan)
 	endif()
 
-	target_link_libraries(torasu-cpp-examples torasu torasustd nlohmann_json::nlohmann_json)
+	target_link_libraries(torasu-cpp-examples torasu torasustd)
+#target_link_libraries(torasu-cpp-examples nlohmann_json::nlohmann_json)	
 
 endif()
 
