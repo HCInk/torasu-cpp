@@ -11,7 +11,9 @@ if(NOT TARGET torasustd)
 	
 	# Packages
 
-	#find_package(nlohmann_json 3.2.0 REQUIRED)
+	if (APPLE)
+		find_package(nlohmann_json 3.2.0 REQUIRED)
+	endif()
 
 	# TORASU-CORE (local)
 	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
@@ -25,12 +27,12 @@ if(NOT TARGET torasustd)
 	# Link libraries 
 
 	if(APPLE)
+		target_link_libraries(torasustd nlohmann_json::nlohmann_json)
 	else()
 		target_link_libraries(torasustd asan)
 	endif()
 
 	target_link_libraries(torasustd torasu)
-	#target_link_libraries(torasustd nlohmann_json::nlohmann_json)
 	
 	# Includes for others
 

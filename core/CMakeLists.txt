@@ -10,8 +10,10 @@ if(NOT TARGET torasu)
 	set(CMAKE_CXX_STANDARD 20)
 	
 	# Packages
-
-	#find_package(nlohmann_json 3.2.0 REQUIRED)
+	
+	if (APPLE)
+		find_package(nlohmann_json 3.2.0 REQUIRED)
+	endif()
 
 	# Compile
 
@@ -23,11 +25,10 @@ if(NOT TARGET torasu)
 	# Link libraries 
 
 	if(APPLE)
+		target_link_libraries(torasustd nlohmann_json::nlohmann_json)
 	else()
 		target_link_libraries(torasu asan)
 	endif()
-	
-	#target_link_libraries(torasu nlohmann_json::nlohmann_json)
 	
 	# Includes for others
 
