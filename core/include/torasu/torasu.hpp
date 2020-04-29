@@ -22,7 +22,7 @@ class Renderable;
 
 // DOWNSTREAM
 class RenderInstruction;
-typedef std::map<std::string, Element*> RenderContext; // TODO "Real" RenderContext
+typedef std::map<std::string, DataResource*> RenderContext; // TODO "Real" RenderContext
 class ResultFormatSettings;
 class ResultSegmentSettings;
 typedef std::vector<ResultSegmentSettings*> ResultSettings;
