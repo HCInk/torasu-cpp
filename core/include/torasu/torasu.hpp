@@ -16,6 +16,10 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// DATA
+class DataDump;
+class DataResource;
+
 // TREE
 class Element;
 class Renderable;
@@ -31,9 +35,80 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 class RenderResult;
 class ResultSegment;
 
+
+//
 // DATA
-class DataDump;
-class DataResource;
+//
+
+typedef int (*two_num_operation)(int, int);
+
+union DDDataPointer {
+	unsigned char* b;
+	const char* s;
+};
+
+/**
+ * @brief Defines how the DD
+ */
+enum DDDataPointerType {
+	/**unsigned char*
+	 */
+	DDDataPointerType_BINARY = 0,
+	/**const char*
+	 */
+	DDDataPointerType_CSTR = 1,
+	/**const char* (json conform)
+	 */
+	DDDataPointerType_JSON_CSTR = 2
+};
+
+class DataDump {
+// TODO coditional dereferencing
+private:
+	DDDataPointer data;
+	int size;
+	DDDataPointerType format;
+	void (*freeFunc)(DataDump* data);
+public:
+	inline DataDump(DDDataPointer data, int size, DDDataPointerType format, void (*freeFunc)(DataDump* data)) {
+		this->data = data;
+		this->size = size;
+		this->format = format;
+		this->freeFunc = freeFunc;
+	}
+
+	~DataDump() {
+		if (freeFunc != NULL) {
+			freeFunc(this);
+		}
+	}
+
+	inline DDDataPointer const getData() {
+		return data;
+	}
+
+	inline int const getSize() {
+		return size;
+	}
+
+	inline DDDataPointerType getFormat() {
+		return format;
+	}
+
+	inline DataDump* newReference() {
+		return new DataDump(data, size, format, freeFunc);
+	}
+};
+
+class DataResource {
+public:
+	DataResource() {}
+
+	virtual ~DataResource() {}
+
+	virtual std::string getIdent() = 0;
+	virtual DataDump getData() = 0;
+};
 
 //
 // TREE
@@ -243,80 +318,6 @@ public:
 		return result;
 	}
 
-};
-
-//
-// DATA
-//
-
-typedef int (*two_num_operation)(int, int);
-
-union DDDataPointer {
-	unsigned char* b;
-	const char* s;
-};
-
-/**
- * @brief Defines how the DD
- */
-enum DDDataPointerType {
-	/**unsigned char*
-	 */
-	DDDataPointerType_BINARY = 0,
-	/**const char*
-	 */
-	DDDataPointerType_CSTR = 1,
-	/**const char* (json conform)
-	 */
-	DDDataPointerType_JSON_CSTR = 2
-};
-
-class DataDump {
-// TODO coditional dereferencing
-private:
-	DDDataPointer data;
-	int size;
-	DDDataPointerType format;
-	void (*freeFunc)(DataDump* data);
-public:
-	inline DataDump(DDDataPointer data, int size, DDDataPointerType format, void (*freeFunc)(DataDump* data)) {
-		this->data = data;
-		this->size = size;
-		this->format = format;
-		this->freeFunc = freeFunc;
-	}
-
-	~DataDump() {
-		if (freeFunc != NULL) {
-			freeFunc(this);
-		}
-	}
-
-	inline DDDataPointer const getData() {
-		return data;
-	}
-
-	inline int const getSize() {
-		return size;
-	}
-
-	inline DDDataPointerType getFormat() {
-		return format;
-	}
-
-	inline DataDump* newReference() {
-		return new DataDump(data, size, format, freeFunc);
-	}
-};
-
-class DataResource {
-public:
-	DataResource() {}
-
-	virtual ~DataResource() {}
-
-	virtual std::string getIdent() = 0;
-	virtual DataDump getData() = 0;
 };
 
 } /* namespace torasu */
