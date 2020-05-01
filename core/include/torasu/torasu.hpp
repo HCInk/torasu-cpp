@@ -45,8 +45,8 @@ class ResultSegment;
 
 class ExecutionInterface {
 public:
-	virtual long enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, long prio) = 0;
-	virtual RenderResult fetchRenderResult(long renderId) = 0;
+	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
+	virtual RenderResult fetchRenderResult(uint64_t renderId) = 0;
 };
 
 //
