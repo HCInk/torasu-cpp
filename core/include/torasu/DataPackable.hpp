@@ -26,6 +26,10 @@ private:
 	void parse();
 protected:
 
+	void inline setLoaded() {
+		loaded = true;
+	}
+
 	void inline ensureLoaded() {
 		if (!loaded) {
 			load();
@@ -67,7 +71,6 @@ public:
 	}
 
 };
-
 
 class DPUniversal : public DataPackable {
 
