@@ -9,6 +9,7 @@
 // TORASU CORE
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
+#include <torasu/tools.hpp>
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
@@ -19,7 +20,6 @@
 using namespace std;
 using namespace torasu;
 using namespace torasustd;
-
 
 namespace torasuexamples {
 
@@ -86,24 +86,11 @@ void simpleRenderExample() {
     
     // Finding results
 
-    map<string, ResultSegment*>* results = rr->getResults();
+	tools::CastedRenderSegmentResult<DPNum>* result = tools::findResult<DPNum>(rr, segKey);
+	
+    cout << "DPNum Value: " << result->getResult()->getNum() << endl;
 
-    map<string, ResultSegment*>::iterator found = results->find(segKey);
-
-    if (found != results->end()) {
-        cout << "Found result for segKey \"" + segKey + "\"" << endl;
-        ResultSegment* rs = found->second;
-        DataResource* dr = rs->getResult();
-
-        if(DPNum* dpn = dynamic_cast<DPNum*>(dr)) {
-            cout << "DPNum Value: " << dpn->getNum() << endl;
-        } else {
-            cerr << "Returned object is not DPNum!" << endl;
-        }
-
-    } else {
-        cerr << "No result found for segKey \"" + segKey + "\"" << endl;
-    }
+	delete result;
 
     // Cleaning
 
