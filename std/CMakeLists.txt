@@ -21,7 +21,9 @@ if(NOT TARGET torasustd)
 	# Compile
 
 	set(TORASU_STD_SRC 
-		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/DPNum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	# Link libraries 
