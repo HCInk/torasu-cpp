@@ -134,7 +134,7 @@ public:
 	}
 
 	virtual std::string getType() = 0;
-	virtual DataResource* geData() = 0;
+	virtual DataResource* getData() = 0;
 	virtual std::map<std::string, Element*> getElements() = 0;
 
 	virtual void setData(DataResource* data,

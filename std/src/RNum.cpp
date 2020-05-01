@@ -23,7 +23,7 @@ string RNum::getType() {
     return ident;
 }
 
-DataResource* RNum::geData() {
+DataResource* RNum::getData() {
     return valdr;
 }
 

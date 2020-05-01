@@ -18,7 +18,7 @@ public:
     virtual ~RNum();
 
     virtual std::string getType();
-    virtual torasu::DataResource* geData();
+    virtual torasu::DataResource* getData();
     virtual std::map<std::string, Element*> getElements();
 
     virtual void setData(torasu::DataResource* data,
