@@ -59,6 +59,6 @@ template<class T> CastedRenderSegmentResult<T>* findResult(RenderResult* rr, std
 
 }
 
-} // namespace torasuexamples
+} // namespace torasu::tools
 
 #endif // CORE_INCLUDE_TORASU_TOOLS_HPP_
