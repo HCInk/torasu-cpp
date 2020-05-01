@@ -44,7 +44,7 @@ public:
 	}
 };
 
-template<class T> CastedRenderSegmentResult<T>* findResult(RenderResult* rr, std::string& key) {
+template<class T> CastedRenderSegmentResult<T>* findResult(RenderResult* rr, const std::string& key) {
 
 	std::map<std::string, ResultSegment*>* results = rr->getResults();
 	std::map<std::string, ResultSegment*>::iterator found = results->find(key);
