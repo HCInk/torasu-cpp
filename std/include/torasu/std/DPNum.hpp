@@ -1,11 +1,11 @@
 #ifndef STD_INCLUDE_TORASU_STD_DPNUM_HPP_
 #define STD_INCLUDE_TORASU_STD_DPNUM_HPP_
 
+#include <string>
+
 #include <nlohmann/json.hpp>
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
-
-#include <string>
 
 namespace torasustd {
 

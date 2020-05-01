@@ -1,3 +1,8 @@
+// System
+#include <iostream>
+#include <map>
+#include <string>
+
 // Dev Dependencies
 #include <nlohmann/json.hpp>
 
@@ -10,10 +15,6 @@
 #include <torasu/std/RNum.hpp>
 #include <torasu/std/DPNum.hpp>
 
-// System
-#include <iostream>
-#include <map>
-#include <string>
 
 using namespace std;
 using namespace torasu;

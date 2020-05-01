@@ -7,10 +7,10 @@
 #ifndef CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_
 #define CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_
 
-#include <nlohmann/json.hpp>
-
 #include <utility>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 #include "torasu.hpp"
 

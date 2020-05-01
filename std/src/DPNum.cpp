@@ -1,7 +1,8 @@
 #include "../include/torasu/std/DPNum.hpp"
 
-#include <nlohmann/json.hpp>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 using namespace std;
 using json = nlohmann::json;

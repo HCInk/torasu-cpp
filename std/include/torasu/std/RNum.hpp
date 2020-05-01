@@ -1,10 +1,10 @@
 #ifndef STD_INCLUDE_TORASU_STD_RNUM_HPP_
 #define STD_INCLUDE_TORASU_STD_RNUM_HPP_
 
-#include <torasu/torasu.hpp>
-
 #include <map>
 #include <string>
+
+#include <torasu/torasu.hpp>
 
 namespace torasustd {
 

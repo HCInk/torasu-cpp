@@ -6,11 +6,11 @@
 
 #include "../include/torasu/DataPackable.hpp"
 
-#include <nlohmann/json.hpp>
-
 #include <iostream>
 #include <utility>
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 #include "../include/torasu/torasu.hpp"
 
