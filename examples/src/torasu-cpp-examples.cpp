@@ -12,6 +12,8 @@
 
 // System
 #include <iostream>
+#include <map>
+#include <string>
 
 using namespace std;
 using namespace torasu;
@@ -111,7 +113,7 @@ void simpleRenderExample() {
     delete rss;
 }
 
-}
+} // namespace torasuexamples
 
 using namespace torasuexamples;
 

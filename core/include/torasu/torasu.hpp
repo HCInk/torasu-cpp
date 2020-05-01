@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <utility>
 
 int TORASU_check_core();
 
@@ -296,7 +297,7 @@ public:
 	 * @note  This constructor should only be used if a result wasn't generated
 	 * @param  status: Calculation-status of the segment
 	 */
-	inline ResultSegment(ResultSegmentStatus status) {
+	explicit inline ResultSegment(ResultSegmentStatus status) {
 		this->status = status;
 		this->result = NULL;
 		this->freeResult = false;

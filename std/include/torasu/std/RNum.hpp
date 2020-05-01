@@ -3,6 +3,9 @@
 
 #include <torasu/torasu.hpp>
 
+#include <map>
+#include <string>
+
 namespace torasustd {
 
 class RNum : public torasu::Renderable {
@@ -14,7 +17,7 @@ private:
 
 public:
     
-    RNum(double val);
+    explicit RNum(double val);
     virtual ~RNum();
 
     virtual std::string getType();
@@ -30,6 +33,6 @@ public:
 
 };
 
-}
+} // namespace torasustd
 
 #endif // STD_INCLUDE_TORASU_STD_RNUM_HPP_

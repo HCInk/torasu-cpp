@@ -1,10 +1,11 @@
 #include "../include/torasu/std/RNum.hpp"
 
-#include <string>
-#include <map>
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 #include <torasu/std/DPNum.hpp>
+
+#include <string>
+#include <map>
 
 using namespace torasu;
 using namespace std;
@@ -61,4 +62,4 @@ RenderResult* RNum::render(RenderInstruction* ri) {
     return new RenderResult(ResultStatus::ResultStatus_MALFORMED, NULL);
 }
 
-}
+} // namespace torasustd
