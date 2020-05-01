@@ -8,3 +8,15 @@
 [![pipeline status](https://ci.d-04.de/buildStatus/icon?job=torasu-cpp)](https://gitlab.com/hcink/torasu/torasu-cpp/pipelines)
 
 C++ Implementation of the TORASU Compute Framework
+
+## Dev Dependencies
+
+### Mandatory
+
+- [nlohmann/json](https://github.com/nlohmann/json) (compile)
+- [asan](https://github.com/google/sanitizers/wiki/AddressSanitizer) (address-sanatizing - will be optional soon)
+
+### Optional
+
+- [cpplint](https://github.com/google/styleguide) (linting - pip version recommended)
+- [astyle](http://astyle.sourceforge.net/) (formatting)
