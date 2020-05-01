@@ -34,8 +34,6 @@ DataPackable::DataPackable(nlohmann::json initialJson) {
 }
 
 DataPackable::~DataPackable() {
-	// TODO delete c-string in currentJson
-	//free(currentJson); // FIXME is this correct?
 }
 
 void DataPackable::parse() {
@@ -45,13 +43,6 @@ void DataPackable::parse() {
 		parsedJson = json::object();
 	}
 }
-
-/*void DP_FreeDump(DataDump* dump) {
-	if (dump->getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
-		cout << "DALLOC" << endl;
-		//delete[] (const char*) dump->getData().s;
-	}
-}*/
 
 DataDump DataPackable::getData() {
 
@@ -72,8 +63,8 @@ DataDump DataPackable::getData() {
  * DP Universal
 */
 
-DPUniversal::DPUniversal(std::string jsonStripped) : DataPackable(jsonStripped) {}
-DPUniversal::DPUniversal(nlohmann::json jsonParsed) : DataPackable(jsonParsed) {}
+DPUniversal::DPUniversal(string jsonStripped) : DataPackable(jsonStripped) {}
+DPUniversal::DPUniversal(json jsonParsed) : DataPackable(jsonParsed) {}
 
 std::string DPUniversal::getIdent() {
 	if (!ident.has_value()) {
@@ -92,7 +83,7 @@ void DPUniversal::load() {
 		" since it practically doesnt have a 'loaded' state");
 }
 
-nlohmann::json DPUniversal::makeJson() {
+json DPUniversal::makeJson() {
 	throw logic_error("makeJson() of DPUniversal should never be called,"
 		" since it practically doesnt have a 'loaded' state");
 }
