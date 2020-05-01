@@ -79,11 +79,11 @@ void simpleRenderExample() {
 
     // Running render based on instruction
 
-    RenderResult rr = rnum.render(ri);
+    RenderResult* rr = rnum.render(ri);
     
     // Finding results
 
-    map<string, ResultSegment*>* results = rr.getResults();
+    map<string, ResultSegment*>* results = rr->getResults();
 
     map<string, ResultSegment*>::iterator found = results->find(segKey);
 
@@ -103,12 +103,9 @@ void simpleRenderExample() {
     }
 
     // Cleaning
-	
-    for (pair<string, ResultSegment*> res : *results) {
-        delete res.second;
-    }
 
-    delete results;
+	delete rr;
+
     delete ri;
     delete rs;
     delete rss;

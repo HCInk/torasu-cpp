@@ -151,7 +151,7 @@ public:
 	virtual ~Renderable() {
 	}
 
-	virtual RenderResult render(RenderInstruction* ri) = 0;
+	virtual RenderResult* render(RenderInstruction* ri) = 0;
 };
 
 //
@@ -284,6 +284,52 @@ enum ResultSegmentStatus {
 	ResultSegmentStatus_OK_WARN = 2
 };
 
+class ResultSegment {
+private:
+	ResultSegmentStatus status;
+	DataResource* result;
+	bool freeResult;
+public:
+	
+	/**
+	 * @brief  Creates a ResultSegment (only status, without content)
+	 * @note  This constructor should only be used if a result wasn't generated
+	 * @param  status: Calculation-status of the segment
+	 */
+	inline ResultSegment(ResultSegmentStatus status) {
+		this->status = status;
+		this->result = NULL;
+		this->freeResult = false;
+	}
+
+	/**
+	 * @brief  Creates a ResultSegment
+	 * @param  status: Calculation-status of the segment
+	 * @param  result: The result of the calculation of the segment
+	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult) {
+		this->status = status;
+		this->result = result;
+		this->freeResult = freeResult;
+	}
+
+	~ResultSegment() {
+		if (freeResult) {
+			delete result;
+		}
+	}
+
+	inline ResultSegmentStatus const getStatus() {
+		return status;
+	}
+
+	inline DataResource* const getResult() {
+		return result;
+	}
+
+};
+
 class RenderResult {
 private:
 	ResultStatus status;
@@ -296,7 +342,10 @@ public:
 	}
 
 	~RenderResult() {
-
+		for (std::pair<std::string, ResultSegment*> res : *results) {
+			delete res.second;
+		}
+		delete results;
 	}
 
 	inline ResultStatus const getStatus() {
@@ -306,30 +355,6 @@ public:
 	inline std::map<std::string, ResultSegment*>* const getResults() {
 		return results;
 	}
-};
-
-class ResultSegment {
-private:
-	ResultSegmentStatus status;
-	DataResource* result;
-public:
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result) {
-		this->status = status;
-		this->result = result;
-	}
-
-	~ResultSegment() {
-
-	}
-
-	inline ResultSegmentStatus const getStatus() {
-		return status;
-	}
-
-	inline DataResource* const getResult() {
-		return result;
-	}
-
 };
 
 } /* namespace torasu */

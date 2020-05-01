@@ -43,22 +43,22 @@ void RNum::setElement(string key, Element* elem) {
     // TODO Handle setElement in RNum
 }
 
-RenderResult RNum::render(RenderInstruction* ri) {
+RenderResult* RNum::render(RenderInstruction* ri) {
     ResultSettings* rs = ri->getResultSettings();
     
     for (ResultSegmentSettings* rss : *rs) {
         if (rss->getPipeline().compare(pipeline) == 0) {
-            ResultSegment* rseg = new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK, valdr);
+            ResultSegment* rseg = new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK, valdr, false);
             
             map<string, ResultSegment*>* results = new map<string, ResultSegment*>();
             
             (*results)[rss->getKey()] = rseg;
 
-            return RenderResult(ResultStatus::ResultStatus_OK, results);
+            return new RenderResult(ResultStatus::ResultStatus_OK, results);
         }
     }
 
-    return RenderResult(ResultStatus::ResultStatus_MALFORMED, NULL);
+    return new RenderResult(ResultStatus::ResultStatus_MALFORMED, NULL);
 }
 
 }

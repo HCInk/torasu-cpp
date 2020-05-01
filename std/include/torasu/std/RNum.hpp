@@ -26,7 +26,7 @@ public:
     virtual void setData(torasu::DataResource* data);
     virtual void setElement(std::string key, Element* elem);
 
-    virtual torasu::RenderResult render(torasu::RenderInstruction* ri);
+    virtual torasu::RenderResult* render(torasu::RenderInstruction* ri);
 
 };
 
