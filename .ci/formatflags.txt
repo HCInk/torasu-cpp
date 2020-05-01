@@ -1,0 +1,4 @@
+-n # No backup-files
+-A2 # Attached Braces (java-style)
+--indent=tab # Use tabs
+-T4 # Tab-size: 4
