@@ -16,6 +16,9 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// INTERFACES
+class ExecutionInterface;
+
 // DATA
 class DataDump;
 class DataResource;
@@ -35,6 +38,15 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 class RenderResult;
 class ResultSegment;
 
+//
+// INTERFACES
+//
+
+class ExecutionInterface {
+public:
+	virtual long enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, long prio) = 0;
+	virtual RenderResult fetchRenderResult(long renderId) = 0;
+};
 
 //
 // DATA
