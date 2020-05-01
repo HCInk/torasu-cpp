@@ -25,80 +25,80 @@ namespace torasuexamples {
 
 void checkLinkings() {
 
-    cout << "Checking core..." << endl;
-    TORASU_check_core();
-    cout << "Checking std..." << endl;
-    TORASU_check_std();
-    cout << "Everything seems good!" << endl;
+	cout << "Checking core..." << endl;
+	TORASU_check_core();
+	cout << "Checking std..." << endl;
+	TORASU_check_std();
+	cout << "Everything seems good!" << endl;
 
 }
 
 void simpleDpTest() {
 
-    nlohmann::json dpJson  = { 
-        {"ident", "torasu::testdp"},
-        {"secondProp", "test"}
-    };
+	nlohmann::json dpJson  = {
+		{"ident", "torasu::testdp"},
+		{"secondProp", "test"}
+	};
 
-    DPUniversal dpu(dpJson);
-    
-    std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
+	DPUniversal dpu(dpJson);
 
-    DataDump dump = dpu.getData();
+	std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
 
-    if (dump.getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
-        std::cout << "data:" << dump.getData().s << std::endl;
-    } else {
-        std::cerr << "unexpected DDDPT" << std::endl;
-    }
+	DataDump dump = dpu.getData();
+
+	if (dump.getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
+		std::cout << "data:" << dump.getData().s << std::endl;
+	} else {
+		std::cerr << "unexpected DDDPT" << std::endl;
+	}
 
 }
 
 void simpleRenderExample() {
 
-    //
-    // Simple Render Example
-    //
+	//
+	// Simple Render Example
+	//
 
-    // Creating "tree" to be rendered
-    
-    RNum rnum(1.1);
+	// Creating "tree" to be rendered
 
-    // Creating instruction
+	RNum rnum(1.1);
 
-    std::string segKey = // Segement key the result will be saved to 
+	// Creating instruction
+
+	std::string segKey = // Segement key the result will be saved to
 		std::string("x");
 
-    ResultSegmentSettings* rss = // Save a segment from the pipeline "STD::PNUM" at the segemnt-key "x"
+	ResultSegmentSettings* rss = // Save a segment from the pipeline "STD::PNUM" at the segemnt-key "x"
 		new ResultSegmentSettings(std::string("STD::PNUM"), segKey, NULL);
 
-    ResultSettings* rs = // Create a ResultSettings-object to put the ResultSegmentSettings in
+	ResultSettings* rs = // Create a ResultSettings-object to put the ResultSegmentSettings in
 		new ResultSettings();
 
-    rs->push_back(rss); // Add the previously defined ResultSegmentSettings intot the ResultSettings-object
+	rs->push_back(rss); // Add the previously defined ResultSegmentSettings intot the ResultSettings-object
 
-    RenderInstruction* ri = // Save the ResultInstruction with the defined ResultSettings and the RenderContext (which is unset/NULL for now)
+	RenderInstruction* ri = // Save the ResultInstruction with the defined ResultSettings and the RenderContext (which is unset/NULL for now)
 		new RenderInstruction(NULL, rs);
 
-    // Running render based on instruction
+	// Running render based on instruction
 
-    RenderResult* rr = rnum.render(ri);
-    
-    // Finding results
+	RenderResult* rr = rnum.render(ri);
+
+	// Finding results
 
 	tools::CastedRenderSegmentResult<DPNum>* result = tools::findResult<DPNum>(rr, segKey);
-	
-    cout << "DPNum Value: " << result->getResult()->getNum() << endl;
+
+	cout << "DPNum Value: " << result->getResult()->getNum() << endl;
 
 	delete result;
 
-    // Cleaning
+	// Cleaning
 
 	delete rr;
 
-    delete ri;
-    delete rs;
-    delete rss;
+	delete ri;
+	delete rs;
+	delete rss;
 }
 
 } // namespace torasuexamples
@@ -107,11 +107,11 @@ using namespace torasuexamples;
 
 int main(int argc, char **argv) {
 
-    checkLinkings();
+	checkLinkings();
 
-    simpleDpTest();
+	simpleDpTest();
 
-    simpleRenderExample();
+	simpleRenderExample();
 
 	return 0;
 }

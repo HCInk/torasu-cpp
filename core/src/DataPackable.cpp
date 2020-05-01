@@ -49,14 +49,14 @@ DataDump DataPackable::getData() {
 	if (!serializedJson.has_value()) {
 		serializedJson = getJson().dump();
 	}
-	
+
 	const char* serJson_cStr = serializedJson.value().c_str();
 
 	DDDataPointer pointer;
 	pointer.s = serJson_cStr;
 
-	return DataDump(pointer, strlen(serJson_cStr), 
-		DDDataPointerType::DDDataPointerType_JSON_CSTR, NULL);
+	return DataDump(pointer, strlen(serJson_cStr),
+					DDDataPointerType::DDDataPointerType_JSON_CSTR, NULL);
 }
 
 /*
@@ -80,12 +80,12 @@ std::string DPUniversal::getIdent() {
 
 void DPUniversal::load() {
 	throw logic_error("load() of DPUniversal should never be called,"
-		" since it practically doesnt have a 'loaded' state");
+					  " since it practically doesnt have a 'loaded' state");
 }
 
 json DPUniversal::makeJson() {
 	throw logic_error("makeJson() of DPUniversal should never be called,"
-		" since it practically doesnt have a 'loaded' state");
+					  " since it practically doesnt have a 'loaded' state");
 }
 
 } /* namespace torasu */

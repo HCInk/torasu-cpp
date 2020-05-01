@@ -22,7 +22,7 @@ private:
 	std::optional<std::string> serializedJson;
 	std::optional<nlohmann::json> parsedJson;
 	bool loaded = false;
-	
+
 	void parse();
 protected:
 
@@ -80,7 +80,7 @@ private:
 public:
 	explicit DPUniversal(std::string jsonStripped);
 	explicit DPUniversal(nlohmann::json jsonParsed);
-	
+
 	virtual std::string getIdent();
 	virtual void load();
 	virtual nlohmann::json makeJson();

@@ -13,14 +13,14 @@ class DPNum : public torasu::DataPackable {
 
 private:
 	const std::string ident = std::string("STD::DPNUM");
-	
+
 	double num;
 
 public:
 	explicit DPNum(std::string jsonStripped);
 	explicit DPNum(nlohmann::json jsonParsed);
 	explicit DPNum(double num);
-	
+
 	double getNum();
 
 	virtual std::string getIdent();

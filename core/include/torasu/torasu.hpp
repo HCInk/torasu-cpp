@@ -139,7 +139,7 @@ public:
 	virtual std::map<std::string, Element*> getElements() = 0;
 
 	virtual void setData(DataResource* data,
-			std::map<std::string, Element*> elements) = 0;
+						 std::map<std::string, Element*> elements) = 0;
 	virtual void setData(DataResource* data) = 0;
 	virtual void setElement(std::string key, Element* elem) = 0;
 
@@ -189,7 +189,7 @@ private:
 	ResultFormatSettings* rfs;
 public:
 	inline ResultSegmentSettings(std::string pipeline, std::string key,
-			ResultFormatSettings* rfs) {
+								 ResultFormatSettings* rfs) {
 		this->pipeline = pipeline;
 		this->key = key;
 		this->rfs = rfs;
@@ -219,7 +219,7 @@ private:
 	DataResource* data;
 public:
 	inline ResultFormatSettings(std::string format, std::set<std::string>* tags,
-			DataResource* data) {
+								DataResource* data) {
 		this->format = format;
 		this->tags = tags;
 		this->data = data;
@@ -291,7 +291,7 @@ private:
 	DataResource* result;
 	bool freeResult;
 public:
-	
+
 	/**
 	 * @brief  Creates a ResultSegment (only status, without content)
 	 * @note  This constructor should only be used if a result wasn't generated
@@ -337,7 +337,7 @@ private:
 	std::map<std::string, ResultSegment*>* results;
 public:
 	inline RenderResult(ResultStatus status,
-			std::map<std::string, ResultSegment*>* results) {
+						std::map<std::string, ResultSegment*>* results) {
 		this->status = status;
 		this->results = results;
 	}
