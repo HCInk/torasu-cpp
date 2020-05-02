@@ -336,6 +336,11 @@ private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
 public:
+	inline RenderResult(ResultStatus status) {
+		this->status = status;
+		this->results = NULL;
+	}
+
 	inline RenderResult(ResultStatus status,
 						std::map<std::string, ResultSegment*>* results) {
 		this->status = status;
@@ -343,10 +348,12 @@ public:
 	}
 
 	~RenderResult() {
-		for (std::pair<std::string, ResultSegment*> res : *results) {
-			delete res.second;
+		if (results != NULL) {
+			for (std::pair<std::string, ResultSegment*> res : *results) {
+				delete res.second;
+			}
+			delete results;
 		}
-		delete results;
 	}
 
 	inline ResultStatus const getStatus() {

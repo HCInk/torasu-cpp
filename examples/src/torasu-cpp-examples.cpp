@@ -66,39 +66,23 @@ void simpleRenderExample() {
 
 	// Creating instruction
 
-	std::string segKey = // Segement key the result will be saved to
-		std::string("x");
+	tools::RenderInstructionBuilder rib;
 
-	ResultSegmentSettings* rss = // Save a segment from the pipeline "STD::PNUM" at the segemnt-key "x"
-		new ResultSegmentSettings(std::string("STD::PNUM"), segKey, NULL);
-
-	ResultSettings* rs = // Create a ResultSettings-object to put the ResultSegmentSettings in
-		new ResultSettings();
-
-	rs->push_back(rss); // Add the previously defined ResultSegmentSettings intot the ResultSettings-object
-
-	RenderInstruction* ri = // Save the ResultInstruction with the defined ResultSettings and the RenderContext (which is unset/NULL for now)
-		new RenderInstruction(NULL, rs);
+	auto handle = rib.addSegmentWithHandle<DPNum>("STD::PNUM", NULL);
 
 	// Running render based on instruction
 
-	RenderResult* rr = rnum.render(ri);
+	RenderInstruction  ri = rib.getInstruction(NULL);
+
+	RenderResult* rr = rnum.render(&ri);
 
 	// Finding results
 
-	tools::CastedRenderSegmentResult<DPNum>* result = tools::findResult<DPNum>(rr, segKey);
-
-	cout << "DPNum Value: " << result->getResult()->getNum() << endl;
-
-	delete result;
+	cout << "DPNum Value: " << handle.getFrom(rr)->getResult()->getNum() << endl;
 
 	// Cleaning
 
 	delete rr;
-
-	delete ri;
-	delete rs;
-	delete rss;
 }
 
 } // namespace torasuexamples
