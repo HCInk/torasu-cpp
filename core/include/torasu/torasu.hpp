@@ -336,7 +336,7 @@ private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
 public:
-	inline RenderResult(ResultStatus status) {
+	explicit inline RenderResult(ResultStatus status) {
 		this->status = status;
 		this->results = NULL;
 	}

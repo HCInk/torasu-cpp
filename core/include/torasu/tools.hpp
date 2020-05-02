@@ -3,6 +3,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <sstream>
 #include <stdexcept>
 
@@ -59,7 +60,7 @@ template<class T> class RenderResultSegmentHandle {
 private:
 	std::string segKey;
 public:
-	RenderResultSegmentHandle(std::string segKey) {
+	explicit RenderResultSegmentHandle(std::string segKey) {
 		this->segKey = segKey;
 	}
 

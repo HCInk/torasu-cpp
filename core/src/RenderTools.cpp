@@ -29,4 +29,4 @@ void RenderInstructionBuilder::buildResultSettings() {
 
 }
 
-}
+} // namespace torasu::tools
