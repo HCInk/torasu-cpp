@@ -20,3 +20,4 @@ C++ Implementation of the TORASU Compute Framework
 
 - [cpplint](https://github.com/google/styleguide) (linting - pip version recommended)
 - [astyle](http://astyle.sourceforge.net/) (formatting)
+- [Catch2](https://github.com/catchorg/Catch2) (testing)
