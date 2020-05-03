@@ -38,16 +38,21 @@ TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 
 	// Finding results
 
-	REQUIRE( rr->getStatus() == ResultStatus::ResultStatus_OK );
+	CHECK( rr->getStatus() == ResultStatus::ResultStatus_OK );
 	
-	auto result = handle.getFrom(rr);
+	if (rr->getStatus() == ResultStatus::ResultStatus_OK) {
+			
+		auto result = handle.getFrom(rr);
 
-	REQUIRE( result->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
-	REQUIRE( result->getResult()->getNum() == 1.1 );
+		CHECK( result->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+		
+		if (result->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+			CHECK( result->getResult()->getNum() == 1.1 );
+		}
+		
+		delete result;
+	}
 
-	// Cleaning
-
-	delete result;
 	delete rr;
 
 }
