@@ -14,10 +14,14 @@ RenderInstructionBuilder::~RenderInstructionBuilder() {
 	}
 
 	delete segments;
+
+	if (rs != NULL) {
+		delete rs;
+	}
 }
 
 void RenderInstructionBuilder::buildResultSettings() {
-	if (rs == NULL) {
+	if (rs != NULL) {
 		delete rs;
 	}
 

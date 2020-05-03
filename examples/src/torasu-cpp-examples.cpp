@@ -78,11 +78,14 @@ void simpleRenderExample() {
 
 	// Finding results
 
-	cout << "DPNum Value: " << handle.getFrom(rr)->getResult()->getNum() << endl;
-
+	auto result = handle.getFrom(rr);
+	cout << "DPNum Value: " << result->getResult()->getNum() << endl;
+	
 	// Cleaning
 
+	delete result;
 	delete rr;
+
 }
 
 } // namespace torasuexamples
