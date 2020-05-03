@@ -61,7 +61,7 @@ if(NOT TARGET torasu-cpp-examples)
 		include(Catch)
 		catch_discover_tests(torasu-cpp-test)
 
-	elseif()
+	else()
 		message(WARNING "Found Catch2-cmake-package not found: Disabling tests.")
 	endif()
 
