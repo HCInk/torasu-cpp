@@ -62,4 +62,4 @@ RenderResult* RNum::render(RenderInstruction* ri) {
 	return new RenderResult(ResultStatus::ResultStatus_MALFORMED);
 }
 
-} // namespace torasustd
+} // namespace torasu::tstd

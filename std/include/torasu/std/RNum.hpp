@@ -33,6 +33,6 @@ public:
 
 };
 
-} // namespace torasustd
+} // namespace torasu::tstd
 
 #endif // STD_INCLUDE_TORASU_STD_RNUM_HPP_

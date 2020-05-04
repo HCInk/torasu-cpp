@@ -88,7 +88,7 @@ void simpleRenderExample() {
 
 }
 
-} // namespace torasuexamples
+} // namespace torasu::texample
 
 using namespace torasu::texample;
 

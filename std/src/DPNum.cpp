@@ -40,4 +40,4 @@ nlohmann::json DPNum::makeJson() {
 	return num;
 }
 
-} // namespace torasustd
+} // namespace torasu::tstd
