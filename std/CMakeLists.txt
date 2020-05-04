@@ -26,6 +26,8 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
+	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+
 	# Link libraries 
 
 	if(APPLE)

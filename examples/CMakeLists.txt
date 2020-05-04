@@ -25,6 +25,8 @@ if(NOT TARGET torasu-cpp-examples)
 	set(TORASU_EXAMPLES_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-examples.cpp)
 	add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
+	
+	set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
 	# Link libraries 
 
@@ -43,6 +45,8 @@ if(NOT TARGET torasu-cpp-examples)
 	set(TORASU_TEST_SRC 
  	${CMAKE_CURRENT_LIST_DIR}/test/torasu-cpp-test.cpp)
 	add_executable(torasu-cpp-test ${TORASU_TEST_SRC})
+
+	set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
 	if(APPLE)
 		target_link_libraries(torasu-cpp-test nlohmann_json::nlohmann_json)
