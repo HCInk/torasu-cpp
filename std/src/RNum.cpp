@@ -10,7 +10,7 @@
 using namespace torasu;
 using namespace std;
 
-namespace torasustd {
+namespace torasu::tstd {
 
 RNum::RNum(double val) {
 	valdr = new DPNum(val);

@@ -8,7 +8,7 @@ using namespace std;
 using json = nlohmann::json;
 using namespace torasu;
 
-namespace torasustd {
+namespace torasu::tstd {
 
 DPNum::DPNum(string jsonStripped) : DataPackable(jsonStripped) {}
 DPNum::DPNum(json jsonParsed) : DataPackable(jsonParsed) {}

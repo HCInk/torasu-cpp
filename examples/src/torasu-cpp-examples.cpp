@@ -19,9 +19,9 @@
 
 using namespace std;
 using namespace torasu;
-using namespace torasustd;
+using namespace torasu::tstd;
 
-namespace torasuexamples {
+namespace torasu::texample {
 
 void checkLinkings() {
 
@@ -80,7 +80,7 @@ void simpleRenderExample() {
 
 	auto result = handle.getFrom(rr);
 	cout << "DPNum Value: " << result->getResult()->getNum() << endl;
-	
+
 	// Cleaning
 
 	delete result;
@@ -90,7 +90,7 @@ void simpleRenderExample() {
 
 } // namespace torasuexamples
 
-using namespace torasuexamples;
+using namespace torasu::texample;
 
 int main(int argc, char **argv) {
 

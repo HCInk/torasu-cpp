@@ -16,7 +16,7 @@
 #include <torasu/std/DPNum.hpp>
 
 using namespace torasu;
-using namespace torasustd;
+using namespace torasu::tstd;
 
 TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 

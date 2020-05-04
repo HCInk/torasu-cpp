@@ -6,7 +6,7 @@
 
 #include <torasu/torasu.hpp>
 
-namespace torasustd {
+namespace torasu::tstd {
 
 class RNum : public torasu::Renderable {
 private:

@@ -7,7 +7,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
-namespace torasustd {
+namespace torasu::tstd {
 
 class DPNum : public torasu::DataPackable {
 
