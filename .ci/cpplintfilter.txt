@@ -6,3 +6,4 @@
 +build/include_what_you_use # re-endable notice to include every file that has a direct reference
 +build/include_order # re-enable info to order the header-includes correctly
 -build/namespaces # disables warning for "using namespace xxx"
+-build/c++11 # For some reason <mutex> is an unapproved C++11 header here?
