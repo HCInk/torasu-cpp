@@ -38,32 +38,25 @@ if(NOT TARGET torasu-cpp-examples)
 
 	# Tests
 
-	find_package(Catch2)
-	if (Catch2_FOUND)
-		message(STATUS "Found Catch2-cmake-package: Enabling tests.")
+	add_subdirectory(lib/Catch2)
+	
+	set(TORASU_TEST_SRC 
+ 	${CMAKE_CURRENT_LIST_DIR}/test/torasu-cpp-test.cpp)
+	add_executable(torasu-cpp-test ${TORASU_TEST_SRC})
 
-		set(TORASU_TEST_SRC 
-			${CMAKE_CURRENT_LIST_DIR}/test/torasu-cpp-test.cpp)
-		add_executable(torasu-cpp-test ${TORASU_TEST_SRC})
-
-
-		if(APPLE)	
-			target_link_libraries(torasu-cpp-test nlohmann_json::nlohmann_json)
-		else()
-			target_link_libraries(torasu-cpp-test asan)
-		endif()
-
-		target_link_libraries(torasu-cpp-test torasu torasustd)
-
-		target_link_libraries(torasu-cpp-test Catch2::Catch2)
-
-		include(CTest)
-		include(Catch)
-		catch_discover_tests(torasu-cpp-test)
-
+	if(APPLE)
+		target_link_libraries(torasu-cpp-test nlohmann_json::nlohmann_json)
 	else()
-		message(WARNING "Found Catch2-cmake-package not found: Disabling tests.")
+		target_link_libraries(torasu-cpp-test asan)
 	endif()
+
+	target_link_libraries(torasu-cpp-test torasu torasustd)
+
+	target_link_libraries(torasu-cpp-test Catch2::Catch2)
+
+	include(CTest)
+	include(lib/Catch2/contrib/Catch.cmake)
+	catch_discover_tests(torasu-cpp-test)
 
 endif()
 
