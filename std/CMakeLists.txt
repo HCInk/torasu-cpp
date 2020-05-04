@@ -23,7 +23,8 @@ if(NOT TARGET torasustd)
 	set(TORASU_STD_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/DPNum.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/EICoreRunner.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")

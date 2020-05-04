@@ -15,6 +15,7 @@
 #include <torasu/std/torasu_std.hpp>
 #include <torasu/std/RNum.hpp>
 #include <torasu/std/DPNum.hpp>
+#include <torasu/std/EICoreRunner.hpp>
 
 
 using namespace std;
@@ -64,6 +65,12 @@ void simpleRenderExample() {
 
 	RNum rnum(1.1);
 
+	// Creating the runner
+
+	EICoreRunner runner;
+
+	ExecutionInterface* ei = runner.createInterface();
+
 	// Creating instruction
 
 	tools::RenderInstructionBuilder rib;
@@ -72,9 +79,7 @@ void simpleRenderExample() {
 
 	// Running render based on instruction
 
-	RenderInstruction  ri = rib.getInstruction(NULL);
-
-	RenderResult* rr = rnum.render(&ri);
+	RenderResult* rr = rib.runRender(&rnum, NULL, ei);
 
 	// Finding results
 
@@ -85,6 +90,7 @@ void simpleRenderExample() {
 
 	delete result;
 	delete rr;
+	delete ei;
 
 }
 

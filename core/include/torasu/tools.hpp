@@ -109,8 +109,13 @@ public:
 		return RenderResultSegmentHandle<T>(segKey);
 	}
 
-	inline RenderInstruction getInstruction(RenderContext* rctx) {
-		return RenderInstruction(rctx, getResultSetttings());
+	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
+		return ei->enqueueRender(rnd, rctx, getResultSetttings(), prio);
+	}
+
+	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
+		uint64_t renderId = enqueueRender(rnd, rctx, ei, prio);
+		return ei->fetchRenderResult(renderId);
 	}
 };
 

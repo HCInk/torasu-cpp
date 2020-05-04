@@ -45,8 +45,9 @@ class ResultSegment;
 
 class ExecutionInterface {
 public:
+	virtual ~ExecutionInterface() {}
 	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
-	virtual RenderResult fetchRenderResult(uint64_t renderId) = 0;
+	virtual RenderResult* fetchRenderResult(uint64_t renderId) = 0;
 };
 
 //
@@ -116,7 +117,6 @@ public:
 class DataResource {
 public:
 	DataResource() {}
-
 	virtual ~DataResource() {}
 
 	virtual std::string getIdent() = 0;
@@ -163,15 +163,16 @@ class RenderInstruction {
 private:
 	RenderContext* rctx;
 	ResultSettings* rs;
+	ExecutionInterface* ei;
+
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs) {
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei) {
 		this->rctx = rctx;
 		this->rs = rs;
+		this->ei = ei;
 	}
 
-	~RenderInstruction() {
-
-	}
+	~RenderInstruction() {}
 
 	inline RenderContext* const getRenderContext() {
 		return rctx;
@@ -179,6 +180,10 @@ public:
 
 	inline ResultSettings* const getResultSettings() {
 		return rs;
+	}
+
+	inline ExecutionInterface* const getExecutionInterface() {
+		return ei;
 	}
 };
 
