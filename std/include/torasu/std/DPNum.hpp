@@ -20,7 +20,7 @@ public:
 	explicit DPNum(std::string jsonStripped);
 	explicit DPNum(nlohmann::json jsonParsed);
 	explicit DPNum(double num);
-
+	
 	double getNum();
 
 	virtual std::string getIdent();
