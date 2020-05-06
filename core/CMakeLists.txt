@@ -9,12 +9,6 @@ if(NOT TARGET torasu)
 	project (torasu-cpp-core)
 	set(CMAKE_CXX_STANDARD 20)
 
-	# Packages
-
-	if (APPLE)
-		find_package(nlohmann_json 3.2.0 REQUIRED)
-	endif()
-
 	# Compile
 
 	set(TORASU_CORE_SRC
@@ -23,10 +17,14 @@ if(NOT TARGET torasu)
 		${CMAKE_CURRENT_LIST_DIR}/src/RenderTools.cpp)
 	add_library(torasu SHARED ${TORASU_CORE_SRC})
 
-	# Link libraries
+	# Includes for current target
+
+	target_include_directories(torasu PUBLIC lib/json/single_include/)
+
+	# Libraries for current target
 
 	if(APPLE)
-		target_link_libraries(torasu nlohmann_json::nlohmann_json)
+	
 	else()
 		target_link_libraries(torasu asan)
 	endif()

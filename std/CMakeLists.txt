@@ -8,12 +8,6 @@ if(NOT TARGET torasustd)
 
 	project (torasu-cpp-std)
 	set(CMAKE_CXX_STANDARD 20)
-	
-	# Packages
-
-	if (APPLE)
-		find_package(nlohmann_json 3.2.0 REQUIRED)
-	endif()
 
 	# TORASU-CORE (local)
 	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
@@ -29,10 +23,14 @@ if(NOT TARGET torasustd)
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-	# Link libraries 
+	# Includes for current target
+
+	target_include_directories(torasustd PUBLIC lib/json/single_include/)
+
+	# Libraries for current target
 
 	if(APPLE)
-		target_link_libraries(torasustd nlohmann_json::nlohmann_json)
+
 	else()
 		target_link_libraries(torasustd asan)
 	endif()

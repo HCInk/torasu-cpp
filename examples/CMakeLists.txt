@@ -9,12 +9,6 @@ if(NOT TARGET torasu-cpp-examples)
 	project (torasu-cpp-examples)
 	set(CMAKE_CXX_STANDARD 20)
 
-	# Packages
-	
-	if (APPLE)
-		find_package(nlohmann_json 3.2.0 REQUIRED)
-	endif()
-
 	# TORASU-CORE (local)
 	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
 	# TORASU-STD (local)
@@ -28,10 +22,14 @@ if(NOT TARGET torasu-cpp-examples)
 	
 	set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-	# Link libraries 
+	# Includes for current target
+
+	target_include_directories(torasu-cpp-examples PUBLIC lib/json/single_include/)
+
+	# Libraries for current target
 
 	if(APPLE)
-		target_link_libraries(torasu-cpp-examples nlohmann_json::nlohmann_json)
+
 	else()
 		target_link_libraries(torasu-cpp-examples asan)
 	endif()
@@ -48,11 +46,14 @@ if(NOT TARGET torasu-cpp-examples)
 
 	set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
+	target_include_directories(torasu-cpp-test PUBLIC lib/json/single_include/)
+
 	if(APPLE)
-		target_link_libraries(torasu-cpp-test nlohmann_json::nlohmann_json)
+
 	else()
 		target_link_libraries(torasu-cpp-test asan)
 	endif()
+	
 
 	target_link_libraries(torasu-cpp-test torasu torasustd)
 
