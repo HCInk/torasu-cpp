@@ -18,6 +18,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/DPNum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/RMultiply.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/EICoreRunner.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 

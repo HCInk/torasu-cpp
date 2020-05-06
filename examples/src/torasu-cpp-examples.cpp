@@ -13,8 +13,9 @@
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
-#include <torasu/std/RNum.hpp>
 #include <torasu/std/DPNum.hpp>
+#include <torasu/std/RNum.hpp>
+#include <torasu/std/RMultiply.hpp>
 #include <torasu/std/EICoreRunner.hpp>
 
 
@@ -63,7 +64,10 @@ void simpleRenderExample() {
 
 	// Creating "tree" to be rendered
 
-	RNum rnum(1.1);
+	RNum numA(0.1);
+	RNum numB(0.1);
+
+	RMultiply tree(&numA, &numB);
 
 	// Creating the runner
 
@@ -79,7 +83,7 @@ void simpleRenderExample() {
 
 	// Running render based on instruction
 
-	RenderResult* rr = rib.runRender(&rnum, NULL, ei);
+	RenderResult* rr = rib.runRender(&tree, NULL, ei);
 
 	// Finding results
 
