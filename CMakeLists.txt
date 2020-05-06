@@ -1,7 +1,6 @@
 
-cmake_minimum_required (VERSION 2.6)
-
-project (torasu-cpp)
+cmake_minimum_required (VERSION 3.0)
+project(torasu-cpp VERSION 0.0.4)
 
 if (NOT MINGW AND NOT APPLE)
 	set(TORASU_DEBUG_ASAN true)

@@ -1,12 +1,12 @@
 cmake_policy(PUSH)
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0)
 
 if(NOT TARGET torasustd)
 	
 	# Meta / Settings
 
-	project (torasu-cpp-std)
+	project(torasu-cpp-std VERSION 0.0.4)
 	set(CMAKE_CXX_STANDARD 20)
 
 	# TORASU-CORE (local)
