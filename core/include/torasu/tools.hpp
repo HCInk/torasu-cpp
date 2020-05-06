@@ -64,6 +64,10 @@ public:
 		this->segKey = segKey;
 	}
 
+	explicit RenderResultSegmentHandle(const RenderResultSegmentHandle<T>& handle) {
+		this->segKey = handle.segKey;
+	}
+
 	~RenderResultSegmentHandle() {}
 
 	inline CastedRenderSegmentResult<T>* getFrom(RenderResult* rr) {
