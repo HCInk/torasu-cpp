@@ -26,7 +26,9 @@ if(NOT TARGET torasu)
 	if(APPLE)
 	
 	else()
-		target_link_libraries(torasu asan)
+		if(TORASU_DEBUG_ASAN)
+			target_link_libraries(torasu asan)
+		endif()
 	endif()
 
 	# Includes for others

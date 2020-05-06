@@ -31,7 +31,9 @@ if(NOT TARGET torasu-cpp-examples)
 	if(APPLE)
 
 	else()
-		target_link_libraries(torasu-cpp-examples asan)
+		if(TORASU_DEBUG_ASAN)
+			target_link_libraries(torasu-cpp-examples asan)
+		endif()
 	endif()
 
 	target_link_libraries(torasu-cpp-examples torasu torasustd)
@@ -51,7 +53,9 @@ if(NOT TARGET torasu-cpp-examples)
 	if(APPLE)
 
 	else()
-		target_link_libraries(torasu-cpp-test asan)
+		if(TORASU_DEBUG_ASAN)
+			target_link_libraries(torasu-cpp-test asan)
+		endif()
 	endif()
 	
 

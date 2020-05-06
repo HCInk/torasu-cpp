@@ -3,6 +3,10 @@ cmake_minimum_required (VERSION 2.6)
 
 project (torasu-cpp)
 
+if (NOT MINGW AND NOT APPLE)
+	set(TORASU_DEBUG_ASAN true)
+endif()
+
 include(core/CMakeLists.txt)
 include(std/CMakeLists.txt)
 include(examples/CMakeLists.txt)

@@ -32,7 +32,9 @@ if(NOT TARGET torasustd)
 	if(APPLE)
 
 	else()
-		target_link_libraries(torasustd asan)
+		if(TORASU_DEBUG_ASAN)
+			target_link_libraries(torasustd asan)
+		endif()
 	endif()
 
 	target_link_libraries(torasustd torasu)
