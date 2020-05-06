@@ -110,7 +110,7 @@ uint64_t EICoreRunnerObject::enqueueRender(Renderable* rnd, RenderContext* rctx,
 
 	runner->enqueue(obj);
 
-	return renderId;
+	return newRenderId;
 }
 
 RenderResult* EICoreRunnerObject::fetchRenderResult(uint64_t renderId) {
