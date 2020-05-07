@@ -1,4 +1,16 @@
 #!/bin/bash
+
+function build_runMake() {
+	if [ -f  "$(command -v nproc)" ]; then
+		threads=$(nproc --all)
+		echo "Building multithreaded ($threads)..."
+		make --jobs=$threads
+	else
+		echo "Building singlethreaded..."
+		make
+	fi
+}
+
 if [ -n "$1" ]; then
 
 	if [ "$1" == "delbuild" ]; then
@@ -12,7 +24,7 @@ if [ -n "$1" ]; then
 		mkdir -p build/cross/win/
 		cd build/cross/win/
 		x86_64-w64-mingw32-cmake -Wno-dev ../../../
-		make
+		build_runMake
 
 	elif [ "$1" == "delcross" ]; then
 	
@@ -36,13 +48,6 @@ else
 	mkdir -p build
 	cd build
 	cmake -Wno-dev ../
-	if (command -v nproc); then
-		threads=$(nproc --all)
-		echo "Building multithreaded ($threads)..."
-		make --jobs=$threads
-	else
-		echo "Building singlethreaded..."
-		make
-	fi
+	build_runMake
 
 fi
