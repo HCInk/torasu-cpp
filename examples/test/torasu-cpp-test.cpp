@@ -48,13 +48,12 @@ TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 			
 		auto result = handle.getFrom(rr);
 
-		CHECK( result->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+		CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 		
-		if (result->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
-			CHECK( result->getResult()->getNum() == 1.1 );
+		if (result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+			CHECK( result.getResult()->getNum() == 1.1 );
 		}
 		
-		delete result;
 	}
 
 	delete rr;
