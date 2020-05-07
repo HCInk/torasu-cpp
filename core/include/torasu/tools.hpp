@@ -18,11 +18,15 @@ namespace torasu::tools {
 template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
-	ResultSegment* rs;
+	ResultSegmentStatus status;
 public:
-	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
-		this->rs = rs;
 
+	explicit CastedRenderSegmentResult(ResultSegmentStatus status)  {
+		this->status = status;
+	}
+
+	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
+		this->status = rs->getStatus();
 		if(T* casted = dynamic_cast<T*>(rs->getResult())) {
 			result = casted;
 		} else {
@@ -41,17 +45,20 @@ public:
 	}
 
 	inline ResultSegmentStatus getStatus() {
-		return rs->getStatus();
+		return status;
 	}
 };
 
-template<class T> inline CastedRenderSegmentResult<T>* findResult(RenderResult* rr, const std::string& key) {
-
-	std::map<std::string, ResultSegment*>::iterator found = rr->getResults()->find(key);
+template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key) {
+	auto results = rr->getResults();
+	if (results == NULL) {
+		return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
+	}
+	std::map<std::string, ResultSegment*>::iterator found = results->find(key);
 	if (found != rr->getResults()->end()) {
-		return new CastedRenderSegmentResult<T>(found->second);
+		return CastedRenderSegmentResult<T>(found->second);
 	} else {
-		return NULL;
+		return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
 	}
 
 }
@@ -70,7 +77,7 @@ public:
 
 	~RenderResultSegmentHandle() {}
 
-	inline CastedRenderSegmentResult<T>* getFrom(RenderResult* rr) {
+	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr) {
 		return findResult<T>(rr, segKey);
 	}
 

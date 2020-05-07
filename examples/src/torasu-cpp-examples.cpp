@@ -88,11 +88,10 @@ void simpleRenderExample() {
 	// Finding results
 
 	auto result = handle.getFrom(rr);
-	cout << "DPNum Value: " << result->getResult()->getNum() << endl;
+	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 
 	// Cleaning
 
-	delete result;
 	delete rr;
 	delete ei;
 

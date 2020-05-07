@@ -30,7 +30,7 @@ DataResource* RMultiply::getData() {
 
 map<string, Element*> RMultiply::getElements() {
 	map<string, Element*> elems;
-	
+
 	elems["a"] = a;
 	elems["b"] = b;
 
@@ -70,24 +70,11 @@ RenderResult* RMultiply::render(RenderInstruction* ri) {
 
 			optional<double> calcResult;
 
-			if (resA->getResults()!=NULL && resB->getResults()!=NULL) {
-				tools::CastedRenderSegmentResult<DPNum>* a = resHandle.getFrom(resA);
-				tools::CastedRenderSegmentResult<DPNum>* b = resHandle.getFrom(resB);
-				
-				if (a!=NULL && b!=NULL && a->getResult()!=NULL && b->getResult()!=NULL) {
-					calcResult = a->getResult()->getNum() * b->getResult()->getNum();
-					delete a;
-					delete b;
-				} else {
+			tools::CastedRenderSegmentResult<DPNum> a = resHandle.getFrom(resA);
+			tools::CastedRenderSegmentResult<DPNum> b = resHandle.getFrom(resB);
 
-					if (a != NULL) {
-						delete a;
-					}
-					if (b != NULL) {
-						delete b;
-					}
-				}
-
+			if (a.getResult()!=NULL && b.getResult()!=NULL) {
+				calcResult = a.getResult()->getNum() * b.getResult()->getNum();
 			}
 
 			// Free sub-results
