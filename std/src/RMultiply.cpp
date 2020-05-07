@@ -72,7 +72,7 @@ RenderResult* RMultiply::render(RenderInstruction* ri) {
 
 			if (resA->getResults()!=NULL && resB->getResults()!=NULL) {
 				tools::CastedRenderSegmentResult<DPNum>* a = resHandle.getFrom(resA);
-				tools::CastedRenderSegmentResult<DPNum>* b = resHandle.getFrom(resA);
+				tools::CastedRenderSegmentResult<DPNum>* b = resHandle.getFrom(resB);
 				
 				if (a!=NULL && b!=NULL && a->getResult()!=NULL && b->getResult()!=NULL) {
 					calcResult = a->getResult()->getNum() * b->getResult()->getNum();
