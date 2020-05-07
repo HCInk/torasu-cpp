@@ -255,17 +255,21 @@ enum ResultStatus {
 	/**Request wasnt processed at all because it was received as malformed
 	 */
 	ResultStatus_MALFORMED = -3,
+
 	/**Some segments might not be present as requested,
 	 * refer to the individual segment-status
 	 */
 	ResultStatus_PARTIAL_ERROR = -2,
+
 	/**An internal error or undefined behavior
 	 * occurred during the execution
 	 */
 	ResultStatus_INTERNAL_ERROR = -1,
+
 	/**Everything went as expected
 	 */
 	ResultStatus_OK = 0,
+
 	/**Warnings were thrown while running
 	 */
 	ResultStatus_OK_WARN = 2
@@ -275,16 +279,30 @@ enum ResultSegmentStatus {
 	/**The given format is not available
 	 */
 	ResultSegmentStatus_INVALID_FORMAT = -5,
+
+	/**The given segment was not provided
+	 * @note This is reserved for wrappers, to signalize,
+	 * 	that the Segment is completely absent from the given ResultSettings.
+	 * 	This should never be returned in a first-party generated ResultSegment,
+	 * 	if you want to signaize, that a segment is not supported,
+	 * 	then use ResultSegmentStatus_INVALID_SEGMENT serves that purpose
+	 *
+	 */
+	ResultSegmentStatus_NON_EXISTENT = -4,
+
 	/**The given segment is invalid
 	 */
-	ResultSegmentStatus_INVALID_SEGMENT = -4,
+	ResultSegmentStatus_INVALID_SEGMENT = -3,
+
 	/**An internal error or undefined behavior
 	 * occurred during the execution
 	 */
 	ResultSegmentStatus_INTERNAL_ERROR = -1,
+
 	/**Everything went as expected
 	 */
 	ResultSegmentStatus_OK = 0,
+
 	/**Warnings were thrown while running
 	 */
 	ResultSegmentStatus_OK_WARN = 2
