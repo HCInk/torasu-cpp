@@ -78,27 +78,30 @@ map<string, Element*> RMultiply::getElements() {
 	return elems;
 }
 
-void RMultiply::resetElements() {
-	a = NULL;
-	b = NULL;
-}
-
 void RMultiply::setElement(std::string key, Element* elem) {
 
 	if (key.compare("a") == 0) {
 
+		if (elem == NULL) {
+			throw invalid_argument("Element slot \"a\" may not be empty!");
+		}
 		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
 			a = rnd;
+			return;
 		} else {
-			throw invalid_argument("Element slot \"a\" only accepts Renderables");
+			throw invalid_argument("Element slot \"a\" only accepts Renderables!");
 		}
 
 	} else if (key.compare("b") == 0) {
 
+		if (elem == NULL) {
+			throw invalid_argument("Element slot \"b\" may not be empty!");
+		}
 		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
 			b = rnd;
+			return;
 		} else {
-			throw invalid_argument("Element slot \"b\" only accepts Renderables");
+			throw invalid_argument("Element slot \"b\" only accepts Renderables!");
 		}
 
 	} else {
@@ -110,6 +113,5 @@ void RMultiply::setElement(std::string key, Element* elem) {
 	}
 
 }
-
 
 } // namespace torasu::tstd

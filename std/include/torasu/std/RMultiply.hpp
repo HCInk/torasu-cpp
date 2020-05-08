@@ -28,7 +28,6 @@ public:
 	virtual ~RMultiply();
 
 	virtual std::map<std::string, Element*> getElements();
-	virtual void resetElements();
 	virtual void setElement(std::string key, Element* elem);
 };
 

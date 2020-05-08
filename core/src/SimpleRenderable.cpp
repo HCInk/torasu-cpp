@@ -34,12 +34,6 @@ std::map<std::string, Element*> SimpleRenderable::getElements() {
 	}
 }
 
-void SimpleRenderable::resetElements() {
-	throw std::logic_error("SimpleRenderable-impl-err: Elements are getting set, but resetElements() is not implemented!\n"
-						   "- Make sure resetElements() is implemented, when the element accepts elements "
-						   "or implement setData(data, elements) yourself and remove old elements there.");
-}
-
 void SimpleRenderable::setData(DataResource* data) {
 	if (!acceptData) {
 		throw std::invalid_argument("This element does not accept any data!");
@@ -61,10 +55,16 @@ void SimpleRenderable::setElement(std::string key, Element* elem) {
 void SimpleRenderable::setData(DataResource* data,
 							   std::map<std::string, Element*> elements) {
 	if (acceptElements) {
-		resetElements();
+
+		std::map<std::string, Element*> previousElements = getElements();
 
 		for (auto elemEntry : elements) {
 			setElement(elemEntry.first, elemEntry.second);
+			previousElements.erase(elemEntry.first);
+		}
+
+		for (auto toRemoveElement : previousElements ) {
+			setElement(toRemoveElement.first, NULL);
 		}
 
 	} else if (elements.size() > 0) {
