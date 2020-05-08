@@ -6,13 +6,13 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/tools.hpp>
+#include <torasu/SimpleRenderable.hpp>
 #include <torasu/std/DPNum.hpp>
 
 namespace torasu::tstd {
 
-class RMultiply : public torasu::Renderable {
+class RMultiply : public tools::SimpleRenderable {
 private:
-	std::string ident = std::string("STD::RMULTIPLY");
 	const std::string pipeline = std::string("STD::PNUM");
 
 	Renderable* a = NULL;
@@ -22,20 +22,14 @@ private:
 
 public:
 
-	explicit RMultiply(Renderable* a, Renderable* b);
+	RMultiply(Renderable* a, Renderable* b);
 	virtual ~RMultiply();
 
-	virtual std::string getType();
-	virtual DataResource* getData();
+	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
+
 	virtual std::map<std::string, Element*> getElements();
-
-	virtual void setData(DataResource* data,
-						 std::map<std::string, Element*> elements);
-	virtual void setData(DataResource* data);
+	virtual void resetElements();
 	virtual void setElement(std::string key, Element* elem);
-
-	virtual RenderResult* render(RenderInstruction* ri);
-
 };
 
 } // namespace torasu::tstd

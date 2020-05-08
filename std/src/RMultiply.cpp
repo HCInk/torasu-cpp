@@ -5,7 +5,6 @@
 #include <optional>
 
 #include <torasu/torasu.hpp>
-#include <torasu/DataPackable.hpp>
 #include <torasu/tools.hpp>
 #include <torasu/std/DPNum.hpp>
 
@@ -13,19 +12,61 @@ using namespace std;
 
 namespace torasu::tstd {
 
-RMultiply::RMultiply(Renderable* a, Renderable* b) : resHandle(rib.addSegmentWithHandle<DPNum>(pipeline, NULL)) {
+RMultiply::RMultiply(Renderable* a, Renderable* b)
+	: SimpleRenderable(std::string("STD::RMULTIPLY")),
+	  resHandle(rib.addSegmentWithHandle<DPNum>(pipeline, NULL)) {
 	this->a = a;
 	this->b = b;
 }
 
-RMultiply::~RMultiply() {}
+RMultiply::~RMultiply() {
 
-string RMultiply::getType() {
-	return ident;
 }
 
-DataResource* RMultiply::getData() {
-	return NULL;
+ResultSegment* RMultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+
+	if (pipeline.compare(resSettings->getPipeline())  == 0) {
+
+		// Sub-Renderings
+		auto ei = ri->getExecutionInterface();
+		auto rctx = ri->getRenderContext();
+
+		auto rendA = rib.enqueueRender(a, rctx, ei);
+		auto rendB = rib.enqueueRender(b, rctx, ei);
+
+		RenderResult* resA = ei->fetchRenderResult(rendA);
+		RenderResult* resB = ei->fetchRenderResult(rendB);
+
+		// Calculating Result from Results
+
+		std::optional<double> calcResult;
+
+		tools::CastedRenderSegmentResult<DPNum> a = resHandle.getFrom(resA);
+		tools::CastedRenderSegmentResult<DPNum> b = resHandle.getFrom(resB);
+
+		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+			calcResult = a.getResult()->getNum() * b.getResult()->getNum();
+		}
+
+		// Free sub-results
+
+		delete resA;
+		delete resB;
+
+		// Saving Result
+
+		if (calcResult.has_value()) {
+			DPNum* mulRes = new DPNum(calcResult.value());
+			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
+		} else {
+			DPNum* errRes = new DPNum(0);
+			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+		}
+
+	} else {
+		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+	}
+
 }
 
 map<string, Element*> RMultiply::getElements() {
@@ -37,71 +78,38 @@ map<string, Element*> RMultiply::getElements() {
 	return elems;
 }
 
-void RMultiply::setData(DataResource* data, map<string, Element*> elements) {
-	// TODO Handle setData in RMultiply
+void RMultiply::resetElements() {
+	a = NULL;
+	b = NULL;
 }
 
-void RMultiply::setData(DataResource* data) {
-	// TODO Handle setData in RMultiply
-}
+void RMultiply::setElement(std::string key, Element* elem) {
 
-void RMultiply::setElement(string key, Element* elem) {
-	// TODO Handle setElement in RMultiply
-}
+	if (key.compare("a") == 0) {
 
-RenderResult* RMultiply::render(RenderInstruction* ri) {
-	ResultSettings* rs = ri->getResultSettings();
-
-	for (ResultSegmentSettings* rss : *rs) {
-		if (rss->getPipeline().compare(pipeline) == 0) {
-
-			// Sub-Renderings
-
-			auto ei = ri->getExecutionInterface();
-			auto rctx = ri->getRenderContext();
-
-			auto rendA = rib.enqueueRender(a, rctx, ei);
-			auto rendB = rib.enqueueRender(b, rctx, ei);
-
-			RenderResult* resA = ei->fetchRenderResult(rendA);
-			RenderResult* resB = ei->fetchRenderResult(rendB);
-
-			// Calculating Result from Results
-
-			optional<double> calcResult;
-
-			tools::CastedRenderSegmentResult<DPNum> a = resHandle.getFrom(resA);
-			tools::CastedRenderSegmentResult<DPNum> b = resHandle.getFrom(resB);
-
-			if (a.getResult()!=NULL && b.getResult()!=NULL) {
-				calcResult = a.getResult()->getNum() * b.getResult()->getNum();
-			}
-
-			// Free sub-results
-
-			delete resA;
-			delete resB;
-
-			// Saving Result
-
-			ResultSegment* rseg;
-			if (calcResult.has_value()) {
-				DPNum* mulRes = new DPNum(calcResult.value());
-				rseg = new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK, mulRes, true);
-			} else {
-				DPNum* errRes = new DPNum(0);
-				rseg = new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK_WARN, errRes, true);
-			}
-
-			map<string, ResultSegment*>* results = new map<string, ResultSegment*>();
-			(*results)[rss->getKey()] = rseg;
-
-			return new RenderResult(ResultStatus::ResultStatus_OK, results);
-
+		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
+			a = rnd;
+		} else {
+			throw invalid_argument("Element slot \"a\" only accepts Renderables");
 		}
+
+	} else if (key.compare("b") == 0) {
+
+		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
+			b = rnd;
+		} else {
+			throw invalid_argument("Element slot \"b\" only accepts Renderables");
+		}
+
+	} else {
+		std::ostringstream errMsg;
+		errMsg << "The element slot \""
+			   << key
+			   << "\" does not exist!";
+		throw invalid_argument(errMsg.str());
 	}
 
-	return new RenderResult(ResultStatus::ResultStatus_MALFORMED);
 }
+
 
 } // namespace torasu::tstd
