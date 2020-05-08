@@ -19,25 +19,24 @@ protected:
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
 
 public:
-
 	virtual ~SimpleRenderable();
 
+	// Auto-managed
 	virtual std::string getType();
+	virtual RenderResult* render(RenderInstruction* ri);
 
+	// Overwrite when accepting data
 	virtual DataResource* getData();
-
-	virtual std::map<std::string, Element*> getElements();
-
-	virtual void resetElements();
-
 	virtual void setData(DataResource* data);
 
+	// Implement when accepting elements
+	virtual std::map<std::string, Element*> getElements();
+	virtual void resetElements();
 	virtual void setElement(std::string key, Element* elem);
 
+	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data 
 	virtual void setData(DataResource* data,
 						 std::map<std::string, Element*> elements);
-
-	virtual RenderResult* render(RenderInstruction* ri);
 
 };
 

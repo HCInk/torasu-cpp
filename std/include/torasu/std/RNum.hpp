@@ -17,18 +17,13 @@ private:
 	DataResource* valdr;
 
 protected:
-
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
-
 	explicit RNum(double val);
 	virtual ~RNum();
 
 	virtual void setData(DataResource* data);
-
-
-
 };
 
 } // namespace torasu::tstd

@@ -24,10 +24,8 @@ protected:
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
-
 	RMultiply(Renderable* a, Renderable* b);
 	virtual ~RMultiply();
-
 
 	virtual std::map<std::string, Element*> getElements();
 	virtual void resetElements();
