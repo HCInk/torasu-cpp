@@ -70,6 +70,9 @@ void SimpleRenderable::setData(DataResource* data,
 	} else if (elements.size() > 0) {
 		throw std::invalid_argument("Elements were were added, but this element does not accept any elements!");
 	}
+
+	setData(data);
+	
 }
 
 RenderResult* SimpleRenderable::render(RenderInstruction* ri) {
