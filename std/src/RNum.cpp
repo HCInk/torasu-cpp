@@ -11,7 +11,7 @@ using namespace std;
 
 namespace torasu::tstd {
 
-RNum::RNum(double val) {
+RNum::RNum(double val) : SimpleRenderable("STD::RNUM", true) {
 	valdr = new DPNum(val);
 }
 
@@ -19,46 +19,18 @@ RNum::~RNum() {
 	delete valdr;
 }
 
-string RNum::getType() {
-	return ident;
-}
-
-DataResource* RNum::getData() {
-	return valdr;
-}
-
-map<string, Element*> RNum::getElements() {
-	return map<string, Element*>();
-}
-
-void RNum::setData(DataResource* data, map<string, Element*> elements) {
-	// TODO Handle setData in RNum
-}
-
 void RNum::setData(DataResource* data) {
 	// TODO Handle setData in RNum
 }
 
-void RNum::setElement(string key, Element* elem) {
-	// TODO Handle setElement in RNum
-}
+ResultSegment* RNum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
-RenderResult* RNum::render(RenderInstruction* ri) {
-	ResultSettings* rs = ri->getResultSettings();
-
-	for (ResultSegmentSettings* rss : *rs) {
-		if (rss->getPipeline().compare(pipeline) == 0) {
-			ResultSegment* rseg = new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK, valdr, false);
-
-			map<string, ResultSegment*>* results = new map<string, ResultSegment*>();
-
-			(*results)[rss->getKey()] = rseg;
-
-			return new RenderResult(ResultStatus::ResultStatus_OK, results);
-		}
+	if (resSettings->getPipeline().compare(pipeline) == 0) {
+		return new ResultSegment(ResultSegmentStatus_OK, valdr, false);
+	} else {
+		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
 	}
 
-	return new RenderResult(ResultStatus::ResultStatus_MALFORMED);
 }
 
 } // namespace torasu::tstd
