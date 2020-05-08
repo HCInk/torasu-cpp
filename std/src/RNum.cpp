@@ -20,7 +20,12 @@ RNum::~RNum() {
 }
 
 void RNum::setData(DataResource* data) {
-	// TODO Handle setData in RNum
+	if (DPNum* dpnum = dynamic_cast<DPNum*>(data)) {
+		delete valdr;
+		valdr = dpnum;
+	} else {
+		throw invalid_argument("The data-type \"DPNum\" is only allowed");
+	}
 }
 
 ResultSegment* RNum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
