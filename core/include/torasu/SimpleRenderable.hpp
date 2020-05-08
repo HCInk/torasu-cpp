@@ -9,8 +9,6 @@
 
 namespace torasu::tools {
 
-typedef ResultSegment* (*SimpleRenderable_Pipeline)(ResultSegmentSettings* resSettings, RenderInstruction* ri);
-
 class SimpleRenderable : public Renderable {
 private:
 	bool acceptData, acceptElements;
