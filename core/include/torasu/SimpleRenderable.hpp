@@ -33,7 +33,7 @@ public:
 	virtual std::map<std::string, Element*> getElements();
 	virtual void setElement(std::string key, Element* elem);
 
-	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data 
+	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
 	virtual void setData(DataResource* data,
 						 std::map<std::string, Element*> elements);
 

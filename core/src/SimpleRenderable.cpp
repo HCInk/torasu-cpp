@@ -72,7 +72,7 @@ void SimpleRenderable::setData(DataResource* data,
 	}
 
 	setData(data);
-	
+
 }
 
 RenderResult* SimpleRenderable::render(RenderInstruction* ri) {

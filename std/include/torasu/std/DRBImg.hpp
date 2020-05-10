@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
 #define STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 
 namespace torasu::tstd {
@@ -24,6 +26,6 @@ public:
 	unsigned char* getImageData();
 };
 
-}
+} // namespace torasu::tstd
 
 #endif // STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
