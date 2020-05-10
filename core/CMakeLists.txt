@@ -32,6 +32,11 @@ if(NOT TARGET torasu)
 		endif()
 	endif()
 
+	# Installation
+
+	install(TARGETS torasu DESTINATION lib)
+	install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/torasu DESTINATION include)
+	
 	# Includes for others
 
 	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)

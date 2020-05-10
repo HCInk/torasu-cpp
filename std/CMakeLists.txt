@@ -41,6 +41,11 @@ if(NOT TARGET torasustd)
 
 	target_link_libraries(torasustd torasu)
 	
+	# Installation
+
+	install(TARGETS torasustd DESTINATION lib)
+	install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/torasu DESTINATION include)
+
 	# Includes for others
 
 	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)

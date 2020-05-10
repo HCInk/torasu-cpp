@@ -31,6 +31,15 @@ if [ -n "$1" ]; then
 		echo "Wiping cross build-folder..."
 		rm -r build/cross
 
+	elif [ "$1" == "install" ]; then
+	
+		echo "Installing TORASU..."
+			
+		mkdir -p build
+		cd build
+		cmake -Wno-dev ../
+		build_runMake
+		sudo make install
 
 	else
 
