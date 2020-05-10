@@ -1,10 +1,10 @@
-#ifndef STD_INCLUDE_TORASU_STD_SPOILSDP_HPP_
-#define STD_INCLUDE_TORASU_STD_SPOILSDP_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
+#define STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
 
 // 
-// DataPackable Spoils
+// DataResource Spoils
 // 
-// ~ This file spoils all DataPackable-types from torasu::tstd
+// ~ This file spoils all DataResource-types from torasu::tstd
 //
 
 #ifdef TORASU_SPOILS_UNWRAP_ALL
@@ -21,4 +21,4 @@ class DPNum;
 } // namespace torasu::tstd
 
 
-#endif // STD_INCLUDE_TORASU_STD_SPOILSDP_HPP_
+#endif // STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_

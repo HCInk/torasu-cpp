@@ -9,7 +9,7 @@
 #include <torasu/SimpleRenderable.hpp>
 
 #include <torasu/std/pipelines.hpp>
-#include <torasu/std/SpoilsDP.hpp>
+#include <torasu/std/spoilsDR.hpp>
 
 namespace torasu::tstd {
 
