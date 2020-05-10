@@ -15,7 +15,7 @@ private:
 	std::string typeIdent;
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData = true, bool acceptElements = true);
+	explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
 
 public:
