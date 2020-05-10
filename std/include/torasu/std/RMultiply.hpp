@@ -7,7 +7,8 @@
 #include <torasu/torasu.hpp>
 #include <torasu/tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
-#include <torasu/std/DPNum.hpp>
+
+#include <torasu/std/SpoilsDP.hpp>
 
 namespace torasu::tstd {
 
