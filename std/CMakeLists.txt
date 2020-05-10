@@ -17,6 +17,7 @@ if(NOT TARGET torasustd)
 	set(TORASU_STD_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/DPNum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/DRBImg.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/RMultiply.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/EICoreRunner.cpp)
