@@ -24,6 +24,7 @@ public:
 	explicit RNum(double val);
 	virtual ~RNum();
 
+	virtual DataResource* getData();
 	virtual void setData(DataResource* data);
 };
 

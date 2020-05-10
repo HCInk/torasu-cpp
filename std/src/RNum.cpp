@@ -20,6 +20,10 @@ RNum::~RNum() {
 	delete valdr;
 }
 
+DataResource* RNum::getData() {
+	return valdr;
+}
+
 void RNum::setData(DataResource* data) {
 	if (DPNum* dpnum = dynamic_cast<DPNum*>(data)) {
 		delete valdr;
