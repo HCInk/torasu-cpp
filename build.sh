@@ -13,7 +13,17 @@ function build_runMake() {
 
 if [ -n "$1" ]; then
 
-	if [ "$1" == "delbuild" ]; then
+	if [ "$1" == "install" ]; then
+	
+		echo "Installing TORASU..."
+			
+		mkdir -p build
+		cd build
+		cmake -Wno-dev ../
+		build_runMake
+		sudo make install
+
+	elif [ "$1" == "delbuild" ]; then
 	
 		echo "Deleting build-folder..."
 		rm -r build
@@ -31,23 +41,14 @@ if [ -n "$1" ]; then
 		echo "Wiping cross build-folder..."
 		rm -r build/cross
 
-	elif [ "$1" == "install" ]; then
-	
-		echo "Installing TORASU..."
-			
-		mkdir -p build
-		cd build
-		cmake -Wno-dev ../
-		build_runMake
-		sudo make install
-
 	else
 
 		echo "Unknown argument \"$1\"!"
 		echo "Available arguments: "
-		echo "	delbuild - Deletes all buld files (build/)"
-		echo "	wincross - Builds windows binary into build/cross/win/"
-		echo "	delcross - Removes cross build-folder (build/cross/)"
+		echo "	install 	- Installs Libraries and Include files"
+		echo "	delbuild 	- Deletes all buld files (build/)"
+		echo "	wincross 	- Builds windows binary into build/cross/win/"
+		echo "	delcross 	- Removes cross build-folder (build/cross/)"
 		echo "No arguments will just run a normal build."
 
 	fi
