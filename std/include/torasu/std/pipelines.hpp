@@ -1,0 +1,13 @@
+#ifndef STD_INCLUDE_TORASU_STD_PIPELINES_HPP_
+#define STD_INCLUDE_TORASU_STD_PIPELINES_HPP_
+
+// Numeric-pipeline
+#define TORASU_STD_PL_NUM "STD::PNUM"
+
+// Visual-pipeline
+#define TORASU_STD_PL_VIS "STD::PVIS"
+
+// Audio-pipeline
+#define TORASU_STD_PL_AUDIO "STD::PAUDIO"
+
+#endif // STD_INCLUDE_TORASU_STD_PIPELINES_HPP_

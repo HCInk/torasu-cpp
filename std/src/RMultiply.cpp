@@ -6,6 +6,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/tools.hpp>
+
 #include <torasu/std/DPNum.hpp>
 
 using namespace std;

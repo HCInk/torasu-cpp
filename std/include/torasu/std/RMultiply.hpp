@@ -8,13 +8,14 @@
 #include <torasu/tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
+#include <torasu/std/pipelines.hpp>
 #include <torasu/std/SpoilsDP.hpp>
 
 namespace torasu::tstd {
 
 class RMultiply : public tools::SimpleRenderable {
 private:
-	const std::string pipeline = std::string("STD::PNUM");
+	const std::string pipeline = std::string(TORASU_STD_PL_NUM);
 
 	Renderable* a = NULL;
 	Renderable* b = NULL;

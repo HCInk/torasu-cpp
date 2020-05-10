@@ -5,6 +5,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
+
 #include <torasu/std/DPNum.hpp>
 
 using namespace std;

@@ -7,12 +7,13 @@
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
+#include <torasu/std/pipelines.hpp>
+
 namespace torasu::tstd {
 
 class RNum : public tools::SimpleRenderable {
 private:
-	std::string ident = std::string("STD::RNUM");
-	std::string pipeline = std::string("STD::PNUM");
+	std::string pipeline = std::string(TORASU_STD_PL_NUM);
 
 	DataResource* valdr;
 
