@@ -44,7 +44,7 @@ void DataPackable::parse() {
 	}
 }
 
-DataDump DataPackable::getData() {
+DataDump* DataPackable::getData() {
 
 	if (!serializedJson.has_value()) {
 		serializedJson = getJson().dump();
@@ -55,8 +55,8 @@ DataDump DataPackable::getData() {
 	DDDataPointer pointer;
 	pointer.s = serJson_cStr;
 
-	return DataDump(pointer, strlen(serJson_cStr),
-					DDDataPointerType::DDDataPointerType_JSON_CSTR, NULL);
+	return new DataDump(pointer, strlen(serJson_cStr),
+						DDDataPointerType::DDDataPointerType_JSON_CSTR, NULL);
 }
 
 /*

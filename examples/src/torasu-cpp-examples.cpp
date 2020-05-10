@@ -46,13 +46,14 @@ void simpleDpTest() {
 
 	std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
 
-	DataDump dump = dpu.getData();
+	DataDump* dump = dpu.getData();
 
-	if (dump.getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
-		std::cout << "data:" << dump.getData().s << std::endl;
+	if (dump->getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
+		std::cout << "data:" << dump->getData().s << std::endl;
 	} else {
 		std::cerr << "unexpected DDDPT" << std::endl;
 	}
+	delete dump;
 
 }
 

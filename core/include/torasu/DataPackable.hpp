@@ -47,7 +47,7 @@ public:
 
 	virtual ~DataPackable();
 
-	DataDump getData();
+	DataDump* getData();
 
 	std::string inline getSerializedJson() {
 		if (!serializedJson.has_value()) {
