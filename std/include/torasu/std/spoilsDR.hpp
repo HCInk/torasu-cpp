@@ -18,6 +18,11 @@ class DPNum;
 	#include <torasu/std/DPNum.hpp>
 #endif
 
+class DPString;
+#ifdef TORASU_SPOILS_UNWRAP_STD
+	#include <torasu/std/DPString.hpp>
+#endif
+
 class DRBImg;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DRBImg.hpp>
