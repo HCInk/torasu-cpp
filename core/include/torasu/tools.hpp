@@ -27,8 +27,10 @@ public:
 
 	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
 		this->status = rs->getStatus();
-		if(T* casted = dynamic_cast<T*>(rs->getResult())) {
-			result = casted;
+		if (result == NULL) {
+			this->result = NULL;
+		} else if (T* casted = dynamic_cast<T*>(result)) {
+			this->result = casted;
 		} else {
 			std::ostringstream errMsg;
 			errMsg << "Returned object is not of the expected type\""
