@@ -39,4 +39,4 @@ nlohmann::json DPString::makeJson() {
 	return string;
 }
 
-}
+} // namespace torasu::tstd

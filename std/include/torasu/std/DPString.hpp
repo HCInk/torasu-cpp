@@ -28,6 +28,6 @@ public:
 	virtual nlohmann::json makeJson();
 };
 
-}
+} // namespace torasu::tstd
 
 #endif // STD_INCLUDE_TORASU_STD_DPSTRING_HPP_
