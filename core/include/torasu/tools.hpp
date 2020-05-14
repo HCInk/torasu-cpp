@@ -23,10 +23,12 @@ public:
 
 	explicit CastedRenderSegmentResult(ResultSegmentStatus status)  {
 		this->status = status;
+		this->result = NULL;
 	}
 
 	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
 		this->status = rs->getStatus();
+		DataResource* result = rs->getResult();
 		if (result == NULL) {
 			this->result = NULL;
 		} else if (T* casted = dynamic_cast<T*>(result)) {
@@ -52,7 +54,7 @@ public:
 };
 
 template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key) {
-	auto results = rr->getResults();
+	std::map<std::string, ResultSegment*>* results = rr->getResults();
 	if (results == NULL) {
 		return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
 	}
