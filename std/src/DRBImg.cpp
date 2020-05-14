@@ -5,11 +5,17 @@ namespace torasu::tstd {
 DRBImg::DRBImg(uint32_t width, uint32_t height) {
 	this->width = width;
 	this->height = height;
-	this->data = new uint8_t[width*height*3];
+	this->bufferSize = width*height*4;
+	this->data = new uint8_t[bufferSize];
 }
+
 
 DRBImg::~DRBImg() {
 	delete[] data;
+}
+
+uint64_t DRBImg::getBufferSize() {
+	return bufferSize;
 }
 
 std::string DRBImg::getIdent() {

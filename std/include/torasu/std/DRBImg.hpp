@@ -13,6 +13,7 @@ private:
 
 	uint8_t* data;
 	uint32_t width, height;
+	uint64_t bufferSize;
 
 public:
 	DRBImg(uint32_t width, uint32_t height);
@@ -23,6 +24,7 @@ public:
 
 	uint32_t getWidth();
 	uint32_t getHeight();
+	uint64_t getBufferSize();
 	unsigned char* getImageData();
 };
 
