@@ -12,20 +12,20 @@ using namespace std;
 
 namespace torasu::tstd {
 
-RNum::RNum(double val) : SimpleRenderable("STD::RNUM", true) {
-	valdr = new DPNum(val);
+Rnum::Rnum(double val) : SimpleRenderable("STD::RNUM", true) {
+	valdr = new Dnum(val);
 }
 
-RNum::~RNum() {
+Rnum::~Rnum() {
 	delete valdr;
 }
 
-DataResource* RNum::getData() {
+DataResource* Rnum::getData() {
 	return valdr;
 }
 
-void RNum::setData(DataResource* data) {
-	if (DPNum* dpnum = dynamic_cast<DPNum*>(data)) {
+void Rnum::setData(DataResource* data) {
+	if (Dnum* dpnum = dynamic_cast<Dnum*>(data)) {
 		delete valdr;
 		valdr = dpnum;
 	} else {
@@ -33,7 +33,7 @@ void RNum::setData(DataResource* data) {
 	}
 }
 
-ResultSegment* RNum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rnum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
 	if (resSettings->getPipeline().compare(pipeline) == 0) {
 		return new ResultSegment(ResultSegmentStatus_OK, valdr, false);

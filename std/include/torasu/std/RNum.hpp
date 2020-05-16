@@ -11,7 +11,7 @@
 
 namespace torasu::tstd {
 
-class RNum : public tools::SimpleRenderable {
+class Rnum : public tools::SimpleRenderable {
 private:
 	std::string pipeline = std::string(TORASU_STD_PL_NUM);
 
@@ -21,8 +21,8 @@ protected:
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
-	explicit RNum(double val);
-	virtual ~RNum();
+	explicit Rnum(double val);
+	virtual ~Rnum();
 
 	virtual DataResource* getData();
 	virtual void setData(DataResource* data);

@@ -65,14 +65,14 @@ void simpleRenderExample() {
 
 	// Creating "tree" to be rendered
 
-	RNum numA(0.1);
-	RNum numB(0.1);
+	Rnum numA(0.1);
+	Rnum numB(0.1);
 
-	RMultiply tree(&numA, &numB);
+	Rmultiply tree(&numA, &numB);
 
 	// Creating the runner
 
-	EICoreRunner runner;
+	EIcore_runner runner;
 
 	ExecutionInterface* ei = runner.createInterface();
 
@@ -80,7 +80,7 @@ void simpleRenderExample() {
 
 	tools::RenderInstructionBuilder rib;
 
-	auto handle = rib.addSegmentWithHandle<DPNum>("STD::PNUM", NULL);
+	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
 
 	// Running render based on instruction
 

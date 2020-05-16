@@ -9,7 +9,7 @@
 
 namespace torasu::tstd {
 
-class DPNum : public torasu::DataPackable {
+class Dnum : public torasu::DataPackable {
 
 private:
 	const std::string ident = std::string("STD::DPNUM");
@@ -17,9 +17,9 @@ private:
 	double num;
 
 public:
-	explicit DPNum(std::string jsonStripped);
-	explicit DPNum(nlohmann::json jsonParsed);
-	explicit DPNum(double num);
+	explicit Dnum(std::string jsonStripped);
+	explicit Dnum(nlohmann::json jsonParsed);
+	explicit Dnum(double num);
 
 	double getNum();
 

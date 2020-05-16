@@ -10,19 +10,19 @@ namespace torasu::tstd {
 // EICoreRunner
 //
 
-EICoreRunner::EICoreRunner() {
+EIcore_runner::EIcore_runner() {
 
 }
 
-EICoreRunner::~EICoreRunner() {
+EIcore_runner::~EIcore_runner() {
 
 }
 
-int32_t EICoreRunner::enqueue(EICoreRunnerObject* obj) {
+int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	return -1; // TODO Placeholder
 }
 
-ExecutionInterface* EICoreRunner::createInterface(std::vector<int64_t>* prioStack) {
+ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioStack) {
 	int64_t newInterfaceId = interfaceIdCounter;
 	interfaceIdCounter++;
 
@@ -33,14 +33,14 @@ ExecutionInterface* EICoreRunner::createInterface(std::vector<int64_t>* prioStac
 		selectedPrioStack = new std::vector<int64_t>();
 	}
 
-	return new EICoreRunnerObject(NULL, NULL, this, newInterfaceId, selectedPrioStack);
+	return new EIcore_runner_object(NULL, NULL, this, newInterfaceId, selectedPrioStack);
 }
 
 //
 // EICoreRunnerObject
 //
 
-EICoreRunnerObject::EICoreRunnerObject(Renderable* rnd, EICoreRunnerObject* parent, EICoreRunner* runner, int64_t renderId, std::vector<int64_t>* prioStack) {
+EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack) {
 	this->rnd = rnd;
 
 	this->parent = parent;
@@ -51,7 +51,7 @@ EICoreRunnerObject::EICoreRunnerObject(Renderable* rnd, EICoreRunnerObject* pare
 
 }
 
-EICoreRunnerObject::~EICoreRunnerObject() {
+EIcore_runner_object::~EIcore_runner_object() {
 	if (subTasks != NULL) {
 		delete subTasks;
 	}
@@ -59,7 +59,7 @@ EICoreRunnerObject::~EICoreRunnerObject() {
 	delete prioStack;
 }
 
-void EICoreRunnerObject::run() {
+void EIcore_runner_object::run() {
 
 	RenderInstruction ri(rctx, rs, this);
 
@@ -70,7 +70,7 @@ void EICoreRunnerObject::run() {
 	resultLock.unlock();
 }
 
-RenderResult* EICoreRunnerObject::fetchOwnRenderResult() {
+RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 	run(); // Singlethreaded just-in-time for now
 	while (true) {
 		resultLock.lock();
@@ -85,7 +85,7 @@ RenderResult* EICoreRunnerObject::fetchOwnRenderResult() {
 // Execution Interface
 //
 
-uint64_t EICoreRunnerObject::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
+uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
 	subTasksLock.lock();
 	// Select renderId
 	uint64_t newRenderId = renderIdCounter;
@@ -97,7 +97,7 @@ uint64_t EICoreRunnerObject::enqueueRender(Renderable* rnd, RenderContext* rctx,
 	(*newPrioStack)[thisPrioStackSize] = prio;
 	(*newPrioStack)[thisPrioStackSize+1] = newRenderId;
 
-	EICoreRunnerObject* obj = new EICoreRunnerObject(rnd, this, runner, newRenderId, newPrioStack);
+	EIcore_runner_object* obj = new EIcore_runner_object(rnd, this, runner, newRenderId, newPrioStack);
 
 	obj->setRenderContext(rctx);
 	obj->setResultSettings(rs);
@@ -113,12 +113,12 @@ uint64_t EICoreRunnerObject::enqueueRender(Renderable* rnd, RenderContext* rctx,
 	return newRenderId;
 }
 
-RenderResult* EICoreRunnerObject::fetchRenderResult(uint64_t renderId) {
+RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
 	subTasksLock.lock();
 	if (subTasks != NULL && /*renderId >= 0 &&*/ ((uint32_t)renderId) < subTaskSize) {
 
 		auto it = subTasks->begin()+renderId;
-		EICoreRunnerObject* obj = *it;
+		EIcore_runner_object* obj = *it;
 		*it = NULL;
 		subTasksLock.unlock();
 

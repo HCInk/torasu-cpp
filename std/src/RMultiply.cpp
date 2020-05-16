@@ -13,18 +13,18 @@ using namespace std;
 
 namespace torasu::tstd {
 
-RMultiply::RMultiply(Renderable* a, Renderable* b)
+Rmultiply::Rmultiply(Renderable* a, Renderable* b)
 	: SimpleRenderable(std::string("STD::RMULTIPLY")),
-	  resHandle(rib.addSegmentWithHandle<DPNum>(pipeline, NULL)) {
+	  resHandle(rib.addSegmentWithHandle<Dnum>(pipeline, NULL)) {
 	this->a = a;
 	this->b = b;
 }
 
-RMultiply::~RMultiply() {
+Rmultiply::~Rmultiply() {
 
 }
 
-ResultSegment* RMultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
 	if (pipeline.compare(resSettings->getPipeline())  == 0) {
 
@@ -42,8 +42,8 @@ ResultSegment* RMultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		std::optional<double> calcResult;
 
-		tools::CastedRenderSegmentResult<DPNum> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<DPNum> b = resHandle.getFrom(resB);
+		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA);
+		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB);
 
 		if (a.getResult()!=NULL && b.getResult()!=NULL) {
 			calcResult = a.getResult()->getNum() * b.getResult()->getNum();
@@ -57,10 +57,10 @@ ResultSegment* RMultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 		// Saving Result
 
 		if (calcResult.has_value()) {
-			DPNum* mulRes = new DPNum(calcResult.value());
+			Dnum* mulRes = new Dnum(calcResult.value());
 			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
 		} else {
-			DPNum* errRes = new DPNum(0);
+			Dnum* errRes = new Dnum(0);
 			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
 		}
 
@@ -70,7 +70,7 @@ ResultSegment* RMultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 }
 
-map<string, Element*> RMultiply::getElements() {
+map<string, Element*> Rmultiply::getElements() {
 	map<string, Element*> elems;
 
 	elems["a"] = a;
@@ -79,7 +79,7 @@ map<string, Element*> RMultiply::getElements() {
 	return elems;
 }
 
-void RMultiply::setElement(std::string key, Element* elem) {
+void Rmultiply::setElement(std::string key, Element* elem) {
 
 	if (key.compare("a") == 0) {
 

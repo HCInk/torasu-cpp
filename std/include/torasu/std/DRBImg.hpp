@@ -8,10 +8,10 @@
 
 namespace torasu::tstd {
 
-class DRBImg;
+class Dbimg;
 class DRBImg_FORMAT;
 
-class DRBImg : public DataResource {
+class Dbimg : public DataResource {
 private:
 	std::string ident = std::string("STD::DRBIMG");
 
@@ -20,9 +20,9 @@ private:
 	uint64_t bufferSize;
 
 public:
-	explicit DRBImg(DRBImg_FORMAT format);
-	DRBImg(uint32_t width, uint32_t height);
-	virtual ~DRBImg();
+	explicit Dbimg(DRBImg_FORMAT format);
+	Dbimg(uint32_t width, uint32_t height);
+	virtual ~Dbimg();
 
 	virtual std::string getIdent();
 	virtual DataDump* getData();

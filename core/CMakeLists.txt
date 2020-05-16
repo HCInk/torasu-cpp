@@ -39,7 +39,7 @@ if(NOT TARGET torasu)
 	
 	# Includes for others
 
-	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+	include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
 

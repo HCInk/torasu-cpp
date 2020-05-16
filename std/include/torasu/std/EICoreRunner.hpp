@@ -10,23 +10,23 @@
 
 namespace torasu::tstd {
 
-class EICoreRunnerObject;
+class EIcore_runner_object;
 
-class EICoreRunner {
+class EIcore_runner {
 protected:
-	int32_t enqueue(EICoreRunnerObject* obj);
+	int32_t enqueue(EIcore_runner_object* obj);
 	int64_t interfaceIdCounter = 0;
 public:
-	EICoreRunner();
-	~EICoreRunner();
+	EIcore_runner();
+	~EIcore_runner();
 
 	ExecutionInterface* createInterface(std::vector<int64_t>* prioStack=NULL);
 
-	friend class EICoreRunnerObject;
+	friend class EIcore_runner_object;
 };
 
 
-class EICoreRunnerObject : public ExecutionInterface {
+class EIcore_runner_object : public ExecutionInterface {
 private:
 	// Settings
 	const size_t addAmmount = 10;
@@ -38,23 +38,23 @@ private:
 
 	// Object-data: Task-Settings (persistent)
 	int64_t renderId;
-	EICoreRunnerObject* parent;
-	EICoreRunner* runner;
+	EIcore_runner_object* parent;
+	EIcore_runner* runner;
 	std::vector<int64_t>* prioStack;
 
 	// Sub-task-data (locked by "subTasksLock")
 	std::mutex subTasksLock;
 	int64_t renderIdCounter = 0;
-	std::vector<EICoreRunnerObject*>* subTasks = NULL;
+	std::vector<EIcore_runner_object*>* subTasks = NULL;
 	uint32_t subTaskSize = 0;
 
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
 	RenderResult* result = NULL;
 
-	inline std::vector<EICoreRunnerObject*>* getSubTaskMemory(size_t maxIndex) {
+	inline std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex) {
 		if (subTasks == NULL) {
-			subTasks = new std::vector<EICoreRunnerObject*>(addAmmount);
+			subTasks = new std::vector<EIcore_runner_object*>(addAmmount);
 		}
 		while (subTasks->size() <= maxIndex) {
 			subTasks->resize(subTasks->size() + addAmmount);
@@ -63,8 +63,8 @@ private:
 	}
 
 protected:
-	EICoreRunnerObject(Renderable* rnd, EICoreRunnerObject* parent, EICoreRunner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
-	virtual ~EICoreRunnerObject();
+	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
+	virtual ~EIcore_runner_object();
 
 	void run();
 	RenderResult* fetchOwnRenderResult();
@@ -81,7 +81,7 @@ public:
 	virtual uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio);
 	virtual RenderResult* fetchRenderResult(uint64_t renderId);
 
-	friend class EICoreRunner;
+	friend class EIcore_runner;
 };
 
 } // namespace torasu::tstd

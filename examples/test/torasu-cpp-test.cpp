@@ -23,17 +23,17 @@ TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 
 	// Creating "tree" to be rendered
 
-	RNum rnum(1.1);
+	Rnum rnum(1.1);
 
 	// Creating instruction
 
 	tools::RenderInstructionBuilder rib;
 
-	auto handle = rib.addSegmentWithHandle<DPNum>("STD::PNUM", NULL);
+	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
 
 	//	Create interface
 	
-	EICoreRunner runner;
+	EIcore_runner runner;
 	ExecutionInterface* ei = runner.createInterface();
 
 	// Running render based on instruction

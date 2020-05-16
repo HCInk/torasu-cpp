@@ -9,7 +9,7 @@
 
 namespace torasu::tstd {
 
-class DPString : public torasu::DataPackable {
+class Dstring : public torasu::DataPackable {
 
 private:
 	const std::string ident = std::string("STD::DPSTRING");
@@ -17,9 +17,9 @@ private:
 	std::string string;
 
 public:
-	DPString(std::string jsonStripped, bool json);
-	DPString(nlohmann::json jsonParsed, bool json);
-	explicit DPString(std::string str);
+	Dstring(std::string jsonStripped, bool json);
+	Dstring(nlohmann::json jsonParsed, bool json);
+	explicit Dstring(std::string str);
 
 	std::string getString();
 

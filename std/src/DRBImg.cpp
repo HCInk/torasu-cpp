@@ -2,40 +2,40 @@
 
 namespace torasu::tstd {
 
-DRBImg::DRBImg(DRBImg_FORMAT format) : DRBImg(format.getWidth(), format.getHeight()) {}
+Dbimg::Dbimg(DRBImg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
 
-DRBImg::DRBImg(uint32_t width, uint32_t height) {
+Dbimg::Dbimg(uint32_t width, uint32_t height) {
 	this->width = width;
 	this->height = height;
 	this->bufferSize = width*height*4;
 	this->data = new uint8_t[bufferSize];
 }
 
-DRBImg::~DRBImg() {
+Dbimg::~Dbimg() {
 	delete[] data;
 }
 
-uint64_t DRBImg::getBufferSize() {
+uint64_t Dbimg::getBufferSize() {
 	return bufferSize;
 }
 
-std::string DRBImg::getIdent() {
+std::string Dbimg::getIdent() {
 	return ident;
 }
 
-DataDump* DRBImg::getData() {
+DataDump* Dbimg::getData() {
 	return NULL; // TODO DataDump of DRImg
 }
 
-uint32_t DRBImg::getWidth() {
+uint32_t Dbimg::getWidth() {
 	return width;
 }
 
-uint32_t DRBImg::getHeight() {
+uint32_t Dbimg::getHeight() {
 	return height;
 }
 
-uint8_t* DRBImg::getImageData() {
+uint8_t* Dbimg::getImageData() {
 	return data;
 }
 

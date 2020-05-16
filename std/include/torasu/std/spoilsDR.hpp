@@ -13,17 +13,17 @@
 
 namespace torasu::tstd {
 
-class DPNum;
+class Dnum;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DPNum.hpp>
 #endif
 
-class DPString;
+class Dstring;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DPString.hpp>
 #endif
 
-class DRBImg;
+class Dbimg;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DRBImg.hpp>
 #endif
