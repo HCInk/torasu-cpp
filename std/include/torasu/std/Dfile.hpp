@@ -17,6 +17,7 @@ private:
 	std::vector<uint8_t>* data;
 
 public:
+	explicit Dfile(std::vector<uint8_t>* data);
 	explicit Dfile(uint64_t size);
 	virtual ~Dfile();
 
