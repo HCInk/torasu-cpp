@@ -10,4 +10,7 @@
 // Audio-pipeline
 #define TORASU_STD_PL_AUDIO "STD::PAUDIO"
 
+// File-pipeline
+#define TORASU_STD_PL_FILE "STD::PFILE"
+
 #endif // STD_INCLUDE_TORASU_STD_PIPELINE_NAMES_HPP_
