@@ -19,6 +19,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Dnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dstring.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dfile.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rmultiply.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp)
