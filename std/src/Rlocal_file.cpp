@@ -30,11 +30,14 @@ ResultSegment* Rlocal_file::renderSegment(ResultSegmentSettings* resSettings, Re
 		uint64_t size = pos;
 		Dfile* dfile = new Dfile(size);
 
-		char* pChars = reinterpret_cast<char*>(dfile->getFileData());
+		std::cout << dfile->getFileData()->size() << std::endl;
+
+		char* pChars = reinterpret_cast<char*>(dfile->getFileData()->data());
 		ifs.seekg(0, ios::beg);
 		ifs.read(pChars, size);
 
-		return new ResultSegment(ResultSegmentStatus_OK, dfile, false);
+		return new ResultSegment(ResultSegmentStatus_OK, dfile, true);
+
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
 	}

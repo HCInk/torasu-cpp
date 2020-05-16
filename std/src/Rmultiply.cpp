@@ -14,7 +14,7 @@ using namespace std;
 namespace torasu::tstd {
 
 Rmultiply::Rmultiply(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RMULTIPLY")),
+	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true),
 	  resHandle(rib.addSegmentWithHandle<Dnum>(pipeline, NULL)) {
 	this->a = a;
 	this->b = b;

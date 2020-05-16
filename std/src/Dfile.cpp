@@ -9,7 +9,7 @@ using json = nlohmann::json;
 namespace torasu::tstd {
 
 Dfile::Dfile(uint64_t size) {
-	this->data = new vector<uint8_t>[size];
+	this->data = new vector<uint8_t>(size);
 }
 
 Dfile::~Dfile() {
