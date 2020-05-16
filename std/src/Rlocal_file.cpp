@@ -30,7 +30,7 @@ ResultSegment* Rlocal_file::renderSegment(ResultSegmentSettings* resSettings, Re
 		uint64_t size = pos;
 		Dfile* dfile = new Dfile(size);
 
-		char *pChars = (char*) (dfile->getFileData());
+		char* pChars = reinterpret_cast<char*>(dfile->getFileData());
 		ifs.seekg(0, ios::beg);
 		ifs.read(pChars, size);
 
