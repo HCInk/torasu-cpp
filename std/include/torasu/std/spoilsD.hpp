@@ -28,6 +28,11 @@ class Dbimg;
 	#include <torasu/std/DRBImg.hpp>
 #endif
 
+class Dfile;
+#ifdef TORASU_SPOILS_UNWRAP_STD
+	#include <torasu/std/Dfile.hpp>
+#endif
+
 } // namespace torasu::tstd
 
 
