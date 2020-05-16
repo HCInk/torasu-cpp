@@ -9,7 +9,7 @@
 namespace torasu::tstd {
 
 class Dbimg;
-class DRBImg_FORMAT;
+class Dbimg_FORMAT;
 
 class Dbimg : public DataResource {
 private:
@@ -20,7 +20,7 @@ private:
 	uint64_t bufferSize;
 
 public:
-	explicit Dbimg(DRBImg_FORMAT format);
+	explicit Dbimg(Dbimg_FORMAT format);
 	Dbimg(uint32_t width, uint32_t height);
 	virtual ~Dbimg();
 
@@ -35,7 +35,7 @@ public:
 
 };
 
-class DRBImg_FORMAT : public DataPackable {
+class Dbimg_FORMAT : public DataPackable {
 private:
 	const std::string formatIdent = std::string("STD::DRBIMG");
 	const std::string ident = std::string("STD::DPF_DRBIMG");
@@ -43,9 +43,9 @@ private:
 	u_int32_t width, height;
 
 public:
-	explicit DRBImg_FORMAT(std::string jsonStripped);
-	explicit DRBImg_FORMAT(nlohmann::json jsonParsed);
-	DRBImg_FORMAT(u_int32_t width, u_int32_t height);
+	explicit Dbimg_FORMAT(std::string jsonStripped);
+	explicit Dbimg_FORMAT(nlohmann::json jsonParsed);
+	Dbimg_FORMAT(u_int32_t width, u_int32_t height);
 
 	u_int32_t getWidth();
 	u_int32_t getHeight();

@@ -2,7 +2,7 @@
 
 namespace torasu::tstd {
 
-Dbimg::Dbimg(DRBImg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
+Dbimg::Dbimg(Dbimg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
 
 Dbimg::Dbimg(uint32_t width, uint32_t height) {
 	this->width = width;
@@ -39,19 +39,19 @@ uint8_t* Dbimg::getImageData() {
 	return data;
 }
 
-DRBImg_FORMAT::DRBImg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
-DRBImg_FORMAT::DRBImg_FORMAT(nlohmann::json jsonParsed) : DataPackable(jsonParsed) {}
+Dbimg_FORMAT::Dbimg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
+Dbimg_FORMAT::Dbimg_FORMAT(nlohmann::json jsonParsed) : DataPackable(jsonParsed) {}
 
-DRBImg_FORMAT::DRBImg_FORMAT(u_int32_t width, u_int32_t height) {
+Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height) {
 	this->width = width;
 	this->height = height;
 }
 
-std::string DRBImg_FORMAT::getIdent() {
+std::string Dbimg_FORMAT::getIdent() {
 	return ident;
 }
 
-void DRBImg_FORMAT::load() {
+void Dbimg_FORMAT::load() {
 	auto json = getJson();
 	if (json["w"].is_number()) {
 		width = json["w"];
@@ -66,18 +66,18 @@ void DRBImg_FORMAT::load() {
 	}
 }
 
-nlohmann::json DRBImg_FORMAT::makeJson() {
+nlohmann::json Dbimg_FORMAT::makeJson() {
 	return {
 		{"w", width},
 		{"h", height}
 	};
 }
 
-u_int32_t DRBImg_FORMAT::getWidth() {
+u_int32_t Dbimg_FORMAT::getWidth() {
 	return width;
 }
 
-u_int32_t DRBImg_FORMAT::getHeight() {
+u_int32_t Dbimg_FORMAT::getHeight() {
 	return height;
 }
 
