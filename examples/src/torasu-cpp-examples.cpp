@@ -9,14 +9,14 @@
 // TORASU CORE
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
-#include <torasu/tools.hpp>
+#include <torasu/render_tools.hpp>
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
-#include <torasu/std/DPNum.hpp>
-#include <torasu/std/RNum.hpp>
-#include <torasu/std/RMultiply.hpp>
-#include <torasu/std/EICoreRunner.hpp>
+#include <torasu/std/Dnum.hpp>
+#include <torasu/std/Rnum.hpp>
+#include <torasu/std/Rmultiply.hpp>
+#include <torasu/std/EIcore_runner.hpp>
 
 
 using namespace std;

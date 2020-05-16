@@ -1,4 +1,4 @@
-#include "../include/torasu/std/RNum.hpp"
+#include "../include/torasu/std/Rnum.hpp"
 
 #include <string>
 #include <map>
@@ -6,7 +6,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
-#include <torasu/std/DPNum.hpp>
+#include <torasu/std/Dnum.hpp>
 
 using namespace std;
 

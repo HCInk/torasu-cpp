@@ -7,7 +7,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/pipelines.hpp>
+#include <torasu/std/pipeline_names.hpp>
 
 namespace torasu::tstd {
 

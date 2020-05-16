@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
-#define STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_DBIMG_HPP_
+#define STD_INCLUDE_TORASU_STD_DBIMG_HPP_
 
 #include <string>
 
@@ -61,4 +61,4 @@ public:
 
 } // namespace torasu::tstd
 
-#endif // STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
+#endif // STD_INCLUDE_TORASU_STD_DBIMG_HPP_

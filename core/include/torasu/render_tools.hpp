@@ -1,5 +1,5 @@
-#ifndef CORE_INCLUDE_TORASU_TOOLS_HPP_
-#define CORE_INCLUDE_TORASU_TOOLS_HPP_
+#ifndef CORE_INCLUDE_TORASU_RENDER_TOOLS_HPP_
+#define CORE_INCLUDE_TORASU_RENDER_TOOLS_HPP_
 
 #include <string>
 #include <map>
@@ -133,4 +133,4 @@ public:
 
 } // namespace torasu::tools
 
-#endif // CORE_INCLUDE_TORASU_TOOLS_HPP_
+#endif // CORE_INCLUDE_TORASU_RENDER_TOOLS_HPP_

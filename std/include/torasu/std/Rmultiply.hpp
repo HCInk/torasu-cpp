@@ -5,11 +5,11 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
-#include <torasu/tools.hpp>
+#include <torasu/render_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/pipelines.hpp>
-#include <torasu/std/spoilsDR.hpp>
+#include <torasu/std/pipeline_names.hpp>
+#include <torasu/std/spoilsD.hpp>
 
 namespace torasu::tstd {
 

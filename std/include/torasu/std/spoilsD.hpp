@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
-#define STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_SPOILSD_HPP_
+#define STD_INCLUDE_TORASU_STD_SPOILSD_HPP_
 
 //
 // DataResource Spoils
@@ -31,4 +31,4 @@ class Dbimg;
 } // namespace torasu::tstd
 
 
-#endif // STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
+#endif // STD_INCLUDE_TORASU_STD_SPOILSD_HPP_

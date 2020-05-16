@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_DPNUM_HPP_
-#define STD_INCLUDE_TORASU_STD_DPNUM_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_DNUM_HPP_
+#define STD_INCLUDE_TORASU_STD_DNUM_HPP_
 
 #include <string>
 
@@ -30,4 +30,4 @@ public:
 
 } // namespace torasu::tstd
 
-#endif // STD_INCLUDE_TORASU_STD_DPNUM_HPP_
+#endif // STD_INCLUDE_TORASU_STD_DNUM_HPP_

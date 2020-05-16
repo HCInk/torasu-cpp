@@ -1,4 +1,4 @@
-#include "../include/torasu/std/DPString.hpp"
+#include "../include/torasu/std/Dstring.hpp"
 
 #include <string>
 

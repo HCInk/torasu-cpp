@@ -1,4 +1,4 @@
-#include "../include/torasu/std/EICoreRunner.hpp"
+#include "../include/torasu/std/EIcore_runner.hpp"
 
 #include <sstream>
 
