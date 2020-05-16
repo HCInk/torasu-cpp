@@ -23,6 +23,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rmultiply.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rlocal_file.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rnet_file.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
@@ -42,7 +43,7 @@ if(NOT TARGET torasustd)
 		endif()
 	endif()
 
-	target_link_libraries(torasustd torasu)
+	target_link_libraries(torasustd torasu curl)
 	
 	# Installation
 
