@@ -9,14 +9,14 @@
 // TORASU CORE
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
-#include <torasu/tools.hpp>
+#include <torasu/render_tools.hpp>
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
-#include <torasu/std/DPNum.hpp>
-#include <torasu/std/RNum.hpp>
-#include <torasu/std/RMultiply.hpp>
-#include <torasu/std/EICoreRunner.hpp>
+#include <torasu/std/Dnum.hpp>
+#include <torasu/std/Rnum.hpp>
+#include <torasu/std/Rmultiply.hpp>
+#include <torasu/std/EIcore_runner.hpp>
 
 
 using namespace std;
@@ -65,14 +65,14 @@ void simpleRenderExample() {
 
 	// Creating "tree" to be rendered
 
-	RNum numA(0.1);
-	RNum numB(0.1);
+	Rnum numA(0.1);
+	Rnum numB(0.1);
 
-	RMultiply tree(&numA, &numB);
+	Rmultiply tree(&numA, &numB);
 
 	// Creating the runner
 
-	EICoreRunner runner;
+	EIcore_runner runner;
 
 	ExecutionInterface* ei = runner.createInterface();
 
@@ -80,7 +80,7 @@ void simpleRenderExample() {
 
 	tools::RenderInstructionBuilder rib;
 
-	auto handle = rib.addSegmentWithHandle<DPNum>("STD::PNUM", NULL);
+	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
 
 	// Running render based on instruction
 

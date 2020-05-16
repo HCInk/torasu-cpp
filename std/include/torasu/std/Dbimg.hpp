@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
-#define STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_DBIMG_HPP_
+#define STD_INCLUDE_TORASU_STD_DBIMG_HPP_
 
 #include <string>
 
@@ -8,21 +8,21 @@
 
 namespace torasu::tstd {
 
-class DRBImg;
-class DRBImg_FORMAT;
+class Dbimg;
+class Dbimg_FORMAT;
 
-class DRBImg : public DataResource {
+class Dbimg : public DataResource {
 private:
-	std::string ident = std::string("STD::DRBIMG");
+	std::string ident = std::string("STD::DBIMG");
 
 	uint8_t* data;
 	uint32_t width, height;
 	uint64_t bufferSize;
 
 public:
-	explicit DRBImg(DRBImg_FORMAT format);
-	DRBImg(uint32_t width, uint32_t height);
-	virtual ~DRBImg();
+	explicit Dbimg(Dbimg_FORMAT format);
+	Dbimg(uint32_t width, uint32_t height);
+	virtual ~Dbimg();
 
 	virtual std::string getIdent();
 	virtual DataDump* getData();
@@ -35,7 +35,7 @@ public:
 
 };
 
-class DRBImg_FORMAT : public DataPackable {
+class Dbimg_FORMAT : public DataPackable {
 private:
 	const std::string formatIdent = std::string("STD::DRBIMG");
 	const std::string ident = std::string("STD::DPF_DRBIMG");
@@ -43,9 +43,9 @@ private:
 	u_int32_t width, height;
 
 public:
-	explicit DRBImg_FORMAT(std::string jsonStripped);
-	explicit DRBImg_FORMAT(nlohmann::json jsonParsed);
-	DRBImg_FORMAT(u_int32_t width, u_int32_t height);
+	explicit Dbimg_FORMAT(std::string jsonStripped);
+	explicit Dbimg_FORMAT(nlohmann::json jsonParsed);
+	Dbimg_FORMAT(u_int32_t width, u_int32_t height);
 
 	u_int32_t getWidth();
 	u_int32_t getHeight();
@@ -61,4 +61,4 @@ public:
 
 } // namespace torasu::tstd
 
-#endif // STD_INCLUDE_TORASU_STD_DRBIMG_HPP_
+#endif // STD_INCLUDE_TORASU_STD_DBIMG_HPP_

@@ -1,4 +1,4 @@
-#include "../include/torasu/std/DPNum.hpp"
+#include "../include/torasu/std/Dnum.hpp"
 
 #include <string>
 
@@ -9,24 +9,24 @@ using json = nlohmann::json;
 
 namespace torasu::tstd {
 
-DPNum::DPNum(string jsonStripped) : DataPackable(jsonStripped) {}
-DPNum::DPNum(json jsonParsed) : DataPackable(jsonParsed) {}
+Dnum::Dnum(string jsonStripped) : DataPackable(jsonStripped) {}
+Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
 
-DPNum::DPNum(double num) {
+Dnum::Dnum(double num) {
 	this->num = num;
 	setLoaded();
 }
 
-double DPNum::getNum() {
+double Dnum::getNum() {
 	ensureLoaded();
 	return num;
 }
 
-std::string DPNum::getIdent() {
+std::string Dnum::getIdent() {
 	return ident;
 }
 
-void DPNum::load() {
+void Dnum::load() {
 	json json = getJson();
 	if (json.is_number()) {
 		num = json;
@@ -35,7 +35,7 @@ void DPNum::load() {
 	}
 }
 
-nlohmann::json DPNum::makeJson() {
+nlohmann::json Dnum::makeJson() {
 	return num;
 }
 

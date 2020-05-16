@@ -14,7 +14,7 @@ if(NOT TARGET torasu)
 	set(TORASU_CORE_SRC
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-core.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/DataPackable.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/RenderTools.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/render_tools.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/SimpleRenderable.cpp)
 	add_library(torasu SHARED ${TORASU_CORE_SRC})
 
@@ -39,7 +39,7 @@ if(NOT TARGET torasu)
 	
 	# Includes for others
 
-	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+	include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
 

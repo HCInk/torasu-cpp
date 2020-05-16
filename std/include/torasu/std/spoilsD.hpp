@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
-#define STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_SPOILSD_HPP_
+#define STD_INCLUDE_TORASU_STD_SPOILSD_HPP_
 
 //
 // DataResource Spoils
@@ -13,17 +13,17 @@
 
 namespace torasu::tstd {
 
-class DPNum;
+class Dnum;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DPNum.hpp>
 #endif
 
-class DPString;
+class Dstring;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DPString.hpp>
 #endif
 
-class DRBImg;
+class Dbimg;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DRBImg.hpp>
 #endif
@@ -31,4 +31,4 @@ class DRBImg;
 } // namespace torasu::tstd
 
 
-#endif // STD_INCLUDE_TORASU_STD_SPOILSDR_HPP_
+#endif // STD_INCLUDE_TORASU_STD_SPOILSD_HPP_

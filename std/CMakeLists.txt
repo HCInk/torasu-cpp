@@ -16,12 +16,12 @@ if(NOT TARGET torasustd)
 
 	set(TORASU_STD_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/DPNum.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/DPString.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/DRBImg.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/RNum.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/RMultiply.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/EICoreRunner.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/Dnum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dstring.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rmultiply.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
@@ -49,7 +49,7 @@ if(NOT TARGET torasustd)
 
 	# Includes for others
 
-	include_directories(${CMAKE_CURRENT_LIST_DIR}/include)
+	include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
 

@@ -5,29 +5,29 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
-#include <torasu/tools.hpp>
+#include <torasu/render_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/pipelines.hpp>
-#include <torasu/std/spoilsDR.hpp>
+#include <torasu/std/pipeline_names.hpp>
+#include <torasu/std/spoilsD.hpp>
 
 namespace torasu::tstd {
 
-class RMultiply : public tools::SimpleRenderable {
+class Rmultiply : public tools::SimpleRenderable {
 private:
 	const std::string pipeline = std::string(TORASU_STD_PL_NUM);
 
 	Renderable* a = NULL;
 	Renderable* b = NULL;
 	tools::RenderInstructionBuilder rib;
-	tools::RenderResultSegmentHandle<DPNum> resHandle;
+	tools::RenderResultSegmentHandle<Dnum> resHandle;
 
 protected:
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
-	RMultiply(Renderable* a, Renderable* b);
-	virtual ~RMultiply();
+	Rmultiply(Renderable* a, Renderable* b);
+	virtual ~Rmultiply();
 
 	virtual std::map<std::string, Element*> getElements();
 	virtual void setElement(std::string key, Element* elem);
