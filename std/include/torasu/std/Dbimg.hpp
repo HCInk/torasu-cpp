@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_DBIMG_HPP_
 
 #include <string>
+#include <vector>
 
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
@@ -15,13 +16,13 @@ class Dbimg : public DataResource {
 private:
 	std::string ident = std::string("STD::DBIMG");
 
-	uint8_t* data;
+	std::vector<uint8_t>* data;
 	uint32_t width, height;
-	uint64_t bufferSize;
 
 public:
 	explicit Dbimg(Dbimg_FORMAT format);
 	Dbimg(uint32_t width, uint32_t height);
+	Dbimg(uint32_t width, uint32_t height, std::vector<uint8_t>* data);
 	virtual ~Dbimg();
 
 	virtual std::string getIdent();
@@ -29,16 +30,17 @@ public:
 
 	uint32_t getWidth();
 	uint32_t getHeight();
-	uint64_t getBufferSize();
-	unsigned char* getImageData();
+	std::vector<uint8_t>* getImageData();
+	uint8_t* getDataAddress();
+	std::size_t getBufferSize();
 
 
 };
 
 class Dbimg_FORMAT : public DataPackable {
 private:
-	const std::string formatIdent = std::string("STD::DRBIMG");
-	const std::string ident = std::string("STD::DPF_DRBIMG");
+	const std::string formatIdent = std::string("STD::DBIMG");
+	const std::string ident = std::string("STD::DBIMG_F");
 
 	u_int32_t width, height;
 

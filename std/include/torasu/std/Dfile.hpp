@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_DFILE_HPP_
 
 #include <string>
+#include <vector>
 #include <nlohmann/json.hpp>
 
 #include <torasu/torasu.hpp>
@@ -13,8 +14,7 @@ class Dfile : public DataResource {
 private:
 	std::string ident = std::string("STD::DFILE");
 
-	uint8_t* data;
-	uint64_t size;
+	std::vector<uint8_t>* data;
 
 public:
 	explicit Dfile(uint64_t size);
@@ -23,8 +23,7 @@ public:
 	virtual std::string getIdent();
 	virtual DataDump* getData();
 
-	uint8_t* getFileData();
-	uint64_t getSize();
+	std::vector<uint8_t>* getFileData();
 
 };
 

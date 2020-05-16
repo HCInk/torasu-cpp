@@ -1,22 +1,26 @@
 #include "../include/torasu/std/Dbimg.hpp"
 
+using namespace std;
+
 namespace torasu::tstd {
 
 Dbimg::Dbimg(Dbimg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
 
+
 Dbimg::Dbimg(uint32_t width, uint32_t height) {
 	this->width = width;
 	this->height = height;
-	this->bufferSize = width*height*4;
-	this->data = new uint8_t[bufferSize];
+	this->data = new vector<uint8_t>(width*height*4);
+}
+
+Dbimg::Dbimg(uint32_t width, uint32_t height, vector<uint8_t>* data) {
+	this->width = width;
+	this->height = height;
+	this->data = data;
 }
 
 Dbimg::~Dbimg() {
-	delete[] data;
-}
-
-uint64_t Dbimg::getBufferSize() {
-	return bufferSize;
+	delete data;
 }
 
 std::string Dbimg::getIdent() {
@@ -35,7 +39,7 @@ uint32_t Dbimg::getHeight() {
 	return height;
 }
 
-uint8_t* Dbimg::getImageData() {
+vector<uint8_t>* Dbimg::getImageData() {
 	return data;
 }
 

@@ -9,12 +9,11 @@ using json = nlohmann::json;
 namespace torasu::tstd {
 
 Dfile::Dfile(uint64_t size) {
-	this->size = size;
-	this->data = new uint8_t[size];
+	this->data = new vector<uint8_t>[size];
 }
 
 Dfile::~Dfile() {
-	delete[] data;
+	delete data;
 }
 
 std::string Dfile::getIdent() {
@@ -25,12 +24,8 @@ DataDump* Dfile::getData() {
 	return NULL; // TODO Dfile-getData
 }
 
-uint8_t* Dfile::getFileData() {
+std::vector<uint8_t>* Dfile::getFileData() {
 	return data;
-}
-
-uint64_t Dfile::getSize() {
-	return size;
 }
 
 } // namespace torasu::tstd
