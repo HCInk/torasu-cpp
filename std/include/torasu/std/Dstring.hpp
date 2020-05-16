@@ -12,7 +12,7 @@ namespace torasu::tstd {
 class Dstring : public torasu::DataPackable {
 
 private:
-	const std::string ident = std::string("STD::DPSTRING");
+	const std::string ident = std::string("STD::DSTRING");
 
 	std::string string;
 

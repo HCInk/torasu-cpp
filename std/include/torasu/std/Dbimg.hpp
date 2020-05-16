@@ -13,7 +13,7 @@ class DRBImg_FORMAT;
 
 class Dbimg : public DataResource {
 private:
-	std::string ident = std::string("STD::DRBIMG");
+	std::string ident = std::string("STD::DBIMG");
 
 	uint8_t* data;
 	uint32_t width, height;

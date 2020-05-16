@@ -7,7 +7,6 @@
 
 #include <torasu/torasu.hpp>
 
-
 namespace torasu::tstd {
 
 class EIcore_runner_object;

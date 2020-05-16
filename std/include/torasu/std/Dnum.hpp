@@ -12,7 +12,7 @@ namespace torasu::tstd {
 class Dnum : public torasu::DataPackable {
 
 private:
-	const std::string ident = std::string("STD::DPNUM");
+	const std::string ident = std::string("STD::DNUM");
 
 	double num;
 
