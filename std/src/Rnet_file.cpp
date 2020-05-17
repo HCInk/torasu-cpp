@@ -1,8 +1,10 @@
 #include "../include/torasu/std/Rnet_file.hpp"
 
+#include <curl/curl.h>
+
 #include <torasu/std/Dfile.hpp>
 
-#include <curl/curl.h>
+using namespace std;
 
 namespace torasu::tstd {
 
@@ -40,8 +42,12 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		res = curl_easy_perform(curl);
 		curl_easy_cleanup(curl);
 
+		if (res != CURLcode::CURLE_OK) {
+			cerr << "Aborted due to CURL error - code: " << res << endl;
+			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
+		}
+
 		size_t size = dataout.size();
-		
 		char* data = dataout.data();
 
 		Dfile* file = new Dfile(new std::vector<uint8_t>(data, data+size));
