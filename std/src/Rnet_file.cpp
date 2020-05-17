@@ -8,7 +8,7 @@ using namespace std;
 
 namespace torasu::tstd {
 
-Rnet_file::Rnet_file(std::string url) 
+Rnet_file::Rnet_file(std::string url)
 	: SimpleRenderable("STD::RNET_FILE", true, false) {
 	this->url = url;
 }
@@ -16,11 +16,11 @@ Rnet_file::Rnet_file(std::string url)
 Rnet_file::~Rnet_file() {}
 
 size_t Rnet_file_WRITE_FUNC(void *ptr, size_t size, size_t nmemb,  std::string *s) {
-  size_t new_len = size*nmemb;
-  char* data = static_cast<char*>(ptr);
-  std::string new_data(data, new_len);
-  *s += new_data;
-  return size*nmemb;
+	size_t new_len = size*nmemb;
+	char* data = static_cast<char*>(ptr);
+	std::string new_data(data, new_len);
+	*s += new_data;
+	return size*nmemb;
 }
 
 
@@ -31,7 +31,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		CURL *curl;
 		CURLcode res;
 		curl = curl_easy_init();
-		if(!curl){
+		if (!curl) {
 			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
 		}
 
@@ -48,10 +48,10 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		}
 
 		size_t size = dataout.size();
-		char* data = dataout.data();
+		const char* data = dataout.data();
 
 		Dfile* file = new Dfile(new std::vector<uint8_t>(data, data+size));
-		
+
 		return new ResultSegment(ResultSegmentStatus_OK, file, true);
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
