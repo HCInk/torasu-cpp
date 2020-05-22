@@ -6,6 +6,7 @@
 [![build: cmake](https://img.shields.io/badge/build-cmake-89e051)](https://cmake.org/)
 [![license: LGPLv3](https://img.shields.io/badge/license-LGPLv3-blue)](https://choosealicense.com/licenses/lgpl-3.0/)
 [![pipeline status](https://ci.d-04.de/buildStatus/icon?job=torasu-cpp)](https://gitlab.com/hcink/torasu/torasu-cpp/pipelines)
+[![](https://ci.d-04.de/buildStatus/icon?job=torasu-cpp&build=0&config=cloc)](https://gitlab.com/hcink/torasu/torasu-cpp/pipelines)
 
 C++ Implementation of the TORASU Compute Framework
 

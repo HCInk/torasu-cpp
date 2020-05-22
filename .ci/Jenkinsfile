@@ -1,74 +1,95 @@
+def clocBadge = addEmbeddableBadgeConfiguration(id: 'cloc', subject: 'lines of code', status: 'running', color: 'green')
+
 pipeline {
-  agent none
-  options {
-    gitLabConnection('gitlab.com')
-    gitlabBuilds(builds: ['Build', 'Lint', 'Unit-Test'])
-  }
-  triggers {
-    gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
-  }
-  stages {
-        stage('Build') {
-          agent { dockerfile { filename '.ci/Dockerfiles/build' } }
-          steps {
-            sh './build.sh'
-            archiveArtifacts artifacts: 'build/torasu-cpp-test', fingerprint: true
-            archiveArtifacts artifacts: 'build/libtorasu.so', fingerprint: true
-            archiveArtifacts artifacts: 'build/libtorasustd.so', fingerprint: true
-          }
-          post {
-            failure {
-              updateGitlabCommitStatus name: 'Build', state: 'failed'
-            }
-            success {
-              updateGitlabCommitStatus name: 'Build', state: 'success'
-            }
-          }
-        }
-    stage('Testing') {
-      parallel {
-        stage('Lint') {
-          agent { dockerfile { filename '.ci/Dockerfiles/cpplint' } }
-          steps {
-            sh 'mkdir -p reports/cpplint'
-            sh './lint.sh 2> reports/cpplint/cpplint.txt || true'
-          }
-          post {
-            failure {
-              updateGitlabCommitStatus name: 'Lint', state: 'failed'
-            }
-            success {
-              updateGitlabCommitStatus name: 'Lint', state: 'success'
-            }
-            always {
-              recordIssues enabledForFailure: true, tool: cppLint(pattern: 'reports/cpplint/*')
-            }
-          }
-        }
-        stage('Unit-Test') {
-          agent { dockerfile { filename '.ci/Dockerfiles/build' } }
-          steps {
-            copyArtifacts filter: 'build/torasu-cpp-test', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
-            copyArtifacts filter: 'build/libtorasu.so', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
-            copyArtifacts filter: 'build/libtorasustd.so', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
-            sh 'mkdir -p reports/junit'
-            dir('build') {
-              sh './torasu-cpp-test -r junit 1> ../reports/junit/catch2.xml || true'
-            }
-          }
-          post {
-            failure {
-              updateGitlabCommitStatus name: 'Unit-Test', state: 'failed'
-            }
-            success {
-              updateGitlabCommitStatus name: 'Unit-Test', state: 'success'
-            }
-            always {
-              junit testResults: 'reports/junit/*'
-            }
-          }
-        }
-      }
+    agent none
+    options {
+        gitLabConnection('gitlab.com')
+        gitlabBuilds(builds: ['Build', 'Lint', 'Unit-Test', 'cloc'])
     }
-  }
+    triggers {
+        gitlab(triggerOnPush: true, triggerOnMergeRequest: true, branchFilterType: 'All')
+    }
+    stages {
+        stage('Build') {
+            agent { dockerfile { filename '.ci/Dockerfiles/build' } }
+            steps {
+                sh './build.sh'
+                archiveArtifacts artifacts: 'build/torasu-cpp-test', fingerprint: true
+                archiveArtifacts artifacts: 'build/libtorasu.so', fingerprint: true
+                archiveArtifacts artifacts: 'build/libtorasustd.so', fingerprint: true
+            }
+            post {
+                failure {
+                    updateGitlabCommitStatus name: 'Build', state: 'failed'
+                }
+                success {
+                    updateGitlabCommitStatus name: 'Build', state: 'success'
+                }
+            }
+        }
+        stage('Testing') {
+            parallel {
+                stage('Lint') {
+                    agent { dockerfile { filename '.ci/Dockerfiles/cpplint' } }
+                    steps {
+                        sh 'mkdir -p reports/cpplint'
+                        sh './lint.sh 2> reports/cpplint/cpplint.txt || true'
+                    }
+                    post {
+                        failure {
+                            updateGitlabCommitStatus name: 'Lint', state: 'failed'
+                        }
+                        success {
+                            updateGitlabCommitStatus name: 'Lint', state: 'success'
+                        }
+                        always {
+                            recordIssues enabledForFailure: true, tool: cppLint(pattern: 'reports/cpplint/*')
+                        }
+                    }
+                }
+                stage('Unit-Test') {
+                    agent { dockerfile { filename '.ci/Dockerfiles/build' } }
+                    steps {
+                        copyArtifacts filter: 'build/torasu-cpp-test', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
+                        copyArtifacts filter: 'build/libtorasu.so', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
+                        copyArtifacts filter: 'build/libtorasustd.so', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
+                        sh 'mkdir -p reports/junit'
+                        dir('build') {
+                            sh './torasu-cpp-test -r junit 1> ../reports/junit/catch2.xml || true'
+                        }
+                    }
+                    post {
+                        failure {
+                            updateGitlabCommitStatus name: 'Unit-Test', state: 'failed'
+                        }
+                        success {
+                            updateGitlabCommitStatus name: 'Unit-Test', state: 'success'
+                        }
+                        always {
+                            junit testResults: 'reports/junit/*'
+                        }
+                    }
+                }
+                stage('cloc') {
+                    agent any
+                    steps {
+                        sh 'mkdir -p reports/cloc'
+                        sh 'cloc --json --fullpath --force-lang=C++ --not-match-d=lib/* . > reports.json'
+                        script {
+                            def clocJSON = sh(script: 'jq .SUM.code reports.json', returnStdout: true)
+                            clocBadge.setStatus(clocJSON)
+                        }
+                    }
+                    post {
+                        failure {
+                            updateGitlabCommitStatus name: 'cloc', state: 'failed'
+                        }
+                        success {
+                            updateGitlabCommitStatus name: 'cloc', state: 'success'
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
