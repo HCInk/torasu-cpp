@@ -23,16 +23,14 @@ public:
 	explicit Dbimg(Dbimg_FORMAT format);
 	Dbimg(uint32_t width, uint32_t height);
 	Dbimg(uint32_t width, uint32_t height, std::vector<uint8_t>* data);
-	virtual ~Dbimg();
+	~Dbimg();
 
-	virtual std::string getIdent();
-	virtual DataDump* getData();
+	std::string getIdent();
+	DataDump* getData();
 
 	uint32_t getWidth();
 	uint32_t getHeight();
 	std::vector<uint8_t>* getImageData();
-	uint8_t* getDataAddress();
-	std::size_t getBufferSize();
 
 
 };
@@ -52,9 +50,9 @@ public:
 	u_int32_t getWidth();
 	u_int32_t getHeight();
 
-	virtual std::string getIdent();
-	virtual void load();
-	virtual nlohmann::json makeJson();
+	std::string getIdent();
+	void load();
+	nlohmann::json makeJson();
 
 	inline ResultFormatSettings asFormat() {
 		return ResultFormatSettings(formatIdent, NULL, this);

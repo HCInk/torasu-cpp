@@ -23,9 +23,9 @@ public:
 
 	double getNum();
 
-	virtual std::string getIdent();
-	virtual void load();
-	virtual nlohmann::json makeJson();
+	std::string getIdent();
+	void load();
+	nlohmann::json makeJson();
 };
 
 } // namespace torasu::tstd

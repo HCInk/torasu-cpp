@@ -19,10 +19,10 @@ private:
 public:
 	explicit Dfile(std::vector<uint8_t>* data);
 	explicit Dfile(uint64_t size);
-	virtual ~Dfile();
+	~Dfile();
 
-	virtual std::string getIdent();
-	virtual DataDump* getData();
+	std::string getIdent();
+	DataDump* getData();
 
 	std::vector<uint8_t>* getFileData();
 
