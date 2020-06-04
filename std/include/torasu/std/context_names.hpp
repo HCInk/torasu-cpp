@@ -1,7 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_CONTEXT_NAMES_HPP_
 #define STD_INCLUDE_TORASU_STD_CONTEXT_NAMES_HPP_
 
-// Numeric-pipeline
-#define TORASU_STD_CTX_TIME "STD::CTIME"
+/** Time in seconds (with decimal spaces)
+ */
+#define TORASU_STD_CTX_TIME "STD::TIME"
 
 #endif // STD_INCLUDE_TORASU_STD_CONTEXT_NAMES_HPP_
