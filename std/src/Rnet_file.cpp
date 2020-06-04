@@ -50,7 +50,8 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		size_t size = dataout.size();
 		const char* data = dataout.data();
 
-		Dfile* file = new Dfile(new std::vector<uint8_t>(data, data+size));
+		Dfile* file = new Dfile(size);
+		copy(data, data+size, file->getFileData());
 
 		return new ResultSegment(ResultSegmentStatus_OK, file, true);
 	} else {

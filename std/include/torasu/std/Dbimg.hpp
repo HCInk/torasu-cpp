@@ -16,22 +16,28 @@ class Dbimg : public DataResource {
 private:
 	std::string ident = std::string("STD::DBIMG");
 
-	std::vector<uint8_t>* data;
+	uint8_t* data;
 	uint32_t width, height;
 
 public:
 	explicit Dbimg(Dbimg_FORMAT format);
 	Dbimg(uint32_t width, uint32_t height);
-	Dbimg(uint32_t width, uint32_t height, std::vector<uint8_t>* data);
 	~Dbimg();
 
 	std::string getIdent();
 	DataDump* getData();
 
-	uint32_t getWidth();
-	uint32_t getHeight();
-	std::vector<uint8_t>* getImageData();
+	inline uint32_t getWidth() {
+		return width;
+	}
 
+	inline uint32_t getHeight() {
+		return height;
+	}
+
+	inline uint8_t* getImageData() {
+		return data;
+	}
 
 };
 
@@ -40,15 +46,20 @@ private:
 	const std::string formatIdent = std::string("STD::DBIMG");
 	const std::string ident = std::string("STD::DBIMG_F");
 
-	u_int32_t width, height;
+	uint32_t width, height;
 
 public:
 	explicit Dbimg_FORMAT(std::string jsonStripped);
 	explicit Dbimg_FORMAT(nlohmann::json jsonParsed);
-	Dbimg_FORMAT(u_int32_t width, u_int32_t height);
+	Dbimg_FORMAT(uint32_t width, uint32_t height);
 
-	u_int32_t getWidth();
-	u_int32_t getHeight();
+	inline uint32_t getWidth() {
+		return width;
+	}
+
+	inline uint32_t getHeight() {
+		return height;
+	}
 
 	std::string getIdent();
 	void load();
@@ -57,6 +68,7 @@ public:
 	inline ResultFormatSettings asFormat() {
 		return ResultFormatSettings(formatIdent, NULL, this);
 	}
+
 };
 
 } // namespace torasu::tstd

@@ -14,18 +14,23 @@ class Dfile : public DataResource {
 private:
 	std::string ident = std::string("STD::DFILE");
 
-	std::vector<uint8_t>* data;
+	uint8_t* data;
+	uint64_t size;
 
 public:
-	explicit Dfile(std::vector<uint8_t>* data);
 	explicit Dfile(uint64_t size);
 	~Dfile();
 
 	std::string getIdent();
 	DataDump* getData();
 
-	std::vector<uint8_t>* getFileData();
+	inline uint8_t* getFileData() {
+		return data;
+	}
 
+	inline uint64_t getFileSize() {
+		return size;
+	}
 };
 
 } // namespace torasu::tstd
