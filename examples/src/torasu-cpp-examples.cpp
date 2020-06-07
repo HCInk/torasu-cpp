@@ -18,6 +18,7 @@
 #include <torasu/std/Rmultiply.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 
+#include "task-distribution-test.hpp"
 
 using namespace std;
 using namespace torasu;
@@ -104,11 +105,13 @@ using namespace torasu::texample;
 
 int main(int argc, char **argv) {
 
-	checkLinkings();
+	//checkLinkings();
 
-	simpleDpTest();
+	//simpleDpTest();
 
-	simpleRenderExample();
+	//simpleRenderExample();
+
+	taskDistTest();
 
 	return 0;
 }
