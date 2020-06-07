@@ -21,7 +21,12 @@ if [ -n "$1" ]; then
 		cd build
 		cmake -Wno-dev ../
 		build_runMake
-		sudo make install
+		if [ $(uname) == "Darwin" ]; then
+      make install
+    else
+		  sudo make install
+    fi
+
 
 	elif [ "$1" == "delbuild" ]; then
 	
