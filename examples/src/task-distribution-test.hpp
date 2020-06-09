@@ -94,7 +94,8 @@ public:
 
 	void readjustFQI(bool adding = false);
 
-	bool findBestExport(std::string type, TaskDistInstance*& outTargetInstance, double& outPci, bool& outHasOwnExpierence);
+	double getATSI(TaskDistInstance* instance, std::string type, double* outTaskTsi);
+	bool findBestExport(std::string type, TaskDistInstance** outTargetInstance, double* outPci, bool* outHasOwnExpierence);
 
 	inline void log(std::string msg) {
 		logger->log(std::string("INSTANCE:") + name, msg);

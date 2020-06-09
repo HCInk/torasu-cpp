@@ -54,7 +54,17 @@ int TaskDistInstance::run(TaskDistInstance* instance) {
 			instance->queue.pop();
 			instance->queueLock.unlock();
 
-			// instance->log(string("RUN SELF: ") + next.type);
+			TaskDistInstance* foundTargetInstance = NULL;
+			double foundPci;
+			bool hasOwnExpierence;
+			instance->findBestExport(next.type, &foundTargetInstance, &foundPci, &hasOwnExpierence);
+			if (hasOwnExpierence && foundTargetInstance != NULL) {
+				//instance->log(string("OTHER: ") + next.type + " => " + foundTargetInstance->name);
+				foundTargetInstance->addToQueue(next);
+				continue;
+			}
+
+			//instance->log(string("RUN SELF: ") + next.type);
 
 			auto start = chrono::high_resolution_clock::now(); 
 
@@ -117,7 +127,7 @@ bool TaskDistInstance::isEmpty() {
 }
 
 void TaskDistInstance::printStats(std::vector<std::string> query) {
-	string statMsg = "STATS::";
+	string statMsg = "[" + name + "] STATS::";
 	statMsg += "	QUEUE: " + to_string(queue.size());
 	statMsg += "	FQI: " + to_string(fqi);
 
@@ -137,9 +147,9 @@ void TaskDistInstance::printStats(std::vector<std::string> query) {
 		}
 	}
 
-	statMsg += "AVG: " + to_string(tsiTotal/tsiCount);
+	statMsg += "	AVG: " + to_string(tsiTotal/tsiCount);
 
-	log(statMsg);
+	cout << statMsg << endl;
 	
 }
 
@@ -151,7 +161,9 @@ void TaskDistInstance::readjustFQI(bool adding) {
 	double directionFactor = static_cast<double>(currentQueueSize+1)/(targetQueueSize+1);
 
 	if (directionFactor > 1) {
-		fqi = fqi+fqi*adjustmentSpeed*directionFactor;
+		if (adding) {
+			fqi = fqi+fqi*adjustmentSpeed*directionFactor;
+		}
 	} else {
 		if (!adding) {
 			fqi = fqi-fqi*adjustmentSpeed*(1/directionFactor);
@@ -168,73 +180,100 @@ void TaskDistInstance::readjustFQI(bool adding) {
 }
 
 
-inline void getProcessingExperience(TaskDistInstance* instance, string type, double& avgTsi, double& taskTsi) {
+double TaskDistInstance::getATSI(TaskDistInstance* instance, string type, double* outTaskTsi) {
 
-		int entriesThere = 0;
-		avgTsi = 0;
-		taskTsi = -1;
-		for (auto experiencedObject : instance->tsiMap) {
-			if (experiencedObject.first == type) {
-				taskTsi = experiencedObject.second;
-			}
-			avgTsi += experiencedObject.second;
-			entriesThere++;
+	int entriesMeasured = 0;
+	double avgTsiThere = 0;
+	double avgTsiHere = 0;
+	double taskTsi = -1;
+
+	// Inner join average / find tsi for current type on instance
+	for (auto experiencedObject : instance->tsiMap) {
+
+		if (experiencedObject.first == type) {
+			taskTsi = experiencedObject.second;
 		}
-		
-		if (entriesThere > 0) {
-			avgTsi /= entriesThere;
-		} else {
-			avgTsi = -1;
+
+		auto foundHere = tsiMap.find(experiencedObject.first);
+		if (foundHere != tsiMap.end()) {
+			avgTsiThere += experiencedObject.second;
+			avgTsiHere += foundHere->second;
+			entriesMeasured++;
 		}
+
+	}
+	
+	if (taskTsi < 0) {
+		*outTaskTsi = -1;
+		return -1;
+	}
+
+	*outTaskTsi = taskTsi;
+
+	if (entriesMeasured > 0) {
+		avgTsiThere /= entriesMeasured;
+		avgTsiHere /= entriesMeasured;
+	} else {
+		return -1;
+	}
+
+
+	double pai = avgTsiHere/avgTsiThere;
+
+	return taskTsi*pai;
 
 }
 
-bool TaskDistInstance::findBestExport(string type, TaskDistInstance*& outTargetInstance, double& outPci, bool& outHasOwnExpierence) {
+bool TaskDistInstance::findBestExport(string type, TaskDistInstance** outTargetInstance, double* outPci, bool* outHasOwnExpierence) {
 	double taskTsiHere;
-	double avgTsiHere;
-	getProcessingExperience(this, type, avgTsiHere, taskTsiHere);
-	
-	if (taskTsiHere > 0) {
-		outHasOwnExpierence = true;
+
+	auto foundExperienceHere = tsiMap.find(type);
+
+	if (foundExperienceHere != tsiMap.end()) {
+		*outHasOwnExpierence = true;
+		taskTsiHere = foundExperienceHere->second;
 	} else {
-		outHasOwnExpierence = false;
+		*outHasOwnExpierence = false;
 		taskTsiHere = 1;
-		if (avgTsiHere < 0) {
-			avgTsiHere = 1;
-		}
 	}
 
 	double fqiOnNew = INFINITY;
-	double bestPci = 0;
+	double bestPci = -1;
 
-	double avgTsiThere;
 	double taskTsiThere;
 	for (TaskDistInstance* connection : connections) {
 		if (connection->doRun) {
+			if (connection == NULL) {
+				cout << "CON NULL" << endl;
+			}
+			//cout << "CON PTR " << connection << endl;;
 
-			getProcessingExperience(connection, type, avgTsiThere, taskTsiThere);
+			double atsiThere = getATSI(connection, type, &taskTsiThere);
 
-			if (taskTsiThere > 0) {
+			if (atsiThere > 0) {
 				
-				double pai = avgTsiHere/avgTsiThere;
-				double pci = taskTsiThere*pai;
+				double pci = taskTsiHere/atsiThere;
 
 				if (bestPci < pci) {
-					bestPci = pci;
-					outTargetInstance = connection;
+					if (connection->fqi < pci) {
+						bestPci = pci;
+						*outTargetInstance = connection;
+					}
 				}
 
 			} else {
 				if (bestPci <= 0 && fqiOnNew > connection->fqi) {
-					fqiOnNew = connection->fqi;
-					outTargetInstance = connection;
+					if (connection->fqi < 1) {
+						fqiOnNew = connection->fqi;
+						*outTargetInstance = connection;
+					}
 				}
 			}
 
 		}
 	}
 
-	
+	*outPci = bestPci;
 
 	return true;
 }
@@ -243,21 +282,29 @@ void taskDistTest() {
 	cout << "HELLOWO!" << endl;
 	ConcurrentLogger logger;
 
-	int instanceCount = 4;
+	int instanceCount = 6;
 	TaskDistInstance instances[] = {
-									TaskDistInstance("I0", &logger), 
-									TaskDistInstance("I1", &logger), 
-									TaskDistInstance("I2", &logger), 
-									TaskDistInstance("I3", &logger, 0.5)
+									TaskDistInstance("I0", &logger, 10), 
+									TaskDistInstance("I1", &logger, 10), 
+									TaskDistInstance("I2", &logger, 10), 
+									TaskDistInstance("I3", &logger, 5),
+									TaskDistInstance("I4", &logger, 20), 
+									TaskDistInstance("I5", &logger, 5)
 									};
+
+	instances[0].addConnection(instances+1);
+	instances[0].addConnection(instances+2);
+	instances[0].addConnection(instances+3);
+	instances[0].addConnection(instances+4);
+	instances[0].addConnection(instances+5);
 	
 	auto t1t = map<string, uint64_t>();
 	t1t["I1"] = 200*1000;
 	t1t["I2"] = 300*1000;
 
 	auto t3t = map<string, uint64_t>();
-	t1t["I2"] = 90*1000;
-	t1t["I3"] = 250*1000;
+	t3t["I2"] = 90*1000;
+	t3t["I3"] = 2500*1000;
 
 	int taskCount = 4;
 	TaskDistTask tasks[] = {
@@ -272,7 +319,7 @@ void taskDistTest() {
 	}
 	
 
-	for (int i = 0; i < 100; ) {
+	for (int i = 0; i < 5000; ) {
 		
 		if (instances[0].fqi <= 1) {
 			
