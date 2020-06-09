@@ -324,10 +324,28 @@ void taskDistTest() {
 		if (instances[0].fqi <= 1) {
 			
 			for (int ti = 0; ti < taskCount; ti++) {
-				// for (int ii = 0; ii < instanceCount; ii++) {
-				// 	instances[ii].addToQueue( tasks[ti] );
-				// }
-				instances[0].addToQueue( tasks[ti] );
+				switch (ti) {
+				
+				default:
+					instances[0].addToQueue( tasks[ti] );
+					break;
+
+				// case 0:
+				// case 1:
+				// 	if (rand()%10 > 2) {
+				// 		instances[0].addToQueue( tasks[ti] );
+				// 	}
+				// 	break;
+				// case 2:
+				// case 3:
+				// 	if (rand()%10 > 8) {
+				// 		instances[0].addToQueue( tasks[ti] );
+				// 	}
+				// 	break;
+				// default:
+				// 	break;
+
+				}
 			}
 			i++;
 		} else {
