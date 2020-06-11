@@ -24,6 +24,7 @@ class Dstring;
 #endif
 
 class Dbimg;
+class Dbimg_FORMAT;
 #ifdef TORASU_SPOILS_UNWRAP_STD
 	#include <torasu/std/DRBImg.hpp>
 #endif
