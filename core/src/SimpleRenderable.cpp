@@ -91,7 +91,7 @@ RenderResult* SimpleRenderable::render(RenderInstruction* ri) {
 		try {
 			rseg = renderSegment(rss, ri);
 		} catch (const std::exception& ex) {
-			std::cerr << "SimpleRenderable" << std::endl;
+			std::cerr << "SimpleRenderable error: " << ex.what() << std::endl;
 			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
 			continue;
 		}
