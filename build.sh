@@ -22,8 +22,10 @@ if [ -n "$1" ]; then
 		cmake -Wno-dev ../
 		build_runMake
 		if [ $(uname) == "Darwin" ] || [ "$2" == "nosudo" ]; then
+			echo "Installing TORASU as user..."
       		make install
     	else
+			echo "Installing TORASU as super-user..."
 			sudo make install
     	fi
 
