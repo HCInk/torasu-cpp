@@ -35,7 +35,7 @@ pipeline {
                 stage('Lint') {
                     agent { dockerfile { 
 						label 'hcink_vps'
-						filename '.ci/Dockerfiles/cpplint' 
+						filename '.ci/Dockerfiles/analysis' 
 					} }
                     steps {
                         sh 'mkdir -p reports/cpplint'
@@ -80,7 +80,10 @@ pipeline {
                     }
                 }
                 stage('cloc') {
-                    agent { label 'hcink_vps' }
+                    agent { dockerfile { 
+						label 'hcink_vps'
+						filename '.ci/Dockerfiles/analysis' 
+					} }
                     steps {
                         sh 'mkdir -p reports/cloc'
                         sh 'cloc --json --fullpath --force-lang=C++ --not-match-d=lib/* . > reports.json'
