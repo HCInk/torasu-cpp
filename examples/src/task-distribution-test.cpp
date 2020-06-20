@@ -18,7 +18,7 @@ ConcurrentLogger::~ConcurrentLogger() {
 }
 
 void ConcurrentLogger::log(string tag, string message) {
-	
+
 	writeLock.lock();
 
 	cout << "[" << tag << "] " << message << endl;
@@ -66,13 +66,13 @@ int TaskDistInstance::run(TaskDistInstance* instance) {
 
 			//instance->log(string("RUN SELF: ") + next.type);
 
-			auto start = chrono::high_resolution_clock::now(); 
+			auto start = chrono::high_resolution_clock::now();
 
 			next.run(instance);
-			
+
 			auto end = chrono::high_resolution_clock::now();
 
-			auto duration =	chrono::duration_cast<chrono::milliseconds>(end - start); 
+			auto duration =	chrono::duration_cast<chrono::milliseconds>(end - start);
 
 			instance->tsiMap[next.type] = duration.count();
 
@@ -122,7 +122,7 @@ bool TaskDistInstance::isEmpty() {
 	bool empty = queue.empty();
 
 	queueLock.unlock();
-	
+
 	return empty;
 }
 
@@ -150,7 +150,7 @@ void TaskDistInstance::printStats(std::vector<std::string> query) {
 	statMsg += "	AVG: " + to_string(tsiTotal/tsiCount);
 
 	cout << statMsg << endl;
-	
+
 }
 
 void TaskDistInstance::readjustFQI(bool adding) {
@@ -175,7 +175,7 @@ void TaskDistInstance::readjustFQI(bool adding) {
 	}
 
 	// fqi = (pow((static_cast<double>(currentQueueSize+1)/(targetQueueSize+1)), 4) * fqi*adjustmentSpeed) + (fqi*(1-adjustmentSpeed));
-	
+
 	queueLock.unlock();
 }
 
@@ -202,7 +202,7 @@ double TaskDistInstance::getATSI(TaskDistInstance* instance, string type, double
 		}
 
 	}
-	
+
 	if (taskTsi < 0) {
 		*outTaskTsi = -1;
 		return -1;
@@ -251,7 +251,7 @@ bool TaskDistInstance::findBestExport(string type, TaskDistInstance** outTargetI
 			double atsiThere = getATSI(connection, type, &taskTsiThere);
 
 			if (atsiThere > 0) {
-				
+
 				double pci = taskTsiHere/atsiThere;
 
 				if (bestPci < pci) {
@@ -284,20 +284,20 @@ void taskDistTest() {
 
 	int instanceCount = 6;
 	TaskDistInstance instances[] = {
-									TaskDistInstance("I0", &logger, 10), 
-									TaskDistInstance("I1", &logger, 10), 
-									TaskDistInstance("I2", &logger, 10), 
-									TaskDistInstance("I3", &logger, 5),
-									TaskDistInstance("I4", &logger, 20), 
-									TaskDistInstance("I5", &logger, 5)
-									};
+		TaskDistInstance("I0", &logger, 10),
+		TaskDistInstance("I1", &logger, 10),
+		TaskDistInstance("I2", &logger, 10),
+		TaskDistInstance("I3", &logger, 5),
+		TaskDistInstance("I4", &logger, 20),
+		TaskDistInstance("I5", &logger, 5)
+	};
 
 	instances[0].addConnection(instances+1);
 	instances[0].addConnection(instances+2);
 	instances[0].addConnection(instances+3);
 	instances[0].addConnection(instances+4);
 	instances[0].addConnection(instances+5);
-	
+
 	auto t1t = map<string, uint64_t>();
 	t1t["I1"] = 200*1000;
 	t1t["I2"] = 300*1000;
@@ -308,42 +308,42 @@ void taskDistTest() {
 
 	int taskCount = 4;
 	TaskDistTask tasks[] = {
-							TaskDistTask("T0", 100*1000, map<string, uint64_t>()),
-							TaskDistTask("T1", 400*1000, t1t),
-							TaskDistTask("T2", 300*1000, map<string, uint64_t>()),
-							TaskDistTask("T3", 200*1000, t3t)
-							};
+		TaskDistTask("T0", 100*1000, map<string, uint64_t>()),
+		TaskDistTask("T1", 400*1000, t1t),
+		TaskDistTask("T2", 300*1000, map<string, uint64_t>()),
+		TaskDistTask("T3", 200*1000, t3t)
+	};
 
 	for (int ii = 0; ii < instanceCount; ii++) {
 		instances[ii].launch();
 	}
-	
+
 
 	for (int i = 0; i < 5000; ) {
-		
+
 		if (instances[0].fqi <= 1) {
-			
+
 			for (int ti = 0; ti < taskCount; ti++) {
 				switch (ti) {
-				
+
 				default:
 					instances[0].addToQueue( tasks[ti] );
 					break;
 
-				// case 0:
-				// case 1:
-				// 	if (rand()%10 > 2) {
-				// 		instances[0].addToQueue( tasks[ti] );
-				// 	}
-				// 	break;
-				// case 2:
-				// case 3:
-				// 	if (rand()%10 > 8) {
-				// 		instances[0].addToQueue( tasks[ti] );
-				// 	}
-				// 	break;
-				// default:
-				// 	break;
+					// case 0:
+					// case 1:
+					// 	if (rand()%10 > 2) {
+					// 		instances[0].addToQueue( tasks[ti] );
+					// 	}
+					// 	break;
+					// case 2:
+					// case 3:
+					// 	if (rand()%10 > 8) {
+					// 		instances[0].addToQueue( tasks[ti] );
+					// 	}
+					// 	break;
+					// default:
+					// 	break;
 
 				}
 			}
@@ -351,17 +351,17 @@ void taskDistTest() {
 		} else {
 			usleep(100*1000);
 		}
-		
+
 		for (int ii = 0; ii < instanceCount; ii++) {
 			instances[ii].printStats({"T0", "T1", "T2", "T3"});
 		}
 		cout << "===== STATS =====" << endl;
 	}
-	
+
 	bool hasRunningThread = false;
 	int ii = 0;
 	while ( true ) {
-		
+
 		if (instances[ii].doRun) {
 
 			if (!instances[ii].isEmpty()) {
@@ -369,7 +369,7 @@ void taskDistTest() {
 				// cout << "WAITING FOR INSTANCE " << instances[ii].name << endl;
 			}
 			instances[ii].printStats({"T0", "T1", "T2", "T3"});
-		} 
+		}
 
 		ii++;
 		if (ii >= instanceCount) {
@@ -383,9 +383,9 @@ void taskDistTest() {
 			}
 		}
 	}
-	
 
-	
+
+
 
 }
 

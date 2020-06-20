@@ -3,7 +3,7 @@ cmake_policy(PUSH)
 cmake_minimum_required (VERSION 3.0)
 
 if(NOT TARGET torasustd)
-	
+
 	# Meta / Settings
 
 	project(torasu-cpp-std VERSION 0.0.4)
@@ -14,7 +14,7 @@ if(NOT TARGET torasustd)
 
 	# Compile
 
-	set(TORASU_STD_SRC 
+	set(TORASU_STD_SRC
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dstring.cpp
@@ -24,7 +24,8 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rmultiply.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rlocal_file.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnet_file.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Daudio_buffer.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
@@ -44,7 +45,7 @@ if(NOT TARGET torasustd)
 	endif()
 
 	target_link_libraries(torasustd torasu curl)
-	
+
 	# Installation
 
 	install(TARGETS torasustd DESTINATION lib)
