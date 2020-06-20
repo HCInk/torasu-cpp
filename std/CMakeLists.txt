@@ -33,16 +33,6 @@ if(NOT TARGET torasustd)
 
 	target_include_directories(torasustd PUBLIC lib/json/single_include/)
 
-	# Libraries for current target
-
-	if(APPLE)
-
-	else()
-		if(TORASU_DEBUG_ASAN)
-			target_link_libraries(torasustd asan)
-		endif()
-	endif()
-
 	target_link_libraries(torasustd torasu curl)
 	
 	# Installation

@@ -22,16 +22,6 @@ if(NOT TARGET torasu)
 
 	target_include_directories(torasu PUBLIC lib/json/single_include/)
 
-	# Libraries for current target
-
-	if(APPLE)
-	
-	else()
-		if(TORASU_DEBUG_ASAN)
-			target_link_libraries(torasu asan)
-		endif()
-	endif()
-
 	# Installation
 
 	install(TARGETS torasu DESTINATION lib)
