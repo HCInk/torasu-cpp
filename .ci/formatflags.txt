@@ -5,3 +5,4 @@
 -K # Ident cases
 -L # Ident labels one less
 -xW # Preprocessor idented at 0
+-k1 # Pointer symbol at type

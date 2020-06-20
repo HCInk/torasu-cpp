@@ -11,7 +11,10 @@ pipeline {
     }
     stages {
         stage('Build') {
-            agent { dockerfile { filename '.ci/Dockerfiles/build' } }
+            agent { dockerfile { 
+				label 'hcink_vps'
+				filename '.ci/Dockerfiles/build' 
+			} }
             steps {
                 sh './build.sh'
                 archiveArtifacts artifacts: 'build/torasu-cpp-test', fingerprint: true
@@ -30,7 +33,10 @@ pipeline {
         stage('Testing') {
             parallel {
                 stage('Lint') {
-                    agent { dockerfile { filename '.ci/Dockerfiles/cpplint' } }
+                    agent { dockerfile { 
+						label 'hcink_vps'
+						filename '.ci/Dockerfiles/analysis' 
+					} }
                     steps {
                         sh 'mkdir -p reports/cpplint'
                         sh './lint.sh 2> reports/cpplint/cpplint.txt || true'
@@ -48,7 +54,10 @@ pipeline {
                     }
                 }
                 stage('Unit-Test') {
-                    agent { dockerfile { filename '.ci/Dockerfiles/build' } }
+                    agent { dockerfile { 
+						label 'hcink_vps'
+						filename '.ci/Dockerfiles/build' 
+					} }
                     steps {
                         copyArtifacts filter: 'build/torasu-cpp-test', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
                         copyArtifacts filter: 'build/libtorasu.so', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}')
@@ -71,7 +80,10 @@ pipeline {
                     }
                 }
                 stage('cloc') {
-                    agent any
+                    agent { dockerfile { 
+						label 'hcink_vps'
+						filename '.ci/Dockerfiles/analysis' 
+					} }
                     steps {
                         sh 'mkdir -p reports/cloc'
                         sh 'cloc --json --fullpath --force-lang=C++ --not-match-d=lib/* . > reports.json'

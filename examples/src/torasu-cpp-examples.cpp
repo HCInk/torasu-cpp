@@ -103,7 +103,7 @@ void simpleRenderExample() {
 
 using namespace torasu::texample;
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
 
 	//checkLinkings();
 

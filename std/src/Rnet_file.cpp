@@ -15,7 +15,7 @@ Rnet_file::Rnet_file(std::string url)
 
 Rnet_file::~Rnet_file() {}
 
-size_t Rnet_file_WRITE_FUNC(void *ptr, size_t size, size_t nmemb,  std::string *s) {
+size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* s) {
 	size_t new_len = size*nmemb;
 	char* data = static_cast<char*>(ptr);
 	std::string new_data(data, new_len);
@@ -28,7 +28,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 	if (resSettings->getPipeline().compare(pipeline) == 0) {
 
-		CURL *curl;
+		CURL* curl;
 		CURLcode res;
 		curl = curl_easy_init();
 		if (!curl) {
