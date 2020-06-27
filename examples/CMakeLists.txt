@@ -41,7 +41,7 @@ if(NOT TARGET torasu-cpp-examples)
 
 	# Tests
 
-	add_subdirectory(lib/Catch2)
+	add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/../lib/Catch2)
 	
 	set(TORASU_TEST_SRC 
  	${CMAKE_CURRENT_LIST_DIR}/test/torasu-cpp-test.cpp)
@@ -49,7 +49,7 @@ if(NOT TARGET torasu-cpp-examples)
 
 	set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-	target_include_directories(torasu-cpp-test PUBLIC lib/json/single_include/)
+	target_include_directories(torasu-cpp-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../lib/json/single_include/)
 
 	if(APPLE)
 
