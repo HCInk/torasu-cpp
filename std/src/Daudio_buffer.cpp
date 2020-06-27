@@ -8,20 +8,20 @@ namespace torasu::tstd {
 
 Daudio_buffer::Daudio_buffer(size_t channelCount) : channelCount(channelCount) {
 	channels = new Daudio_buffer_CHANNEL[channelCount];
-	for (int i = 0; i < channelCount; ++i) {
+	for (size_t i = 0; i < channelCount; ++i) {
 		initChannel(i, 0, UNKNOWN, 0, true);
 	}
 }
 
 Daudio_buffer::Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize) : channelCount(channelCount) {
 	channels = new Daudio_buffer_CHANNEL[channelCount];
-	for (int i = 0; i < channelCount; ++i) {
+	for (size_t i = 0; i < channelCount; ++i) {
 		initChannel(i, sampleRate, format, dataSize, true);
 	}
 }
 
 Daudio_buffer::~Daudio_buffer() {
-	for (int i = 0; i < channelCount; ++i) {
+	for (size_t i = 0; i < channelCount; ++i) {
 		delete[] channels[i].data;
 	}
 	delete[] channels;
