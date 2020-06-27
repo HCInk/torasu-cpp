@@ -105,13 +105,13 @@ using namespace torasu::texample;
 
 int main(int argc, char** argv) {
 
-	//checkLinkings();
+	checkLinkings();
 
-	//simpleDpTest();
+	simpleDpTest();
 
-	//simpleRenderExample();
+	simpleRenderExample();
 
-	taskDistTest();
+	// taskDistTest();
 
 	return 0;
 }

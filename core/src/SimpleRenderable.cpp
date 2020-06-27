@@ -2,57 +2,57 @@
 
 namespace torasu::tools {
 
-SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements) {
-	this->typeIdent = typeIdent;
-	this->acceptData = acceptData;
-	this->acceptElements = acceptElements;
-}
+NamedIdentElement::NamedIdentElement(std::string typeIdent) 
+					: typeIdent(typeIdent) {}
 
-SimpleRenderable::~SimpleRenderable() {
+NamedIdentElement::~NamedIdentElement() {}
 
-}
-
-std::string SimpleRenderable::getType() {
+std::string NamedIdentElement::getType() {
 	return typeIdent;
 }
 
-DataResource* SimpleRenderable::getData() {
+SimpleDataElement::SimpleDataElement(bool acceptData, bool acceptElements) 
+					: acceptData(acceptData), acceptElements(acceptElements) {}
+
+SimpleDataElement::~SimpleDataElement() {}
+
+DataResource* SimpleDataElement::getData() {
 	if (!acceptData) {
 		return NULL;
 	} else {
-		throw std::logic_error("SimpleRenderable-impl-err: getData(data) is not defined,"
+		throw std::logic_error("SimpleDataElement-impl-err: getData(data) is not defined,"
 							   "even though data is set to be accepted");
 	}
 }
 
-std::map<std::string, Element*> SimpleRenderable::getElements() {
+std::map<std::string, Element*> SimpleDataElement::getElements() {
 	if (!acceptElements) {
 		return std::map<std::string, Element*>();
 	} else {
-		throw std::logic_error("SimpleRenderable-impl-err: getElements(data) is not defined,"
+		throw std::logic_error("SimpleDataElement-impl-err: getElements(data) is not defined,"
 							   "even though elements are set to be accepted.");
 	}
 }
 
-void SimpleRenderable::setData(DataResource* data) {
+void SimpleDataElement::setData(DataResource* data) {
 	if (!acceptData) {
 		throw std::invalid_argument("This element does not accept any data!");
 	} else {
-		throw std::logic_error("SimpleRenderable-impl-err: setData(data) is not defined,"
+		throw std::logic_error("SimpleDataElement-impl-err: setData(data) is not defined,"
 							   "even though data is set to be accepted.");
 	}
 }
 
-void SimpleRenderable::setElement(std::string key, Element* elem) {
+void SimpleDataElement::setElement(std::string key, Element* elem) {
 	if (!acceptElements) {
 		throw std::invalid_argument("This element does not accept any elements!");
 	} else {
-		throw std::logic_error("SimpleRenderable-impl-err: setElement(key, elem) is not defined,"
+		throw std::logic_error("SimpleDataElement-impl-err: setElement(key, elem) is not defined,"
 							   "even though elements are set to be accepted.");
 	}
 }
 
-void SimpleRenderable::setData(DataResource* data,
+void SimpleDataElement::setData(DataResource* data,
 							   std::map<std::string, Element*> elements) {
 	if (acceptElements) {
 
@@ -75,7 +75,11 @@ void SimpleRenderable::setData(DataResource* data,
 
 }
 
-RenderResult* SimpleRenderable::render(RenderInstruction* ri) {
+
+IndividualizedSegnentRenderable::IndividualizedSegnentRenderable() {}
+IndividualizedSegnentRenderable::~IndividualizedSegnentRenderable() {}
+
+RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 
 	auto rs = ri->getResultSettings();
 
@@ -127,5 +131,11 @@ RenderResult* SimpleRenderable::render(RenderInstruction* ri) {
 
 	return new RenderResult(summarizedStatus, results);
 }
+
+SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements) 
+					: NamedIdentElement(typeIdent),
+				 	SimpleDataElement(acceptData, acceptElements) {}
+
+SimpleRenderable::~SimpleRenderable() {}
 
 } // namespace torasu::tools

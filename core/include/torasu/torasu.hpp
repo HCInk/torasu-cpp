@@ -145,7 +145,7 @@ public:
 
 };
 
-class Renderable : public Element {
+class Renderable : public virtual Element {
 public:
 	Renderable() {
 	}
