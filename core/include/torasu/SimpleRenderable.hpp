@@ -27,7 +27,7 @@ public:
 	virtual ~NamedIdentElement();
 
 	// Auto-managed
-	virtual std::string getType() override;
+	std::string getType() override;
 };
 
 /**
@@ -49,15 +49,15 @@ public:
 	virtual ~SimpleDataElement();
 
 	// Overwrite when accepting data
-	virtual DataResource* getData() override;
-	virtual void setData(DataResource* data) override;
+	DataResource* getData() override;
+	void setData(DataResource* data) override;
 
 	// Implement when accepting elements
-	virtual std::map<std::string, Element*> getElements() override;
-	virtual void setElement(std::string key, Element* elem) override;
+	std::map<std::string, Element*> getElements() override;
+	void setElement(std::string key, Element* elem) override;
 
 	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
-	virtual void setData(DataResource* data,
+	void setData(DataResource* data,
 						 std::map<std::string, Element*> elements) override;
 };
 
@@ -76,7 +76,7 @@ protected:
 
 public:
 	virtual ~IndividualizedSegnentRenderable();
-	virtual RenderResult* render(RenderInstruction* ri) override;
+	RenderResult* render(RenderInstruction* ri) override;
 };
 
 /**
