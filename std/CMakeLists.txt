@@ -12,6 +12,9 @@ if(NOT TARGET torasustd)
 	# TORASU-CORE (local)
 	include(${CMAKE_CURRENT_LIST_DIR}/../core/CMakeLists.txt)
 
+	# Includes provided by this
+	include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
+
 	# Compile
 
 	set(TORASU_STD_SRC
@@ -19,6 +22,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Dnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dstring.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg_sequence.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dfile.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rmultiply.cpp
@@ -40,10 +44,6 @@ if(NOT TARGET torasustd)
 
 	install(TARGETS torasustd DESTINATION lib)
 	install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/include/torasu DESTINATION include)
-
-	# Includes for others
-
-	include_directories(BEFORE ${CMAKE_CURRENT_LIST_DIR}/include)
 
 endif()
 
