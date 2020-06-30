@@ -18,7 +18,7 @@ Dbimg* Dbimg_sequence::addFrame(double pts, Dbimg_FORMAT format) {
 	return bimg;
 }
 
-std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& Dbimg_sequence::getFames() {
+std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& Dbimg_sequence::getFrames() {
 	return frames;
 }
 
