@@ -13,10 +13,10 @@ Daudio_buffer::Daudio_buffer(size_t channelCount) : channelCount(channelCount) {
 	}
 }
 
-Daudio_buffer::Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize) : channelCount(channelCount) {
+Daudio_buffer::Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t sampleSize, size_t dataSize) : channelCount(channelCount) {
 	channels = new Daudio_buffer_CHANNEL[channelCount];
 	for (size_t i = 0; i < channelCount; ++i) {
-		initChannel(i, sampleRate, format, dataSize, true);
+		initChannel(i, sampleRate, format, dataSize, sampleSize, true);
 	}
 }
 
@@ -43,7 +43,7 @@ std::string Daudio_buffer::getIdent() {
 	return "STD::DAUDIO_BUFFER";
 }
 //                                                                                                                         Only delete old ref if not from instantiation
-uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize, bool fromInit) {
+uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize,size_t sampleSize, bool fromInit) {
 
 	if (channelIndex < 0 || channelIndex >= channelCount) {
 		throw std::out_of_range(std::string("Channel index out of bounds: ") + std::to_string(channelIndex)
@@ -57,6 +57,7 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 		.data = data,
 		.dataSize = dataSize,
 		.sampleRate = sampleRate,
+		.sampleSize = sampleSize,
 		.format = format
 	};
 

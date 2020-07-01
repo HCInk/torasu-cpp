@@ -29,6 +29,7 @@ struct Daudio_buffer_CHANNEL {
 	uint8_t* data;
 	size_t dataSize;
 	size_t sampleRate;
+	size_t sampleSize;
 	Daudio_buffer_CHFMT format;
 
 };
@@ -79,10 +80,10 @@ private:
 
 public:
 	explicit Daudio_buffer(size_t channelCount);
-	explicit Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize);
+	explicit Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t sampleSize, size_t dataSize);
 	virtual ~Daudio_buffer();
 
-	uint8_t* initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize, bool fromInit = false);
+	uint8_t* initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t sampleSize, size_t dataSize, bool fromInit = false);
 	Daudio_buffer_CHANNEL* getChannels() const;
 	size_t getChannelCount() const;
 
