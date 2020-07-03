@@ -86,7 +86,7 @@ pipeline {
 					} }
                     steps {
                         sh 'mkdir -p reports/cloc'
-                        sh 'cloc --json --fullpath --force-lang=C++ --not-match-d=lib/* . > reports.json'
+                        sh 'cloc --json --fullpath $(cat .ci/sourcelist.txt) > reports.json'
                         script {
                             def clocJSON = sh(script: 'jq .SUM.code reports.json', returnStdout: true)
                             clocBadge.setStatus(clocJSON)
