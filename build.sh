@@ -19,7 +19,23 @@ if [ -n "$1" ]; then
 			
 		mkdir -p build
 		cd build
-		cmake -Wno-dev ../
+		cmake -Wno-dev -DCMAKE_BUILD_TYPE=Release ../
+		build_runMake
+		if [ $(uname) == "Darwin" ] || [ "$2" == "nosudo" ]; then
+			echo "Installing TORASU as user..."
+      		make install
+    	else
+			echo "Installing TORASU as super-user..."
+			sudo make install
+    	fi
+	
+	elif [ "$1" == "dbginstall" ]; then
+	
+		echo "Installing TORASU [DEBUG]..."
+			
+		mkdir -p build
+		cd build
+		cmake -Wno-dev -DCMAKE_BUILD_TYPE=Debug ../
 		build_runMake
 		if [ $(uname) == "Darwin" ] || [ "$2" == "nosudo" ]; then
 			echo "Installing TORASU as user..."
@@ -53,6 +69,7 @@ if [ -n "$1" ]; then
 		echo "Unknown argument \"$1\"!"
 		echo "Available arguments: "
 		echo "	install [nosudo] 	- Installs Libraries and Include files"
+		echo "	dbginstall [nosudo] - Installs Libraries and Include files in debug-mode"
 		echo "	delbuild 	- Deletes all buld files (build/)"
 		echo "	wincross 	- Builds windows binary into build/cross/win/"
 		echo "	delcross 	- Removes cross build-folder (build/cross/)"
