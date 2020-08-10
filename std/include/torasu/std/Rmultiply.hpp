@@ -5,7 +5,6 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
-#include <torasu/render_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
 #include <torasu/std/pipeline_names.hpp>
@@ -15,12 +14,11 @@ namespace torasu::tstd {
 
 class Rmultiply : public tools::SimpleRenderable {
 private:
-	const std::string pipeline = std::string(TORASU_STD_PL_NUM);
+	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
+	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
 
 	Renderable* a = NULL;
 	Renderable* b = NULL;
-	tools::RenderInstructionBuilder rib;
-	tools::RenderResultSegmentHandle<Dnum> resHandle;
 
 protected:
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
