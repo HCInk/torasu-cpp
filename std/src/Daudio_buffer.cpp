@@ -35,7 +35,7 @@ size_t Daudio_buffer::getChannelCount() const {
 	return channelCount;
 }
 
-DataDump *Daudio_buffer::getData() {
+DataDump* Daudio_buffer::getData() {
 	throw std::logic_error("getData() not implemented for Daudio_buffer");
 }
 
@@ -67,8 +67,8 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format) : bitrate(bitrate),
 	format(format) {}
 
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const nlohmann::json &initialJson) : DataPackable(initialJson) {}
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const std::string &initialSerializedJson) : DataPackable(
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const nlohmann::json& initialJson) : DataPackable(initialJson) {}
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const std::string& initialSerializedJson) : DataPackable(
 		initialSerializedJson) {}
 
 int Daudio_buffer_FORMAT::getBitrate() const {

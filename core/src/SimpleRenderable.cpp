@@ -2,8 +2,8 @@
 
 namespace torasu::tools {
 
-NamedIdentElement::NamedIdentElement(std::string typeIdent) 
-					: typeIdent(typeIdent) {}
+NamedIdentElement::NamedIdentElement(std::string typeIdent)
+	: typeIdent(typeIdent) {}
 
 NamedIdentElement::~NamedIdentElement() {}
 
@@ -11,8 +11,8 @@ std::string NamedIdentElement::getType() {
 	return typeIdent;
 }
 
-SimpleDataElement::SimpleDataElement(bool acceptData, bool acceptElements) 
-					: acceptData(acceptData), acceptElements(acceptElements) {}
+SimpleDataElement::SimpleDataElement(bool acceptData, bool acceptElements)
+	: acceptData(acceptData), acceptElements(acceptElements) {}
 
 SimpleDataElement::~SimpleDataElement() {}
 
@@ -53,7 +53,7 @@ void SimpleDataElement::setElement(std::string key, Element* elem) {
 }
 
 void SimpleDataElement::setData(DataResource* data,
-							   std::map<std::string, Element*> elements) {
+								std::map<std::string, Element*> elements) {
 	if (acceptElements) {
 
 		std::map<std::string, Element*> previousElements = getElements();
@@ -132,9 +132,9 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 	return new RenderResult(summarizedStatus, results);
 }
 
-SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements) 
-					: NamedIdentElement(typeIdent),
-				 	SimpleDataElement(acceptData, acceptElements) {}
+SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
+	: NamedIdentElement(typeIdent),
+	  SimpleDataElement(acceptData, acceptElements) {}
 
 SimpleRenderable::~SimpleRenderable() {}
 

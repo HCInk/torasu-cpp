@@ -10,9 +10,9 @@
 namespace torasu::tools {
 
 /**
- * Element that lets you declare a fixed type-ident 
+ * Element that lets you declare a fixed type-ident
  * that will constantly be provided over Element#getType()
- * 
+ *
  * @brief  Element with a fixed type-ident
  */
 class NamedIdentElement : public virtual Element {
@@ -33,8 +33,8 @@ public:
 /**
  * Element that lets you remaps all methods of an Element
  * for setting Data / Elements to setData() and setElement().
- * It also provides sensible defaults/fallbacks for those. 
- * 
+ * It also provides sensible defaults/fallbacks for those.
+ *
  * @brief  Element with simplified data-/connection-management
  */
 class SimpleDataElement : public virtual Element {
@@ -58,14 +58,14 @@ public:
 
 	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
 	void setData(DataResource* data,
-						 std::map<std::string, Element*> elements) override;
+				 std::map<std::string, Element*> elements) override;
 };
 
 /**
- * Renderable which calls for every segment in the ResultSettings renderSegment(), 
+ * Renderable which calls for every segment in the ResultSettings renderSegment(),
  * which then has to process the given segement and return the matching ResultSegment.
  * Those ResultSegment will then be packed into the RenderResult together with others automatically by this class.
- * 
+ *
  * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
  */
 class IndividualizedSegnentRenderable : public virtual Renderable {
@@ -81,12 +81,12 @@ public:
 
 /**
  * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
- * 
+ *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
-class SimpleRenderable : public NamedIdentElement, 
-							public SimpleDataElement,
-							public IndividualizedSegnentRenderable {
+class SimpleRenderable : public NamedIdentElement,
+	public SimpleDataElement,
+	public IndividualizedSegnentRenderable {
 
 protected:
 	explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);

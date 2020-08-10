@@ -26,18 +26,18 @@ class Dstring;
 class Dbimg;
 class Dbimg_FORMAT;
 #ifdef TORASU_SPOILS_UNWRAP_STD
-#include <torasu/std/DRBImg.hpp>
+	#include <torasu/std/DRBImg.hpp>
 #endif
 
 class Dbimg_sequence;
 #ifdef TORASU_SPOILS_UNWRAP_STD
-#include <torasu/std/DRBImg.hpp>
+	#include <torasu/std/DRBImg.hpp>
 #endif
 
 class Daudio_buffer;
 class Daudio_buffer_FORMAT;
 #ifdef TORASU_SPOILS_UNWRAP_STD
-#include <torasu/std/Daudio_buffer.hpp>
+	#include <torasu/std/Daudio_buffer.hpp>
 #endif
 
 class Dfile;

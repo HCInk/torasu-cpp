@@ -50,8 +50,8 @@ public:
 
 	explicit Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format);
 
-	explicit Daudio_buffer_FORMAT(const nlohmann::json &initialJson);
-	explicit Daudio_buffer_FORMAT(const std::string &initialSerializedJson);
+	explicit Daudio_buffer_FORMAT(const nlohmann::json& initialJson);
+	explicit Daudio_buffer_FORMAT(const std::string& initialSerializedJson);
 
 	int getBitrate() const;
 	Daudio_buffer_CHFMT getFormat() const;
