@@ -16,6 +16,7 @@
 #include <torasu/std/Dnum.hpp>
 #include <torasu/std/Rnum.hpp>
 #include <torasu/std/Rmultiply.hpp>
+#include <torasu/std/Rsubtract.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 
 #include "task-distribution-test.hpp"
@@ -58,11 +59,15 @@ void simpleDpTest() {
 
 }
 
-void simpleRenderExample() {
+void simpleRenderExample1() {
 
 	//
-	// Simple Render Example
+	// Simple Render Example 1
 	//
+
+	cout << "//" << endl
+			<< "// Simple Render Example 1" << endl
+			<< "//" << endl;
 
 	// Creating "tree" to be rendered
 
@@ -70,6 +75,51 @@ void simpleRenderExample() {
 	Rnum numB(0.1);
 
 	Rmultiply tree(&numA, &numB);
+
+	// Creating the runner
+
+	EIcore_runner runner;
+
+	ExecutionInterface* ei = runner.createInterface();
+
+	// Creating instruction
+
+	tools::RenderInstructionBuilder rib;
+
+	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+
+	// Running render based on instruction
+
+	RenderResult* rr = rib.runRender(&tree, NULL, ei);
+
+	// Finding results
+
+	auto result = handle.getFrom(rr);
+	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+
+	// Cleaning
+
+	delete rr;
+	delete ei;
+
+}
+
+void simpleRenderExample2() {
+
+	//
+	// Simple Render Example 2
+	//
+
+	cout << "//" << endl
+			<< "// Simple Render Example 2" << endl
+			<< "//" << endl;
+
+	// Creating "tree" to be rendered
+
+	Rnum numA(0.1);
+	Rnum numB(0.2);
+
+	torasu::tstd::Rsubtract tree(&numA, &numB);
 
 	// Creating the runner
 
@@ -109,7 +159,9 @@ int main(int argc, char** argv) {
 
 	simpleDpTest();
 
-	simpleRenderExample();
+	simpleRenderExample1();
+
+	simpleRenderExample2();
 
 	// taskDistTest();
 
