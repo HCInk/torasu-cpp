@@ -114,21 +114,24 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 			auto benchBegin = std::chrono::steady_clock::now();
 
 			int16_t buf;
-			for (int i = 0; i < dataSize; i++) {
-				// RED
-				buf = (int16_t) srcA[i]-srcB[i];
-				dest[i] = buf >= 0 ? buf:0;
-				i++;
-				// GREEN
-				buf = (int16_t) srcA[i]-srcB[i];
-				dest[i] = buf >= 0 ? buf:0;
-				i++;
-				// BLUE
-				buf = (int16_t) srcA[i]-srcB[i];
-				dest[i] = buf >= 0 ? buf:0;
-				i++;
+			uint8_t currentPremulFactor;
+			for (int i = dataSize-1; i >= 0; ) {
 				// ALPHA
 				dest[i] = srcA[i];
+				currentPremulFactor = srcB[i]>>4;
+				i--;
+				// BLUE
+				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				dest[i] = buf >= 0 ? buf:0;
+				i--;
+				// GREEN
+				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				dest[i] = buf >= 0 ? buf:0;
+				i--;
+				// RED
+				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				dest[i] = buf >= 0 ? buf:0;
+				i--;
 			}
 
 			auto benchEnd = std::chrono::steady_clock::now();
