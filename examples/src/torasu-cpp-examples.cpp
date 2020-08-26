@@ -66,8 +66,8 @@ void simpleRenderExample1() {
 	//
 
 	cout << "//" << endl
-			<< "// Simple Render Example 1" << endl
-			<< "//" << endl;
+		 << "// Simple Render Example 1" << endl
+		 << "//" << endl;
 
 	// Creating "tree" to be rendered
 
@@ -111,8 +111,8 @@ void simpleRenderExample2() {
 	//
 
 	cout << "//" << endl
-			<< "// Simple Render Example 2" << endl
-			<< "//" << endl;
+		 << "// Simple Render Example 2" << endl
+		 << "//" << endl;
 
 	// Creating "tree" to be rendered
 

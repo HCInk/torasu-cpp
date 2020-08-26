@@ -101,10 +101,10 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 			result = new Dbimg(*fmt);
 
-			const int height = result->getHeight();
-			const int width = result->getWidth();
-			const int channels = 4;
-			const long dataSize = height*width*channels;
+			const uint32_t height = result->getHeight();
+			const uint32_t width = result->getWidth();
+			const uint32_t channels = 4;
+			const size_t dataSize = height*width*channels;
 
 
 			uint8_t* srcA = a.getResult()->getImageData();
@@ -121,15 +121,15 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 				currentPremulFactor = srcB[i];
 				i--;
 				// BLUE
-				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
+				buf = (int16_t) srcA[i] - ( ((uint16_t) srcB[i]*currentPremulFactor) >>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 				// GREEN
-				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
+				buf = (int16_t) srcA[i] - ( ((uint16_t) srcB[i]*currentPremulFactor) >>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 				// RED
-				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
+				buf = (int16_t) srcA[i] - ( ((uint16_t) srcB[i]*currentPremulFactor) >>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 			}

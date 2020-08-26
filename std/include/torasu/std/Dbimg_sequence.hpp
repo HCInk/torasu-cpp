@@ -3,6 +3,8 @@
 
 #include <utility>
 #include <map>
+#include <functional>
+#include <string>
 
 #include <torasu/torasu.hpp>
 
