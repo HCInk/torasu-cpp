@@ -118,18 +118,18 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 			for (int i = dataSize-1; i >= 0; ) {
 				// ALPHA
 				dest[i] = srcA[i];
-				currentPremulFactor = srcB[i]>>4;
+				currentPremulFactor = srcB[i];
 				i--;
 				// BLUE
-				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 				// GREEN
-				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 				// RED
-				buf = (int16_t) srcA[i] - ((srcB[i]>>4)*currentPremulFactor);
+				buf = (int16_t) srcA[i] - (((uint_16_t)srcB[i]*currentPremulFactor)>>8);
 				dest[i] = buf >= 0 ? buf:0;
 				i--;
 			}
