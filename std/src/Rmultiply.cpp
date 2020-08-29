@@ -113,7 +113,7 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 			auto benchBegin = std::chrono::steady_clock::now();
 
-			for (int i = 0; i < dataSize; i++) {
+			for (size_t i = 0; i < dataSize; i++) {
 				// dest[i] = (srcA[i]>>4)*(srcB[i]>>4);
 				dest[i] = ((uint16_t) srcA[i]*srcB[i]) >> 8;
 				// *dest++ = ((uint16_t) *srcA++ * *srcB++) >> 8;
