@@ -22,6 +22,7 @@ private:
 public:
 	explicit Dbimg(Dbimg_FORMAT format);
 	Dbimg(uint32_t width, uint32_t height);
+	Dbimg(const Dbimg& copy);
 	~Dbimg();
 
 	std::string getIdent();

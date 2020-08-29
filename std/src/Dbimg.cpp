@@ -12,6 +12,13 @@ Dbimg::Dbimg(uint32_t width, uint32_t height) {
 	this->data = new uint8_t[width*height*4];
 }
 
+Dbimg::Dbimg(const Dbimg& copy) {
+	this->width = copy.width;
+	this->height = copy.height;
+	this->data = new uint8_t[width*height*4];
+	std::copy(copy.data, copy.data+(width*height*4), this->data);
+}
+
 Dbimg::~Dbimg() {
 	delete[] data;
 }
