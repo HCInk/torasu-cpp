@@ -38,6 +38,7 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM
 class RenderResult;
 class ResultSegment;
+typedef std::map<std::string, DataResource*> RenderableProperties;
 
 //
 // INTERFACES
@@ -153,6 +154,7 @@ public:
 	}
 
 	virtual RenderResult* render(RenderInstruction* ri) = 0;
+	virtual RenderableProperties* getProperties() = 0;
 };
 
 //

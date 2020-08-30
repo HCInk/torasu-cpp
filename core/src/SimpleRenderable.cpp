@@ -132,6 +132,14 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 	return new RenderResult(summarizedStatus, results);
 }
 
+
+NoPropRenderable::NoPropRenderable() {}
+NoPropRenderable::~NoPropRenderable() {}
+
+RenderableProperties* NoPropRenderable::getProperties() {
+	return new RenderableProperties();
+}
+
 SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
 	: NamedIdentElement(typeIdent),
 	  SimpleDataElement(acceptData, acceptElements) {}

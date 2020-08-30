@@ -80,13 +80,25 @@ public:
 };
 
 /**
+ * @brief  Renderable without RenderablePropierties
+ */
+class NoPropRenderable : public virtual Renderable {
+protected:
+	NoPropRenderable();
+public:
+	virtual ~NoPropRenderable();
+	virtual RenderableProperties* getProperties();
+};
+
+/**
  * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
 class SimpleRenderable : public NamedIdentElement,
 	public SimpleDataElement,
-	public IndividualizedSegnentRenderable {
+	public IndividualizedSegnentRenderable,
+	public NoPropRenderable {
 
 protected:
 	explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);
