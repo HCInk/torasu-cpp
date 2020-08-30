@@ -1,11 +1,12 @@
 cmake_policy(PUSH)
 
 cmake_minimum_required (VERSION 3.0)
-
+message(${CMAKE_TOOLCHAIN_FILE})
 if(NOT TARGET torasustd)
-
 	# Meta / Settings
-
+	if(EXPORT_TORASUCORE)
+		message("LOLOLO")
+	endif()
 	project(torasu-cpp-std VERSION 0.0.4)
 	set(CMAKE_CXX_STANDARD 20)
 
@@ -38,10 +39,17 @@ if(NOT TARGET torasustd)
 
 	# Includes for current target
 
+
+	if(WIN32)
+  find_package(CURL CONFIG REQUIRED)
+     target_link_libraries(torasustd PRIVATE CURL::libcurl)
+
+ find_package(nlohmann_json CONFIG REQUIRED)
+     target_link_libraries(torasustd PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
+	else()
 	target_include_directories(torasustd PUBLIC lib/json/single_include/)
-
 	target_link_libraries(torasustd torasu curl)
-
+	endif()
 	# Installation
 
 	install(TARGETS torasustd DESTINATION lib)

@@ -10,7 +10,7 @@
 
 namespace torasu::tstd {
 
-class Rnet_file : public tools::SimpleRenderable {
+class DLL_EXPORT Rnet_file : public tools::SimpleRenderable {
 private:
 	std::string pipeline = std::string(TORASU_STD_PL_FILE);
 

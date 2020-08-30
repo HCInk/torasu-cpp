@@ -12,7 +12,7 @@
 
 namespace torasu::tstd {
 
-class Rmultiply : public tools::SimpleRenderable {
+class DLL_EXPORT Rmultiply : public tools::SimpleRenderable {
 private:
 	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
 	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);

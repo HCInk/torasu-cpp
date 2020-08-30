@@ -53,12 +53,12 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 
 	uint8_t* data = new uint8_t[dataSize];
 
-	channels[channelIndex] = (Daudio_buffer_CHANNEL) {
-		.data = data,
-		.dataSize = dataSize,
-		.sampleRate = sampleRate,
-		.sampleSize = sampleSize,
-		.format = format
+	channels[channelIndex] =  {
+		data,
+		dataSize,
+		sampleRate,
+		sampleSize,
+		format 
 	};
 
 	return data;

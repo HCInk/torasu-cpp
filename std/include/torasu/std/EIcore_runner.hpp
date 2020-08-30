@@ -11,7 +11,7 @@ namespace torasu::tstd {
 
 class EIcore_runner_object;
 
-class EIcore_runner {
+class DLL_EXPORT EIcore_runner {
 protected:
 	int32_t enqueue(EIcore_runner_object* obj);
 	int64_t interfaceIdCounter = 0;
@@ -51,7 +51,7 @@ private:
 	std::mutex resultLock;
 	RenderResult* result = NULL;
 
-	inline std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex) {
+	DLL_EXPORT inline std::vector<EIcore_runner_object*>* __cdecl getSubTaskMemory(size_t maxIndex) {
 		if (subTasks == NULL) {
 			subTasks = new std::vector<EIcore_runner_object*>(addAmmount);
 		}

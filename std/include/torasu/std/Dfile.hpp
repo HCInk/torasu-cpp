@@ -10,7 +10,7 @@
 
 namespace torasu::tstd {
 
-class Dfile : public DataResource {
+class DLL_EXPORT Dfile : public DataResource {
 private:
 	std::string ident = std::string("STD::DFILE");
 

@@ -12,7 +12,7 @@
 
 namespace torasu::tstd {
 
-class Rsubtract : public tools::SimpleRenderable {
+class DLL_EXPORT Rsubtract : public tools::SimpleRenderable {
 private:
 	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
 	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);

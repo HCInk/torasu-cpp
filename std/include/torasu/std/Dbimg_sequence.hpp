@@ -12,7 +12,7 @@
 
 namespace torasu::tstd {
 
-class Dbimg_sequence : public torasu::DataResource {
+class DLL_EXPORT Dbimg_sequence : public torasu::DataResource {
 private:
 	double time_padding;
 	std::multimap<double, torasu::tstd::Dbimg*, std::less<double>> frames;

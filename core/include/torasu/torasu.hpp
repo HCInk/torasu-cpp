@@ -7,6 +7,23 @@
 #ifndef CORE_INCLUDE_TORASU_TORASU_HPP_
 #define CORE_INCLUDE_TORASU_TORASU_HPP_
 
+#ifdef _WIN32
+#ifdef EXPORT_TORASUCORE
+#define DLL_EXPORT __declspec(dllexport)
+#pragma message ("123123132131")
+#endif
+
+#ifndef EXPORT_TORASUCORE
+
+#define DLL_EXPORT __declspec(dllimport)
+#pragma message ("4564565464")
+
+#endif
+
+#elif
+#define DLL_EXPORT
+#endif
+
 #include <string>
 #include <map>
 #include <set>
@@ -43,7 +60,7 @@ class ResultSegment;
 // INTERFACES
 //
 
-class ExecutionInterface {
+class DLL_EXPORT ExecutionInterface {
 public:
 	virtual ~ExecutionInterface() {}
 	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
@@ -76,7 +93,7 @@ enum DDDataPointerType {
 	DDDataPointerType_JSON_CSTR = 2
 };
 
-class DataDump {
+class DLL_EXPORT DataDump {
 // TODO coditional dereferencing
 private:
 	DDDataPointer data;
@@ -114,7 +131,7 @@ public:
 	}
 };
 
-class DataResource {
+class DLL_EXPORT DataResource {
 public:
 	DataResource() {}
 	virtual ~DataResource() {}
@@ -127,7 +144,7 @@ public:
 // TREE
 //
 
-class Element {
+class DLL_EXPORT Element {
 public:
 	Element() {
 	}
@@ -145,7 +162,7 @@ public:
 
 };
 
-class Renderable : public virtual Element {
+class DLL_EXPORT Renderable : public virtual Element {
 public:
 	Renderable() {
 	}
@@ -159,7 +176,7 @@ public:
 // DOWNSTREAM
 //
 
-class RenderInstruction {
+class DLL_EXPORT RenderInstruction {
 private:
 	RenderContext* rctx;
 	ResultSettings* rs;
@@ -187,7 +204,7 @@ public:
 	}
 };
 
-class ResultSegmentSettings {
+class DLL_EXPORT ResultSegmentSettings {
 private:
 	std::string pipeline;
 	std::string key;
@@ -217,7 +234,7 @@ public:
 	}
 };
 
-class ResultFormatSettings {
+class DLL_EXPORT ResultFormatSettings {
 private:
 	std::string format;
 	std::set<std::string>* tags;
@@ -308,7 +325,7 @@ enum ResultSegmentStatus {
 	ResultSegmentStatus_OK_WARN = 2
 };
 
-class ResultSegment {
+class DLL_EXPORT ResultSegment {
 private:
 	ResultSegmentStatus status;
 	DataResource* result;
@@ -354,7 +371,7 @@ public:
 
 };
 
-class RenderResult {
+class DLL_EXPORT RenderResult {
 private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;

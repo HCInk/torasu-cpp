@@ -17,11 +17,14 @@ if(NOT TARGET torasu)
 		${CMAKE_CURRENT_LIST_DIR}/src/render_tools.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/SimpleRenderable.cpp)
 	add_library(torasu SHARED ${TORASU_CORE_SRC})
-
+	target_compile_definitions(torasu PUBLIC EXPORT_TORASUCORE=1)
 	# Includes for current target
-
+if(WIN32)
+ find_package(nlohmann_json CONFIG REQUIRED)
+     target_link_libraries(torasu PRIVATE nlohmann_json nlohmann_json::nlohmann_json)
+else()
 	target_include_directories(torasu PUBLIC lib/json/single_include/)
-
+endif()
 	# Installation
 
 	install(TARGETS torasu DESTINATION lib)

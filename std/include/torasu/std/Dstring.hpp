@@ -9,7 +9,7 @@
 
 namespace torasu::tstd {
 
-class Dstring : public torasu::DataPackable {
+class DLL_EXPORT Dstring : public torasu::DataPackable {
 
 private:
 	const std::string ident = std::string("STD::DSTRING");

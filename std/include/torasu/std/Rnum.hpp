@@ -11,7 +11,7 @@
 
 namespace torasu::tstd {
 
-class Rnum : public tools::SimpleRenderable {
+class DLL_EXPORT Rnum : public tools::SimpleRenderable {
 private:
 	std::string pipeline = std::string(TORASU_STD_PL_NUM);
 

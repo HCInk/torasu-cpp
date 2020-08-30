@@ -37,7 +37,7 @@ struct Daudio_buffer_CHANNEL {
 /**Format for Daudio_buffer
  * @see Daudio_buffer
  */
-class Daudio_buffer_FORMAT : public DataPackable {
+class DLL_EXPORT Daudio_buffer_FORMAT : public DataPackable {
 
 private:
 	const std::string dataIdent = std::string("STD::DAUDIO_BUFFER");
@@ -73,7 +73,7 @@ public:
 
 /**TORASU's standard for holding raw audio
  */
-class Daudio_buffer : public DataResource {
+class DLL_EXPORT Daudio_buffer : public DataResource {
 private:
 	Daudio_buffer_CHANNEL* channels;
 	size_t channelCount;

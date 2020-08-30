@@ -11,7 +11,10 @@
 #include <string>
 
 #include <nlohmann/json.hpp>
+#ifdef _WIN32
 
+#include <optional>
+#endif
 #include "torasu.hpp"
 
 
@@ -23,7 +26,7 @@ private:
 	std::optional<nlohmann::json> parsedJson;
 	bool loaded = false;
 
-	void parse();
+	 DLL_EXPORT void __cdecl parse();
 protected:
 
 	void inline setLoaded() {
@@ -41,22 +44,22 @@ protected:
 	virtual nlohmann::json makeJson() = 0;
 
 public:
-	DataPackable();
-	explicit DataPackable(std::string initialSerializedJson);
-	explicit DataPackable(nlohmann::json initialJson);
+	DLL_EXPORT __cdecl DataPackable();
+	DLL_EXPORT explicit __cdecl DataPackable(std::string initialSerializedJson);
+	DLL_EXPORT explicit __cdecl DataPackable(nlohmann::json initialJson);
 
-	virtual ~DataPackable();
+	virtual  ~DataPackable();
 
 	DataDump* getData();
 
-	std::string inline getSerializedJson() {
+ DLL_EXPORT std::string inline __cdecl getSerializedJson() {
 		if (!serializedJson.has_value()) {
 			serializedJson = getJson().dump();
 		}
 		return serializedJson.value();
 	}
 
-	nlohmann::json inline getJson() {
+	 DLL_EXPORT nlohmann::json inline __cdecl getJson() {
 		if (!parsedJson.has_value()) {
 			if (loaded) {
 				parsedJson = makeJson();
@@ -64,7 +67,7 @@ public:
 					parsedJson.value()["ident"] = getIdent();
 				}
 			} else {
-				parse();
+		    	this->parse();
 			}
 		}
 		return parsedJson.value();
@@ -72,7 +75,7 @@ public:
 
 };
 
-class DPUniversal : public DataPackable {
+class DLL_EXPORT DPUniversal : public DataPackable {
 
 private:
 	std::optional<std::string> ident;

@@ -34,7 +34,7 @@ DataDump* Dbimg::getData() {
 Dbimg_FORMAT::Dbimg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
 Dbimg_FORMAT::Dbimg_FORMAT(nlohmann::json jsonParsed) : DataPackable(jsonParsed) {}
 
-Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height) {
+Dbimg_FORMAT::Dbimg_FORMAT(uint32_t width, uint32_t height) {
 	this->width = width;
 	this->height = height;
 }

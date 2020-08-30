@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_DBIMG_HPP_
 #define STD_INCLUDE_TORASU_STD_DBIMG_HPP_
 
+
+
 #include <string>
 #include <vector>
 
@@ -42,7 +44,7 @@ public:
 
 };
 
-class Dbimg_FORMAT : public DataPackable {
+class DLL_EXPORT Dbimg_FORMAT : public DataPackable {
 private:
 	const std::string formatIdent = std::string("STD::DBIMG");
 	const std::string ident = std::string("STD::DBIMG_F");

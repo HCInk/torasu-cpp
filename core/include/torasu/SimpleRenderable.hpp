@@ -15,7 +15,7 @@ namespace torasu::tools {
  *
  * @brief  Element with a fixed type-ident
  */
-class NamedIdentElement : public virtual Element {
+class DLL_EXPORT NamedIdentElement : public virtual Element {
 
 private:
 	std::string typeIdent;
@@ -54,7 +54,7 @@ public:
 
 	// Implement when accepting elements
 	std::map<std::string, Element*> getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	__declspec(dllexport) void __cdecl  setElement(std::string key, Element* elem) override;
 
 	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
 	void setData(DataResource* data,
@@ -68,15 +68,15 @@ public:
  *
  * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
  */
-class IndividualizedSegnentRenderable : public virtual Renderable {
+class DLL_EXPORT IndividualizedSegnentRenderable : public virtual Renderable {
 
 protected:
 	IndividualizedSegnentRenderable();
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
+	 virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
 
 public:
-	virtual ~IndividualizedSegnentRenderable();
-	RenderResult* render(RenderInstruction* ri) override;
+	 virtual ~IndividualizedSegnentRenderable();
+	 RenderResult* render(RenderInstruction* ri) override;
 };
 
 /**
@@ -84,12 +84,12 @@ public:
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
-class SimpleRenderable : public NamedIdentElement,
+class DLL_EXPORT SimpleRenderable : public NamedIdentElement,
 	public SimpleDataElement,
 	public IndividualizedSegnentRenderable {
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);
+  explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);
 
 public:
 	virtual ~SimpleRenderable();
