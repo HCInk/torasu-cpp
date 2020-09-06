@@ -75,8 +75,8 @@ void SimpleDataElement::setData(DataResource* data,
 
 }
 
-
-IndividualizedSegnentRenderable::IndividualizedSegnentRenderable() {}
+IndividualizedSegnentRenderable::IndividualizedSegnentRenderable(bool hasProperties)
+	: hasProperties(hasProperties) {}
 IndividualizedSegnentRenderable::~IndividualizedSegnentRenderable() {}
 
 RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
@@ -87,15 +87,24 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 
 	bool hasError = false;
 	bool hasWarn = false;
-
+	std::set<std::string> propertiesToGet;
+	std::map<std::string, std::string> propertyMapping;
+	std::string pipelineName;
 	for (ResultSegmentSettings* rss : *rs) {
 
 		ResultSegment* rseg;
+		pipelineName = rss->getPipeline();
+		if (hasProperties
+				&& isPropertyPipelineKey(pipelineName)) {
+			auto propertyName = pipelineKeyToPropertyKey(pipelineName);
+			propertyMapping[propertyName] = rss->getKey();
+			propertiesToGet.insert(propertyName);
+		}
 
 		try {
 			rseg = renderSegment(rss, ri);
 		} catch (const std::exception& ex) {
-			std::cerr << "SimpleRenderable error: " << ex.what() << std::endl;
+			std::cerr << "IndividualizedSegnentRenderable error: " << ex.what() << std::endl;
 			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
 			continue;
 		}
@@ -119,6 +128,15 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 
 	}
 
+
+	if (propertiesToGet.size() > 0) {
+		RenderableProperties* properties = getProperties(
+											   PropertyInstruction(&propertiesToGet, ri->getRenderContext(), ri->getExecutionInterface())
+										   );
+		transferPropertiesToResults(properties, propertyMapping, &propertiesToGet, results);
+		delete properties;
+	}
+
 	ResultStatus summarizedStatus;
 
 	if (hasError) {
@@ -132,17 +150,41 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 	return new RenderResult(summarizedStatus, results);
 }
 
+void transferPropertiesToResults(RenderableProperties* properties, std::map<std::string, std::string>& propertyMapping, std::set<std::string>* propertiesLeft, std::map<std::string, ResultSegment*>* results) {
 
-NoPropRenderable::NoPropRenderable() {}
-NoPropRenderable::~NoPropRenderable() {}
-
-RenderableProperties* NoPropRenderable::getProperties(PropertyInstruction* pi) {
-	return new RenderableProperties();
+	for (auto property : *properties) {
+		(*results)[propertyMapping[property.first]]
+			= new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_OK, property.second, true);
+	}
+	for (std::string requestedProperty : *propertiesLeft) {
+#ifdef TORASU_CHECK_PROPERTYLIST_UNOPOPED
+		if (properties->find(requestedProperty) != properties->end()) {
+			std::cerr << "Property warn: Renderable provided property \""
+					  << requestedProperty << "\" but never removed it from the property requests!" << std::endl;
+		} else {
+			(*results)[propertyMapping[requestedProperty]]
+				= new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_INVALID_SEGMENT);
+		}
+#else
+		(*results)[propertyMapping[requestedProperty]]
+			= new ResultSegment(ResultSegmentStatus::ResultSegmentStatus_INVALID_SEGMENT);
+#endif
+	}
 }
 
-SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
+RenderableProperties* IndividualizedSegnentRenderable::getProperties(PropertyInstruction pi) {
+	if (!hasProperties) {
+		return new RenderableProperties();
+	} else {
+		throw std::logic_error("IndividualizedSegnentRenderable-impl-err: getProperties(pi) is not defined,"
+							   "even though elements are set to be accepted.");
+	}
+}
+
+SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements, bool hasProperties)
 	: NamedIdentElement(typeIdent),
-	  SimpleDataElement(acceptData, acceptElements) {}
+	  SimpleDataElement(acceptData, acceptElements),
+	  IndividualizedSegnentRenderable(hasProperties) {}
 
 SimpleRenderable::~SimpleRenderable() {}
 

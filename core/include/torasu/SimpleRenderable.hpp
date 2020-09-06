@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include <torasu/torasu.hpp>
+#include <torasu/RenderableProperties.hpp>
 
 namespace torasu::tools {
 
@@ -52,7 +53,7 @@ public:
 	DataResource* getData() override;
 	void setData(DataResource* data) override;
 
-	// Implement when accepting elements
+	// Overwrite when accepting elements
 	std::map<std::string, Element*> getElements() override;
 	void setElement(std::string key, Element* elem) override;
 
@@ -69,27 +70,28 @@ public:
  * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
  */
 class IndividualizedSegnentRenderable : public virtual Renderable {
-
+private:
+	bool hasProperties;
 protected:
-	IndividualizedSegnentRenderable();
+	IndividualizedSegnentRenderable(bool hasProperties);
+	// Implement to handle the processing of render-segments
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
+	// Overwrite when serving properties
+	virtual RenderableProperties* getProperties(PropertyInstruction pi);
 
 public:
 	virtual ~IndividualizedSegnentRenderable();
 	RenderResult* render(RenderInstruction* ri) override;
 };
 
-/**
- * @brief  Renderable without RenderablePropierties
- */
-class NoPropRenderable : public virtual Renderable {
-protected:
-	NoPropRenderable();
-public:
-	virtual ~NoPropRenderable();
-	virtual RenderableProperties* getProperties(PropertyInstruction* pi);
-};
-
+void transferPropertiesToResults(RenderableProperties* properties, std::map<std::string, std::string>& propertyMapping, std::set<std::string>* propertiesLeft, std::map<std::string, ResultSegment*>* results);
+inline bool isPropertyPipelineKey(std::string& pipelineKey) {
+	return pipelineKey.length() > TORASU_PROPERTY_PREFIX_LEN &&
+		   pipelineKey.substr(0, TORASU_PROPERTY_PREFIX_LEN).find(TORASU_PROPERTY_PREFIX, 0) == 0;
+}
+inline std::string pipelineKeyToPropertyKey(std::string& isProperty) {
+	return isProperty.substr(TORASU_PROPERTY_PREFIX_LEN);
+}
 /**
  * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
  *
@@ -97,11 +99,10 @@ public:
  */
 class SimpleRenderable : public NamedIdentElement,
 	public SimpleDataElement,
-	public IndividualizedSegnentRenderable,
-	public NoPropRenderable {
+	public IndividualizedSegnentRenderable {
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData = false, bool acceptElements = false);
+	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements, bool hasProperties);
 
 public:
 	virtual ~SimpleRenderable();

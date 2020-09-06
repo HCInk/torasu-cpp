@@ -12,7 +12,7 @@ using namespace std;
 
 namespace torasu::tstd {
 
-Rnum::Rnum(double val) : SimpleRenderable("STD::RNUM", true) {
+Rnum::Rnum(double val) : SimpleRenderable("STD::RNUM", true, false, false) {
 	valdr = new Dnum(val);
 }
 

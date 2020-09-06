@@ -9,7 +9,7 @@ using namespace std;
 namespace torasu::tstd {
 
 Rnet_file::Rnet_file(std::string url)
-	: SimpleRenderable("STD::RNET_FILE", true, false) {
+	: SimpleRenderable("STD::RNET_FILE", true, false, false) {
 	this->url = url;
 }
 

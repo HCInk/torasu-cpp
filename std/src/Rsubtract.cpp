@@ -16,7 +16,7 @@ using namespace std;
 namespace torasu::tstd {
 
 Rsubtract::Rsubtract(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true) {
+	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true, false) {
 	this->a = a;
 	this->b = b;
 }

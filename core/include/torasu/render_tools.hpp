@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include <torasu/torasu.hpp>
+#include <torasu/RenderableProperties.hpp>
 
 namespace torasu::tools {
 
@@ -142,21 +143,47 @@ template<class T> inline T* getPropertyValue(RenderableProperties* props, std::s
 	if (incorrectType != nullptr) {
 		*incorrectType = true;
 	} else {
-		throw std::runtime_error(std::string("Property-value in \"") + 
-				key + std::string("\" was expected to be ") + typeid(T).name() + 
-				std::string(", but couldn't be converted to the given type."));
+		throw std::runtime_error(std::string("Property-value in \"") +
+								 key + std::string("\" was expected to be ") + typeid(T).name() +
+								 std::string(", but couldn't be converted to the given type."));
 	}
-	
+
 }
 
 inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, RenderContext* rctx = nullptr) {
+	auto* rp = new RenderableProperties();
+
 	bool dummyRctx = rctx == nullptr;
 	if (dummyRctx) {
 		rctx = new RenderContext();
 	}
-	auto* pi = new PropertyInstruction(rProps, rctx, ei);
-	auto* rp = rnd->getProperties(pi);
-	delete pi;
+
+	ResultSettings rs;
+	int32_t segmentKey = 0;
+	for (std::string propKey : rProps) {
+		ResultSegmentSettings* segSettings = new ResultSegmentSettings(TORASU_PROPERTY_PREFIX + propKey, std::to_string(segmentKey), nullptr);
+		rs.push_back(segSettings);
+		segmentKey++;
+	}
+
+	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, 0);
+	RenderResult* result = ei->fetchRenderResult(rendId);
+
+	segmentKey = 0;
+	for (std::string propKey : rProps) {
+		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];
+		if (segResult->getResult() != nullptr) {
+			if (segResult->canFreeResult()) {
+				(*rp)[propKey] = segResult->ejectResult();
+			} else {
+				throw std::runtime_error("Unejectable Properties are currently unsupported!");
+			}
+		}
+		segmentKey++;
+	}
+
+	delete result;
+
 	if (dummyRctx) {
 		delete rctx;
 	}

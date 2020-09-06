@@ -12,6 +12,13 @@
 #include <set>
 #include <vector>
 #include <utility>
+#include <stdexcept>
+
+// Warn if a property has been provided, but hasn't been removed from the requests
+#define TORASU_CHECK_PROPERTYLIST_UNOPOPED
+// Error if a property has been provided, but hasn't been removed from the requests
+#define TORASU_CHECK_FALSE_EJECTION
+
 
 int TORASU_check_core();
 
@@ -30,7 +37,6 @@ class Renderable;
 
 // DOWNSTREAM
 class RenderInstruction;
-class PropertyInstruction;
 typedef std::map<std::string, DataResource*> RenderContext; // TODO "Real" RenderContext
 class ResultFormatSettings;
 class ResultSegmentSettings;
@@ -39,7 +45,6 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM
 class RenderResult;
 class ResultSegment;
-typedef std::map<std::string, DataResource*> RenderableProperties;
 
 //
 // INTERFACES
@@ -155,7 +160,6 @@ public:
 	}
 
 	virtual RenderResult* render(RenderInstruction* ri) = 0;
-	virtual RenderableProperties* getProperties(PropertyInstruction* pi) = 0;
 };
 
 //
@@ -170,7 +174,7 @@ private:
 
 public:
 	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei)
-							: rctx(rctx), rs(rs), ei(ei) {}
+		: rctx(rctx), rs(rs), ei(ei) {}
 
 	~RenderInstruction() {}
 
@@ -183,46 +187,6 @@ public:
 	}
 
 	inline ExecutionInterface* const getExecutionInterface() {
-		return ei;
-	}
-};
-
-class PropertyInstruction {
-private:
-	std::set<std::string> rProps;
-	RenderContext* rctx;
-	ExecutionInterface* ei;
-
-public:
-	inline PropertyInstruction(std::set<std::string> rProps, RenderContext* rctx, ExecutionInterface* ei)
-							: rProps(rProps), rctx(rctx), ei(ei) {}
-
-	~PropertyInstruction() {}
-
-	inline RenderContext* const getRenderContext() const {
-		return rctx;
-	}
-
-	inline std::set<std::string>& getRequestedProperties() {
-		return rProps;
-	}
-
-	/**
-	 * @brief  Checks if a property is requested and then removes it from the list of requested properties
-	 * @param  key: The property-key to be checked
-	 * @retval true: The key was found and removed from the requests; false: the key was not found in the requests
-	 */
-	inline bool checkPopProperty(std::string key) {
-		auto found = rProps.find(key);
-		if (found != rProps.end()) {
-			rProps.erase(found);
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	inline ExecutionInterface* const getExecutionInterface() const {
 		return ei;
 	}
 };
@@ -389,6 +353,26 @@ public:
 	}
 
 	inline DataResource* const getResult() {
+		return result;
+	}
+
+	inline bool const canFreeResult() {
+		return freeResult;
+	}
+
+	/**
+	 * @brief  Ejects result to take control of manual memory management
+	 * @note   Only available if canFreeResult() = false
+	 * @retval The pointer to the result that has been ejected
+	 */
+	inline DataResource* const ejectResult() {
+#ifdef TORASU_CHECK_FALSE_EJECTION
+		if (freeResult) {
+			throw std::runtime_error("Ejected result that wasn't ejectable - canFreeResult() = false");
+		}
+#else
+		freeResult = false;
+#endif
 		return result;
 	}
 
