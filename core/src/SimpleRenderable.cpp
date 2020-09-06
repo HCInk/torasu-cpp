@@ -136,7 +136,7 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 NoPropRenderable::NoPropRenderable() {}
 NoPropRenderable::~NoPropRenderable() {}
 
-RenderableProperties* NoPropRenderable::getProperties() {
+RenderableProperties* NoPropRenderable::getProperties(PropertyInstruction* pi) {
 	return new RenderableProperties();
 }
 

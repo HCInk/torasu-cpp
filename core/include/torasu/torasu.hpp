@@ -30,6 +30,7 @@ class Renderable;
 
 // DOWNSTREAM
 class RenderInstruction;
+class PropertyInstruction;
 typedef std::map<std::string, DataResource*> RenderContext; // TODO "Real" RenderContext
 class ResultFormatSettings;
 class ResultSegmentSettings;
@@ -154,7 +155,7 @@ public:
 	}
 
 	virtual RenderResult* render(RenderInstruction* ri) = 0;
-	virtual RenderableProperties* getProperties() = 0;
+	virtual RenderableProperties* getProperties(PropertyInstruction* pi) = 0;
 };
 
 //
@@ -168,11 +169,8 @@ private:
 	ExecutionInterface* ei;
 
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei) {
-		this->rctx = rctx;
-		this->rs = rs;
-		this->ei = ei;
-	}
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei)
+							: rctx(rctx), rs(rs), ei(ei) {}
 
 	~RenderInstruction() {}
 
@@ -185,6 +183,31 @@ public:
 	}
 
 	inline ExecutionInterface* const getExecutionInterface() {
+		return ei;
+	}
+};
+
+class PropertyInstruction {
+private:
+	std::set<std::string> rProps;
+	RenderContext* rctx;
+	ExecutionInterface* ei;
+
+public:
+	inline PropertyInstruction(std::set<std::string> rProps, RenderContext* rctx, ExecutionInterface* ei)
+							: rProps(rProps), rctx(rctx), ei(ei) {}
+
+	~PropertyInstruction() {}
+
+	inline RenderContext* const getRenderContext() const {
+		return rctx;
+	}
+
+	inline std::set<std::string>& getRequestedProperties() {
+		return rProps;
+	}
+
+	inline ExecutionInterface* const getExecutionInterface() const {
 		return ei;
 	}
 };

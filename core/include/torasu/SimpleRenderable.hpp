@@ -87,7 +87,7 @@ protected:
 	NoPropRenderable();
 public:
 	virtual ~NoPropRenderable();
-	virtual RenderableProperties* getProperties();
+	virtual RenderableProperties* getProperties(PropertyInstruction* pi);
 };
 
 /**

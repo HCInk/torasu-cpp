@@ -2,6 +2,7 @@
 #define CORE_INCLUDE_TORASU_RENDER_TOOLS_HPP_
 
 #include <string>
+#include <set>
 #include <map>
 #include <vector>
 #include <sstream>
@@ -130,6 +131,37 @@ public:
 	}
 };
 
+template<class T> inline T* getPropertyValue(RenderableProperties* props, std::string key, bool* incorrectType=nullptr) {
+	torasu::DataResource* value = (*props)[key];
+	if (value == nullptr) {
+		return nullptr;
+	}
+	if (T* casted = dynamic_cast<T*>(value)) {
+		return casted;
+	}
+	if (incorrectType != nullptr) {
+		*incorrectType = true;
+	} else {
+		throw std::runtime_error(std::string("Property-value in \"") + 
+				key + std::string("\" was expected to be ") + typeid(T).name() + 
+				std::string(", but couldn't be converted to the given type."));
+	}
+	
+}
+
+inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, RenderContext* rctx = nullptr) {
+	bool dummyRctx = rctx == nullptr;
+	if (dummyRctx) {
+		rctx = new RenderContext();
+	}
+	auto* pi = new PropertyInstruction(rProps, rctx, ei);
+	auto* rp = rnd->getProperties(pi);
+	delete pi;
+	if (dummyRctx) {
+		delete rctx;
+	}
+	return rp;
+}
 
 } // namespace torasu::tools
 
