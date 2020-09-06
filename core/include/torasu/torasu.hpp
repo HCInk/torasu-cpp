@@ -207,6 +207,21 @@ public:
 		return rProps;
 	}
 
+	/**
+	 * @brief  Checks if a property is requested and then removes it from the list of requested properties
+	 * @param  key: The property-key to be checked
+	 * @retval true: The key was found and removed from the requests; false: the key was not found in the requests
+	 */
+	inline bool checkPopProperty(std::string key) {
+		auto found = rProps.find(key);
+		if (found != rProps.end()) {
+			rProps.erase(found);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	inline ExecutionInterface* const getExecutionInterface() const {
 		return ei;
 	}
