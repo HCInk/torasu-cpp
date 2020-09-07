@@ -16,7 +16,7 @@ using namespace std;
 namespace torasu::tstd {
 
 Radd::Radd(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RADD"), false, true, false) {
+	: SimpleRenderable(std::string("STD::RADD"), false, true) {
 	this->a = a;
 	this->b = b;
 }

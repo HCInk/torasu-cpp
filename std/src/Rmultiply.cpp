@@ -16,7 +16,7 @@ using namespace std;
 namespace torasu::tstd {
 
 Rmultiply::Rmultiply(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true, false) {
+	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true) {
 	this->a = a;
 	this->b = b;
 }

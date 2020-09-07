@@ -70,28 +70,16 @@ public:
  * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
  */
 class IndividualizedSegnentRenderable : public virtual Renderable {
-private:
-	bool hasProperties;
 protected:
-	IndividualizedSegnentRenderable(bool hasProperties);
+	IndividualizedSegnentRenderable();
 	// Implement to handle the processing of render-segments
 	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
-	// Overwrite when serving properties
-	virtual RenderableProperties* getProperties(PropertyInstruction pi);
 
 public:
 	virtual ~IndividualizedSegnentRenderable();
 	RenderResult* render(RenderInstruction* ri) override;
 };
 
-void transferPropertiesToResults(RenderableProperties* properties, std::map<std::string, std::string>& propertyMapping, std::set<std::string>* propertiesLeft, std::map<std::string, ResultSegment*>* results);
-inline bool isPropertyPipelineKey(std::string& pipelineKey) {
-	return pipelineKey.length() > TORASU_PROPERTY_PREFIX_LEN &&
-		   pipelineKey.substr(0, TORASU_PROPERTY_PREFIX_LEN).find(TORASU_PROPERTY_PREFIX, 0) == 0;
-}
-inline std::string pipelineKeyToPropertyKey(std::string& isProperty) {
-	return isProperty.substr(TORASU_PROPERTY_PREFIX_LEN);
-}
 /**
  * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
  *
@@ -102,7 +90,7 @@ class SimpleRenderable : public NamedIdentElement,
 	public IndividualizedSegnentRenderable {
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements, bool hasProperties);
+	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements);
 
 public:
 	virtual ~SimpleRenderable();

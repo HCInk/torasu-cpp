@@ -12,7 +12,7 @@ using namespace torasu::tools;
 
 namespace torasu::tstd {
 
-Rlocal_file::Rlocal_file(string path) : SimpleRenderable("STD::RLOCAL_FILE", true, false, false) {
+Rlocal_file::Rlocal_file(string path) : SimpleRenderable("STD::RLOCAL_FILE", true, false) {
 	this->path = path;
 }
 

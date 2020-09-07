@@ -169,6 +169,10 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, 0);
 	RenderResult* result = ei->fetchRenderResult(rendId);
 
+	for (ResultSegmentSettings* segSettings : rs) {
+		delete segSettings;
+	}
+
 	segmentKey = 0;
 	for (std::string propKey : rProps) {
 		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];

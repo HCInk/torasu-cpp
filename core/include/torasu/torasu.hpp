@@ -14,8 +14,6 @@
 #include <utility>
 #include <stdexcept>
 
-// Warn if a property has been provided, but hasn't been removed from the requests
-#define TORASU_CHECK_PROPERTYLIST_UNOPOPED
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
 
