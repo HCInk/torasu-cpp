@@ -367,12 +367,11 @@ public:
 	 */
 	inline DataResource* const ejectResult() {
 #ifdef TORASU_CHECK_FALSE_EJECTION
-		if (freeResult) {
+		if (!freeResult) {
 			throw std::runtime_error("Ejected result that wasn't ejectable - canFreeResult() = false");
 		}
-#else
-		freeResult = false;
 #endif
+		freeResult = false;
 		return result;
 	}
 
