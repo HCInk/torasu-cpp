@@ -23,7 +23,7 @@ using json = nlohmann::json;
  * DP General
 */
 
-DataPackable::DataPackable() {}
+DataPackable::DataPackable(bool loaded) : loaded(loaded) {}
 
 DataPackable::DataPackable(std::string initialSerializedJson) {
 	serializedJson = initialSerializedJson;

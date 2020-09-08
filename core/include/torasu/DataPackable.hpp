@@ -41,7 +41,7 @@ protected:
 	virtual nlohmann::json makeJson() = 0;
 
 public:
-	DataPackable();
+	DataPackable(bool loaded = true);
 	explicit DataPackable(std::string initialSerializedJson);
 	explicit DataPackable(nlohmann::json initialJson);
 

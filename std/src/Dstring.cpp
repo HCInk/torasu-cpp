@@ -14,7 +14,6 @@ Dstring::Dstring(nlohmann::json jsonParsed, bool json) : DataPackable(jsonParsed
 
 Dstring::Dstring(std::string str) {
 	this->string = str;
-	setLoaded();
 }
 
 std::string Dstring::getString() {

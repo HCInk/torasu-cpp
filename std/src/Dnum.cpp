@@ -14,7 +14,6 @@ Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
 
 Dnum::Dnum(double num) {
 	this->num = num;
-	setLoaded();
 }
 
 double Dnum::getNum() {
