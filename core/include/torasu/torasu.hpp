@@ -17,6 +17,9 @@
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
 
+// Error if a render is enqueued with a null render context
+#define TORASU_CHECK_RENDER_NULL_RCTX
+
 
 int TORASU_check_core();
 
