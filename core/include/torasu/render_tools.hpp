@@ -135,7 +135,7 @@ public:
 
 	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
 #ifdef TORASU_CHECK_RENDER_NULL_RCTX
-		if (rctx == nullptr) throw new logic_error("Can't enqueue render without a render-context");
+		if (rctx == nullptr) throw std::logic_error("Can't enqueue render without a render-context");
 #endif
 		return ei->enqueueRender(rnd, rctx, getResultSetttings(), prio);
 	}
