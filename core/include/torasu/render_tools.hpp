@@ -21,18 +21,21 @@ template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
 	ResultSegmentStatus status;
+	ResultSegment* rs;
 public:
 
 	explicit CastedRenderSegmentResult(ResultSegmentStatus status)  {
 		this->status = status;
-		this->result = NULL;
+		this->result = nullptr;
+		this->rs = nullptr;
 	}
 
 	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
+		this->rs = rs;
 		this->status = rs->getStatus();
 		DataResource* result = rs->getResult();
-		if (result == NULL) {
-			this->result = NULL;
+		if (result == nullptr) {
+			this->result = nullptr;
 		} else if (T* casted = dynamic_cast<T*>(result)) {
 			this->result = casted;
 		} else {
@@ -48,6 +51,14 @@ public:
 
 	inline T* getResult() {
 		return result;
+	}
+
+	inline bool canFreeResult() {
+		return rs ? rs->canFreeResult() : false;
+	}
+
+	inline T* ejectResult() {
+		return rs ? dynamic_cast<T*>(rs->ejectResult()) : nullptr;
 	}
 
 	inline ResultSegmentStatus getStatus() {
