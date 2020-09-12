@@ -90,7 +90,9 @@ void simpleRenderExample1() {
 
 	// Running render based on instruction
 
-	RenderResult* rr = rib.runRender(&tree, NULL, ei);
+	RenderContext rctx;
+
+	RenderResult* rr = rib.runRender(&tree, &rctx, ei);
 
 	// Finding results
 
@@ -135,7 +137,9 @@ void simpleRenderExample2() {
 
 	// Running render based on instruction
 
-	RenderResult* rr = rib.runRender(&tree, NULL, ei);
+	RenderContext rctx;
+
+	RenderResult* rr = rib.runRender(&tree, &rctx, ei);
 
 	// Finding results
 

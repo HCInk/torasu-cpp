@@ -38,7 +38,9 @@ TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 
 	// Running render based on instruction
 
-	RenderResult* rr = rib.runRender(&rnum, NULL, ei);
+	RenderContext rctx;
+
+	RenderResult* rr = rib.runRender(&rnum, &rctx, ei);
 
 	// Finding results
 
