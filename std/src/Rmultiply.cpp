@@ -150,39 +150,9 @@ map<string, Element*> Rmultiply::getElements() {
 }
 
 void Rmultiply::setElement(std::string key, Element* elem) {
-
-	if (key.compare("a") == 0) {
-
-		if (elem == NULL) {
-			throw invalid_argument("Element slot \"a\" may not be empty!");
-		}
-		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
-			a = rnd;
-			return;
-		} else {
-			throw invalid_argument("Element slot \"a\" only accepts Renderables!");
-		}
-
-	} else if (key.compare("b") == 0) {
-
-		if (elem == NULL) {
-			throw invalid_argument("Element slot \"b\" may not be empty!");
-		}
-		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
-			b = rnd;
-			return;
-		} else {
-			throw invalid_argument("Element slot \"b\" only accepts Renderables!");
-		}
-
-	} else {
-		std::ostringstream errMsg;
-		errMsg << "The element slot \""
-			   << key
-			   << "\" does not exist!";
-		throw invalid_argument(errMsg.str());
-	}
-
+	if (torasu::tools::trySetRenderableSlot("a", &a, false, key, elem)) return;
+	if (torasu::tools::trySetRenderableSlot("b", &b, false, key, elem)) return;
+	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 
 } // namespace torasu::tstd
