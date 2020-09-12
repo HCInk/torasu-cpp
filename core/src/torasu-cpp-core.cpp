@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 using namespace std;
-using json = nlohmann::json;
+using json = torasu::json;
 
 int TORASU_check_core() {
 	cout << "CORE HERE" << endl;

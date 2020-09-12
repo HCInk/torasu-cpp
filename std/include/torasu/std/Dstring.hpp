@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
@@ -18,14 +18,14 @@ private:
 
 public:
 	Dstring(std::string jsonStripped, bool json);
-	Dstring(nlohmann::json jsonParsed, bool json);
+	Dstring(torasu::json jsonParsed, bool json);
 	explicit Dstring(std::string str);
 
 	std::string getString();
 
 	virtual std::string getIdent();
 	virtual void load();
-	virtual nlohmann::json makeJson();
+	virtual torasu::json makeJson();
 };
 
 } // namespace torasu::tstd

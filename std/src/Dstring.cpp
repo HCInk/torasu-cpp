@@ -2,15 +2,15 @@
 
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 using namespace std;
-using json = nlohmann::json;
+using json = torasu::json;
 
 namespace torasu::tstd {
 
 Dstring::Dstring(std::string jsonStripped, bool json) : DataPackable(jsonStripped) {}
-Dstring::Dstring(nlohmann::json jsonParsed, bool json) : DataPackable(jsonParsed) {}
+Dstring::Dstring(torasu::json jsonParsed, bool json) : DataPackable(jsonParsed) {}
 
 Dstring::Dstring(std::string str) {
 	this->string = str;
@@ -34,7 +34,7 @@ void Dstring::load() {
 	}
 }
 
-nlohmann::json Dstring::makeJson() {
+torasu::json Dstring::makeJson() {
 	return string;
 }
 

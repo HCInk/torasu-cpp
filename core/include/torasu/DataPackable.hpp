@@ -10,7 +10,7 @@
 #include <utility>
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 #include "torasu.hpp"
 
@@ -20,7 +20,7 @@ namespace torasu {
 class DataPackable : public DataResource {
 private:
 	std::optional<std::string> serializedJson;
-	std::optional<nlohmann::json> parsedJson;
+	std::optional<torasu::json> parsedJson;
 	bool loaded = false;
 
 	void parse();
@@ -38,12 +38,12 @@ protected:
 	}
 
 	virtual void load() = 0;
-	virtual nlohmann::json makeJson() = 0;
+	virtual torasu::json makeJson() = 0;
 
 public:
 	DataPackable(bool loaded = true);
 	explicit DataPackable(std::string initialSerializedJson);
-	explicit DataPackable(nlohmann::json initialJson);
+	explicit DataPackable(torasu::json initialJson);
 
 	virtual ~DataPackable();
 
@@ -56,7 +56,7 @@ public:
 		return serializedJson.value();
 	}
 
-	nlohmann::json inline getJson() {
+	torasu::json inline getJson() {
 		if (!parsedJson.has_value()) {
 			if (loaded) {
 				parsedJson = makeJson();
@@ -79,11 +79,11 @@ private:
 
 public:
 	explicit DPUniversal(std::string jsonStripped);
-	explicit DPUniversal(nlohmann::json jsonParsed);
+	explicit DPUniversal(torasu::json jsonParsed);
 
 	virtual std::string getIdent();
 	virtual void load();
-	virtual nlohmann::json makeJson();
+	virtual torasu::json makeJson();
 
 };
 

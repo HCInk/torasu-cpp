@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
@@ -18,14 +18,14 @@ private:
 
 public:
 	explicit Dnum(std::string jsonStripped);
-	explicit Dnum(nlohmann::json jsonParsed);
+	explicit Dnum(torasu::json jsonParsed);
 	explicit Dnum(double num);
 
 	double getNum();
 
 	std::string getIdent();
 	void load();
-	nlohmann::json makeJson();
+	torasu::json makeJson();
 };
 
 } // namespace torasu::tstd

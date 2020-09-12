@@ -67,7 +67,7 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format) : bitrate(bitrate),
 	format(format) {}
 
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const nlohmann::json& initialJson) : DataPackable(initialJson) {}
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const torasu::json& initialJson) : DataPackable(initialJson) {}
 Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const std::string& initialSerializedJson) : DataPackable(
 		initialSerializedJson) {}
 
@@ -108,7 +108,7 @@ void Daudio_buffer_FORMAT::load() {
 
 }
 
-nlohmann::json Daudio_buffer_FORMAT::makeJson() {
+torasu::json Daudio_buffer_FORMAT::makeJson() {
 	return {
 		{"rate", bitrate},
 		{"fmt", format},

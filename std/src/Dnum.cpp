@@ -2,10 +2,10 @@
 
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 using namespace std;
-using json = nlohmann::json;
+using json = torasu::json;
 
 namespace torasu::tstd {
 
@@ -34,7 +34,7 @@ void Dnum::load() {
 	}
 }
 
-nlohmann::json Dnum::makeJson() {
+torasu::json Dnum::makeJson() {
 	return num;
 }
 

@@ -51,7 +51,7 @@ private:
 
 public:
 	explicit Dbimg_FORMAT(std::string jsonStripped);
-	explicit Dbimg_FORMAT(nlohmann::json jsonParsed);
+	explicit Dbimg_FORMAT(torasu::json jsonParsed);
 	Dbimg_FORMAT(uint32_t width, uint32_t height);
 
 	inline uint32_t getWidth() {
@@ -64,7 +64,7 @@ public:
 
 	std::string getIdent();
 	void load();
-	nlohmann::json makeJson();
+	torasu::json makeJson();
 
 	inline ResultFormatSettings asFormat() {
 		return ResultFormatSettings(formatIdent, NULL, this);

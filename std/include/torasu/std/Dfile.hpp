@@ -3,7 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>

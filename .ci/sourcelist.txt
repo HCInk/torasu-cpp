@@ -3,3 +3,4 @@ std/include/torasu/std/*.hpp
 core/src/*.cpp
 std/src/*.cpp
 examples/src/*.cpp
+lib/include/torasu/json.hpp

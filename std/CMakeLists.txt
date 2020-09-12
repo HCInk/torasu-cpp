@@ -36,9 +36,7 @@ if(NOT TARGET torasustd)
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-	# Includes for current target
-
-	target_include_directories(torasustd PUBLIC lib/json/single_include/)
+	# Linking libraries
 
 	target_link_libraries(torasustd torasu curl)
 

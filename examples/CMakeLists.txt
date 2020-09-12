@@ -49,8 +49,6 @@ if(NOT TARGET torasu-cpp-examples)
 
 	set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 
-	target_include_directories(torasu-cpp-test PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../lib/json/single_include/)
-
 	if(APPLE)
 
 	else()

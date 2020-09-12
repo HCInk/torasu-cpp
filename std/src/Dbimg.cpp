@@ -32,7 +32,7 @@ DataDump* Dbimg::getData() {
 }
 
 Dbimg_FORMAT::Dbimg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
-Dbimg_FORMAT::Dbimg_FORMAT(nlohmann::json jsonParsed) : DataPackable(jsonParsed) {}
+Dbimg_FORMAT::Dbimg_FORMAT(torasu::json jsonParsed) : DataPackable(jsonParsed) {}
 
 Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height) {
 	this->width = width;
@@ -58,7 +58,7 @@ void Dbimg_FORMAT::load() {
 	}
 }
 
-nlohmann::json Dbimg_FORMAT::makeJson() {
+torasu::json Dbimg_FORMAT::makeJson() {
 	return {
 		{"w", width},
 		{"h", height}

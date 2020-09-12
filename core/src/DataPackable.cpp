@@ -10,14 +10,14 @@
 #include <utility>
 #include <string>
 
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 #include "../include/torasu/torasu.hpp"
 
 namespace torasu {
 
 using namespace std;
-using json = nlohmann::json;
+using json = torasu::json;
 
 /*
  * DP General
@@ -29,7 +29,7 @@ DataPackable::DataPackable(std::string initialSerializedJson) {
 	serializedJson = initialSerializedJson;
 }
 
-DataPackable::DataPackable(nlohmann::json initialJson) {
+DataPackable::DataPackable(torasu::json initialJson) {
 	parsedJson = initialJson;
 }
 

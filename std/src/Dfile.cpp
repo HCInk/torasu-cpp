@@ -1,10 +1,10 @@
 #include "../include/torasu/std/Dfile.hpp"
 
 #include <iostream>
-#include <nlohmann/json.hpp>
+#include <torasu/json.hpp>
 
 using namespace std;
-using json = nlohmann::json;
+using json = torasu::json;
 
 namespace torasu::tstd {
 

@@ -3,11 +3,9 @@
 #include <map>
 #include <string>
 
-// Dev Dependencies
-#include <nlohmann/json.hpp>
-
 // TORASU CORE
 #include <torasu/torasu.hpp>
+#include <torasu/json.hpp>
 #include <torasu/DataPackable.hpp>
 #include <torasu/render_tools.hpp>
 
@@ -39,7 +37,7 @@ void checkLinkings() {
 
 void simpleDpTest() {
 
-	nlohmann::json dpJson  = {
+	torasu::json dpJson  = {
 		{"ident", "torasu::testdp"},
 		{"secondProp", "test"}
 	};
