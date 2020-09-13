@@ -18,7 +18,9 @@ if(NOT TARGET torasu-cpp-examples)
 	
 	set(TORASU_EXAMPLES_SRC 
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-examples.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/task-distribution-test.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/task-distribution-test.cpp
+		${CMAKE_CURRENT_LIST_DIR}/boilerplate/Dboilerplate.cpp
+		${CMAKE_CURRENT_LIST_DIR}/boilerplate/Rboilerplate.cpp)
 	add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
 	
 	set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
