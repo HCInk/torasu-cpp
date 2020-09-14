@@ -117,7 +117,7 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 			for (size_t i = 0; i < dataSize; i++) {
 				// dest[i] = (srcA[i]>>4)*(srcB[i]>>4);
 				buf = ((int16_t) srcA[i] * 0xFF) / srcB[i];
-				dest[i] = buf <= 0xFF ? buf : 0xFF; 
+				dest[i] = buf <= 0xFF ? buf : 0xFF;
 				// *dest++ = ((uint16_t) *srcA++ * *srcB++) >> 8;
 			}
 

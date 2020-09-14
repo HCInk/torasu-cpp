@@ -13,15 +13,15 @@ namespace torasu::texample {
 
 class Rboilerplate : public torasu::tools::SimpleRenderable {
 private:
-    Dboilerplate* data;
+	Dboilerplate* data;
 	Renderable* exampleRnd;
 
 protected:
-    virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
 
 public:
 	Rboilerplate(Dboilerplate* data, Renderable* exampleRnd);
-    virtual ~Rboilerplate();
+	virtual ~Rboilerplate();
 
 	std::map<std::string, Element*> getElements() override;
 	void setElement(std::string key, Element* elem) override;

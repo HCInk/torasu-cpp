@@ -38,8 +38,8 @@ void checkLinkings() {
 
 void simpleDpTest() {
 	std::cout << "//" << std::endl
-		 << "// DP Test" << std::endl
-		 << "//" << std::endl;
+			  << "// DP Test" << std::endl
+			  << "//" << std::endl;
 
 	torasu::json dpJson  = {
 		{"ident", "torasu::testdp"},

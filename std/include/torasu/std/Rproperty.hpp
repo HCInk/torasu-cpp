@@ -16,14 +16,14 @@ private:
 	std::string servedPipeline;
 
 protected:
-    virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
 
 public:
 	Rproperty(Renderable* propertySrc, std::string fromProperty, std::string servedPipeline);
 	virtual ~Rproperty();
-    
+
 	std::map<std::string, Element*> getElements() override;
-    void setElement(std::string key, Element* elem) override;
+	void setElement(std::string key, Element* elem) override;
 };
 
 } // namespace torasu::tstd

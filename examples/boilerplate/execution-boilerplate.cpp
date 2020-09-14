@@ -21,7 +21,7 @@ void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInte
 	torasu::tools::RenderInstructionBuilder rib;
 	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr /*TODO format here*/);
 
-	// Enqueueing the render with generated instruction 
+	// Enqueueing the render with generated instruction
 	auto rndId = rib.enqueueRender(tree, rctx, ei);
 
 	// Fetching the Render-Result
@@ -66,14 +66,14 @@ void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInter
 void boilerplate_execution_initializer() {
 
 	std::cout << "//" << std::endl
-		 << "// Boilerplate Execution" << std::endl
-		 << "//" << std::endl;
+			  << "// Boilerplate Execution" << std::endl
+			  << "//" << std::endl;
 
 	// Creation of tree
 
 	Dboilerplate one("TEST", 2); // Data Payload for renderable
 	torasu::tstd::Rnum two(-3); // Sub-Renderable to rendered from Rboilerplate
-	
+
 	Rboilerplate tree(&one, &two); // Root for the tree
 
 	// Creation of Runner / ExecutionInterface

@@ -3,7 +3,7 @@
 
 namespace torasu::texample {
 
-	void boilerplate_execution_initializer();
+void boilerplate_execution_initializer();
 
 } // namespace torasu::texample
 
