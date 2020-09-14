@@ -1,6 +1,9 @@
 #ifndef EXAMPLES_BOILERPLATE_RBOILERPLATE_HPP_
 #define EXAMPLES_BOILERPLATE_RBOILERPLATE_HPP_
 
+#include <map>
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 

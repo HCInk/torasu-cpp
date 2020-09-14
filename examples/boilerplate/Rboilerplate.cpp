@@ -1,8 +1,10 @@
 #include "Rboilerplate.hpp"
 
+#include <memory>
+#include <string>
+
 #include <torasu/render_tools.hpp>
 
-#include <memory>
 #include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/Dnum.hpp>
 

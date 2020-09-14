@@ -1,6 +1,9 @@
 #ifndef STD_INCLUDE_TORASU_STD_RPROPERTY_HPP_
 #define STD_INCLUDE_TORASU_STD_RPROPERTY_HPP_
 
+#include <map>
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 

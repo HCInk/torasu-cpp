@@ -41,7 +41,7 @@ protected:
 	virtual torasu::json makeJson() = 0;
 
 public:
-	DataPackable(bool loaded = true);
+	explicit DataPackable(bool loaded = true);
 	explicit DataPackable(std::string initialSerializedJson);
 	explicit DataPackable(torasu::json initialJson);
 

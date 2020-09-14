@@ -1,5 +1,7 @@
 #include "Dboilerplate.hpp"
 
+#include <string>
+
 namespace torasu::texample {
 
 Dboilerplate::Dboilerplate(std::string str, double num)

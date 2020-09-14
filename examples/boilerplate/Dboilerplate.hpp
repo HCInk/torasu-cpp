@@ -1,6 +1,8 @@
 #ifndef EXAMPLES_BOILERPLATE_DBOILERPLATE_HPP_
 #define EXAMPLES_BOILERPLATE_DBOILERPLATE_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
