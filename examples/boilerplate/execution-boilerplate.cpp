@@ -71,10 +71,10 @@ void boilerplate_execution_initializer() {
 
 	// Creation of tree
 
-	Dboilerplate one("TEST", 2); // Data Payload for renderable
+	auto* one = new Dboilerplate("TEST", 2); // Data Payload for renderable (will be managed by Renderable)
 	torasu::tstd::Rnum two(-3); // Sub-Renderable to rendered from Rboilerplate
 
-	Rboilerplate tree(&one, &two); // Root for the tree
+	Rboilerplate tree(one, &two); // Root for the tree
 
 	// Creation of Runner / ExecutionInterface
 	torasu::tstd::EIcore_runner runner;

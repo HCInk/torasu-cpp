@@ -15,7 +15,9 @@ Rboilerplate::Rboilerplate(Dboilerplate* data, Renderable* exampleRnd)
 	  data(data), exampleRnd(exampleRnd) {}
 
 
-Rboilerplate::~Rboilerplate() {}
+Rboilerplate::~Rboilerplate() {
+	delete data;
+}
 
 torasu::ResultSegment* Rboilerplate::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	std::string pipeline = resSettings->getPipeline();
