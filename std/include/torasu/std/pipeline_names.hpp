@@ -13,4 +13,7 @@
 // File-pipeline
 #define TORASU_STD_PL_FILE "STD::PFILE"
 
+// String-pipeline
+#define TORASU_STD_PL_STRING "STD::PSTRING"
+
 #endif // STD_INCLUDE_TORASU_STD_PIPELINE_NAMES_HPP_
