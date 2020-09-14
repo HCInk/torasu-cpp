@@ -36,10 +36,12 @@ torasu::json Dboilerplate::makeJson() {
 }
 
 std::string Dboilerplate::getStr() {
+	ensureLoaded();
 	return str;
 }
 
 double Dboilerplate::getNum() {
+	ensureLoaded();
 	return num;
 }
 
