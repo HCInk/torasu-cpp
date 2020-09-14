@@ -18,6 +18,7 @@
 #include <torasu/std/EIcore_runner.hpp>
 
 #include "task-distribution-test.hpp"
+#include "../boilerplate/execution-boilerplate.hpp"
 
 using namespace std;
 using namespace torasu;
@@ -36,6 +37,9 @@ void checkLinkings() {
 }
 
 void simpleDpTest() {
+	std::cout << "//" << std::endl
+		 << "// DP Test" << std::endl
+		 << "//" << std::endl;
 
 	torasu::json dpJson  = {
 		{"ident", "torasu::testdp"},
@@ -158,6 +162,8 @@ using namespace torasu::texample;
 int main(int argc, char** argv) {
 
 	checkLinkings();
+
+	boilerplate_execution_initializer();
 
 	simpleDpTest();
 
