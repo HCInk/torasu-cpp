@@ -6,7 +6,7 @@
 
 #include "Dboilerplate.hpp"
 
-namespace torasu::examples {
+namespace torasu::texample {
 
 class Rboilerplate : public torasu::tools::SimpleRenderable {
 private:
@@ -27,6 +27,6 @@ public:
 	void setData(torasu::DataResource* data) override;
 };
 
-} // namespace torasu::examples
+} // namespace torasu::texample
 
 #endif // EXAMPLES_BOILERPLATE_RBOILERPLATE_HPP_

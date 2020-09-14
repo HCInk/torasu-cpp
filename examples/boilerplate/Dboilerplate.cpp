@@ -1,6 +1,6 @@
 #include "Dboilerplate.hpp"
 
-namespace torasu::examples {
+namespace torasu::texample {
 
 Dboilerplate::Dboilerplate(std::string str, double num)
 	: str(str), num(num) {}
@@ -45,4 +45,4 @@ double Dboilerplate::getNum() {
 	return num;
 }
 
-} // namespace torasu::examples
+} // namespace torasu::texample

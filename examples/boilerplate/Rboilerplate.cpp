@@ -6,7 +6,7 @@
 #include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/Dnum.hpp>
 
-namespace torasu::examples {
+namespace torasu::texample {
 
 Rboilerplate::Rboilerplate(Dboilerplate* data, Renderable* exampleRnd)
     : SimpleRenderable("EXAMPLE::RBOILERPLATE", true, true),
@@ -73,4 +73,4 @@ void Rboilerplate::setData(torasu::DataResource* data) {
     }
 }
 
-} // namespace torasu::examples
+} // namespace torasu::texample

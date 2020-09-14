@@ -4,7 +4,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
-namespace torasu::examples {
+namespace torasu::texample {
 
 class Dboilerplate : public torasu::DataPackable {
 private:
@@ -24,6 +24,6 @@ public:
 	double getNum();
 };
 
-} // namespace torasu::examples
+} // namespace torasu::texample
 
 #endif // EXAMPLES_BOILERPLATE_DBOILERPLATE_HPP_
