@@ -15,6 +15,9 @@
 #include <torasu/std/Rnum.hpp>
 #include <torasu/std/Rmultiply.hpp>
 #include <torasu/std/Rsubtract.hpp>
+#include <torasu/std/Rjson_prop.hpp>
+#include <torasu/std/Rnet_file.hpp>
+#include <torasu/std/Dstring.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 
 #include "task-distribution-test.hpp"
@@ -155,6 +158,43 @@ void simpleRenderExample2() {
 
 }
 
+void jsonPropExample() {
+
+	//
+	// Json Prop Example
+	//
+
+	cout << "//" << endl
+		 << "// Json Prop Example" << endl
+		 << "//" << endl;
+	
+
+	torasu::tstd::Rnet_file jsonFile("https://dummy.restapiexample.com/api/v1/employee/1");
+	torasu::tstd::Rjson_prop tree("data.employee_name", &jsonFile);
+
+	// Creation of Runner / ExecutionInterface
+	torasu::tstd::EIcore_runner runner;
+	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+
+	// Creation of the instruction-builder (Defintion of segments)
+	torasu::tools::RenderInstructionBuilder rib;
+	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
+
+	// Rendering / Fetching the Render-Result
+	RenderContext rctx;
+	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
+	auto rs = resHandle.getFrom(rr.get());
+
+	// Evalulating the Result
+
+	torasu::tstd::Dstring* strData = rs.getResult();
+	if (rs.getResult() != nullptr) {
+		std::cout << "EXEC-RESULT: \"" << strData->getString() << "\" - STATUS: " << rs.getStatus() << std::endl;
+	} else {
+		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << rs.getStatus() << std::endl;
+	}
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -170,6 +210,8 @@ int main(int argc, char** argv) {
 	simpleRenderExample1();
 
 	simpleRenderExample2();
+
+	jsonPropExample();
 
 	// taskDistTest();
 
