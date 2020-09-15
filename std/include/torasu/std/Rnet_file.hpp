@@ -14,17 +14,19 @@ class Rnet_file : public tools::SimpleRenderable {
 private:
 	std::string pipeline = std::string(TORASU_STD_PL_FILE);
 
-	std::string url;
+	Renderable* urlRnd;
+	bool ownsUrl;
 
 protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
+	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
 	explicit Rnet_file(std::string url);
+	explicit Rnet_file(Renderable* url);
 	virtual ~Rnet_file();
 
-	virtual DataResource* getData();
-	virtual void setData(DataResource* data);
+	std::map<std::string, Element*> getElements() override;
+	void setElement(std::string key, Element* elem) override;
 
 };
 

@@ -15,6 +15,7 @@
 #include <torasu/std/Rnum.hpp>
 #include <torasu/std/Rmultiply.hpp>
 #include <torasu/std/Rsubtract.hpp>
+#include <torasu/std/Rstring.hpp>
 #include <torasu/std/Rjson_prop.hpp>
 #include <torasu/std/Rnet_file.hpp>
 #include <torasu/std/Dstring.hpp>
@@ -168,8 +169,8 @@ void jsonPropExample() {
 		 << "// Json Prop Example" << endl
 		 << "//" << endl;
 	
-
-	torasu::tstd::Rnet_file jsonFile("https://dummy.restapiexample.com/api/v1/employee/1");
+	torasu::tstd::Rstring url("https://dummy.restapiexample.com/api/v1/employee/1");
+	torasu::tstd::Rnet_file jsonFile(&url);
 	torasu::tstd::Rjson_prop tree("data.employee_name", &jsonFile);
 
 	// Creation of Runner / ExecutionInterface
