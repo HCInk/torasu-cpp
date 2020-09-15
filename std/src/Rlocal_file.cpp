@@ -28,6 +28,10 @@ ResultSegment* Rlocal_file::renderSegment(ResultSegmentSettings* resSettings, Re
 		ifstream ifs(path, ios::binary|ios::ate);
 		ifstream::pos_type pos = ifs.tellg();
 
+		if (pos == ifstream::pos_type(-1)) {
+			throw std::runtime_error("Failed to read file \"" + path + "\"");
+		}
+
 		uint64_t size = pos;
 		Dfile* dfile = new Dfile(size);
 
