@@ -70,8 +70,8 @@ torasu::DataResource* Rboilerplate::getData() {
 
 void Rboilerplate::setData(torasu::DataResource* data) {
 	if (auto* castedData = dynamic_cast<Dboilerplate*>(data)) {
-		delete data;
-		data = castedData;
+		delete this->data;
+		this->data = castedData;
 	} else {
 		throw std::invalid_argument("The data-type \"Dboilerplate\" is only allowed");
 	}
