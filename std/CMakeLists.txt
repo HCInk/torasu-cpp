@@ -34,7 +34,8 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Daudio_buffer.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rproperty.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/Rjson_prop.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/Rjson_prop.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rstring.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
