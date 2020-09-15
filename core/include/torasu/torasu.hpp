@@ -135,6 +135,8 @@ public:
 // TREE
 //
 
+typedef std::map<std::string, Element*> ElementMap;
+
 class Element {
 public:
 	Element() {
@@ -144,10 +146,10 @@ public:
 
 	virtual std::string getType() = 0;
 	virtual DataResource* getData() = 0;
-	virtual std::map<std::string, Element*> getElements() = 0;
+	virtual ElementMap getElements() = 0;
 
 	virtual void setData(DataResource* data,
-						 std::map<std::string, Element*> elements) = 0;
+						 ElementMap elements) = 0;
 	virtual void setData(DataResource* data) = 0;
 	virtual void setElement(std::string key, Element* elem) = 0;
 
