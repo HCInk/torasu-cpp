@@ -1,6 +1,9 @@
 #ifndef STD_INCLUDE_TORASU_STD_RJSON_PROP_HPP_
 #define STD_INCLUDE_TORASU_STD_RJSON_PROP_HPP_
 
+#include <string>
+#include <map>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 

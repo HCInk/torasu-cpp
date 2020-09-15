@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_RSTRING_HPP_
 #define STD_INCLUDE_TORASU_STD_RSTRING_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
@@ -16,7 +18,7 @@ protected:
 	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
 
 public:
-	Rstring(std::string str);
+	explicit Rstring(std::string str);
 	virtual ~Rstring();
 
 	torasu::DataResource* getData() override;

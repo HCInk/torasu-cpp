@@ -38,7 +38,7 @@ inline std::string combine(std::vector<std::string> list, size_t begin, size_t e
 	return str;
 }
 
-}
+} // namespace
 
 namespace torasu::tstd {
 
@@ -136,4 +136,4 @@ void Rjson_prop::setData(torasu::DataResource* data) {
 	}
 }
 
-}
+} // namespace torasu::tstd

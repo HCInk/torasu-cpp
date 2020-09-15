@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_RNET_FILE_HPP_
 
 #include <string>
+#include <map>
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
@@ -18,7 +19,7 @@ private:
 	bool ownsUrl;
 
 protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
+	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
 	explicit Rnet_file(std::string url);
