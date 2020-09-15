@@ -104,12 +104,17 @@ public:
  * @param  supportNull: If the slot can be set to null (if not an exception will be thrown, when null-assignments happen)
  * @param  givenKey: The key that is getting set (and which is getting set)
  * @param  givenElement: The given element to be set
+ * @param  ownsCurrent: Bool wether the element is owned: On a match true will delete the current element and set the value to false
  * @retval If the element has been set into the slot
  */
-inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSlot, bool supportNull, const std::string& givenKey, torasu::Element* givenElement) {
+inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSlot, bool supportNull, const std::string& givenKey, torasu::Element* givenElement, bool* ownsCurrent = nullptr) {
 	if (givenKey.compare(slotKey) == 0) {
 		if (givenElement == nullptr) {
 			if (supportNull) {
+				if (ownsCurrent != nullptr || *ownsCurrent) {
+					*ownsCurrent = false;
+					delete rndSlot;
+				}
 				*rndSlot = nullptr;
 				return true;
 			} else {
@@ -117,6 +122,10 @@ inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSl
 			}
 		}
 		if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(givenElement)) {
+			if (ownsCurrent != nullptr || *ownsCurrent) {
+				*ownsCurrent = false;
+				delete rndSlot;
+			}
 			*rndSlot = rnd;
 			return true;
 		} else {
