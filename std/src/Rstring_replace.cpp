@@ -25,7 +25,7 @@ inline void findAndReplaceAll(std::string* data, const std::string& toSearch, co
 namespace torasu::tstd {
 
 Rstring_replace::Rstring_replace(Renderable* src, Renderable* before, Renderable* after)
-	: SimpleRenderable("EXAMPLE::RSTRING_REPLACE", false, true),
+	: SimpleRenderable("STD::RSTRING_REPLACE", false, true),
 	  srcRnd(src), beforeRnd(before), afterRnd(after) {}
 
 
