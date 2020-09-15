@@ -1,7 +1,6 @@
 #ifndef STD_INCLUDE_TORASU_STD_RMULTIPLY_HPP_
 #define STD_INCLUDE_TORASU_STD_RMULTIPLY_HPP_
 
-#include <map>
 #include <string>
 
 #include <torasu/torasu.hpp>
@@ -21,14 +20,14 @@ private:
 	Renderable* b = NULL;
 
 protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
+	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
 	Rmultiply(Renderable* a, Renderable* b);
-	virtual ~Rmultiply();
+	~Rmultiply() override;
 
-	virtual std::map<std::string, Element*> getElements();
-	virtual void setElement(std::string key, Element* elem);
+	torasu::ElementMap getElements() override;
+	void setElement(std::string key, Element* elem) override;
 };
 
 } // namespace torasu::tstd

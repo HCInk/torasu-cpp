@@ -51,11 +51,9 @@ torasu::ResultSegment* Rboilerplate::renderSegment(torasu::ResultSegmentSettings
 	}
 }
 
-std::map<std::string, torasu::Element*> Rboilerplate::getElements() {
-	std::map<std::string, torasu::Element*> elems;
-
+torasu::ElementMap Rboilerplate::getElements() {
+	torasu::ElementMap elems;
 	elems["ex"] = exampleRnd;
-
 	return elems;
 }
 

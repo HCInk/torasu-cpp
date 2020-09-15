@@ -2,7 +2,6 @@
 #define STD_INCLUDE_TORASU_STD_RJSON_PROP_HPP_
 
 #include <string>
-#include <map>
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
@@ -17,13 +16,13 @@ private:
 	Renderable* jsonRnd;
 
 protected:
-	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	Rjson_prop(std::string path, Renderable* jsonRnd);
-	virtual ~Rjson_prop();
+	~Rjson_prop();
 
-	std::map<std::string, Element*> getElements() override;
+	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
 
 	torasu::DataResource* getData() override;

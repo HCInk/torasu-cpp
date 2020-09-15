@@ -1,7 +1,6 @@
 #ifndef STD_INCLUDE_TORASU_STD_RPROPERTY_HPP_
 #define STD_INCLUDE_TORASU_STD_RPROPERTY_HPP_
 
-#include <map>
 #include <string>
 
 #include <torasu/torasu.hpp>
@@ -16,13 +15,13 @@ private:
 	std::string servedPipeline;
 
 protected:
-	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	Rproperty(Renderable* propertySrc, std::string fromProperty, std::string servedPipeline);
-	virtual ~Rproperty();
+	~Rproperty();
 
-	std::map<std::string, Element*> getElements() override;
+	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
 };
 

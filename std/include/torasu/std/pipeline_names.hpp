@@ -25,7 +25,7 @@
  */
 #define TORASU_STD_PL_FILE "STD::PFILE"
 
-/** 
+/**
  * bief: String-pipeline
  * Default-type: Dstring
  */

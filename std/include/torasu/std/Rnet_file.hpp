@@ -2,7 +2,6 @@
 #define STD_INCLUDE_TORASU_STD_RNET_FILE_HPP_
 
 #include <string>
-#include <map>
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
@@ -24,9 +23,9 @@ protected:
 public:
 	explicit Rnet_file(std::string url);
 	explicit Rnet_file(Renderable* url);
-	virtual ~Rnet_file();
+	~Rnet_file();
 
-	std::map<std::string, Element*> getElements() override;
+	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
 
 };

@@ -2,6 +2,8 @@
 
 #include <curl/curl.h>
 
+#include <iostream>
+
 #include <torasu/render_tools.hpp>
 
 #include <torasu/std/Dfile.hpp>
@@ -14,11 +16,11 @@ namespace torasu::tstd {
 
 Rnet_file::Rnet_file(std::string url)
 	: SimpleRenderable("STD::RNET_FILE", false, true),
-	urlRnd(new torasu::tstd::Rstring(url)), ownsUrl(true) {}
+	  urlRnd(new torasu::tstd::Rstring(url)), ownsUrl(true) {}
 
 Rnet_file::Rnet_file(Renderable* url)
 	: SimpleRenderable("STD::RNET_FILE", false, true),
-	urlRnd(url), ownsUrl(false) {}
+	  urlRnd(url), ownsUrl(false) {}
 
 Rnet_file::~Rnet_file() {
 	if (ownsUrl) delete urlRnd;
@@ -35,7 +37,7 @@ size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* 
 ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
 	if (resSettings->getPipeline().compare(pipeline) == 0) {
-		
+
 		// Getting url
 
 		auto* ei = ri->getExecutionInterface();
@@ -89,8 +91,8 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 	}
 }
 
-std::map<std::string, torasu::Element*> Rnet_file::getElements() {
-	std::map<std::string, torasu::Element*> elems;
+torasu::ElementMap Rnet_file::getElements() {
+	torasu::ElementMap elems;
 
 	elems["url"] = urlRnd;
 

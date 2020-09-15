@@ -168,7 +168,7 @@ void jsonPropExample() {
 	cout << "//" << endl
 		 << "// Json Prop Example" << endl
 		 << "//" << endl;
-	
+
 	torasu::tstd::Rstring url("https://dummy.restapiexample.com/api/v1/employee/1");
 	torasu::tstd::Rnet_file jsonFile(&url);
 	torasu::tstd::Rjson_prop tree("data.employee_name", &jsonFile);

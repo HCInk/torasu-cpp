@@ -1,7 +1,6 @@
 #include "../include/torasu/std/Rnum.hpp"
 
 #include <string>
-#include <map>
 
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>

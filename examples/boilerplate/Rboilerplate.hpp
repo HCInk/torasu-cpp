@@ -1,7 +1,6 @@
 #ifndef EXAMPLES_BOILERPLATE_RBOILERPLATE_HPP_
 #define EXAMPLES_BOILERPLATE_RBOILERPLATE_HPP_
 
-#include <map>
 #include <string>
 
 #include <torasu/torasu.hpp>
@@ -17,13 +16,13 @@ private:
 	Renderable* exampleRnd;
 
 protected:
-	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	Rboilerplate(Dboilerplate* data, Renderable* exampleRnd);
-	virtual ~Rboilerplate();
+	~Rboilerplate();
 
-	std::map<std::string, Element*> getElements() override;
+	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
 
 	torasu::DataResource* getData() override;

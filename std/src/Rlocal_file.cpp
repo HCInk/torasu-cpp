@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <iostream>
 
 #include <torasu/torasu.hpp>
 #include <torasu/std/Dfile.hpp>

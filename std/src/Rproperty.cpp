@@ -30,8 +30,8 @@ torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* r
 	}
 }
 
-std::map<std::string, torasu::Element*> Rproperty::getElements() {
-	std::map<std::string, torasu::Element*> elems;
+torasu::ElementMap Rproperty::getElements() {
+	torasu::ElementMap elems;
 
 	elems["psrc"] = propertySrc;
 

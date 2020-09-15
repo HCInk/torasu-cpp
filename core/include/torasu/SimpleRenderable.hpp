@@ -2,8 +2,6 @@
 #define CORE_INCLUDE_TORASU_SIMPLERENDERABLE_HPP_
 
 #include <string>
-#include <map>
-#include <iostream>
 
 #include <torasu/torasu.hpp>
 #include <torasu/RenderableProperties.hpp>
@@ -54,12 +52,12 @@ public:
 	void setData(DataResource* data) override;
 
 	// Overwrite when accepting elements
-	std::map<std::string, Element*> getElements() override;
+	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
 
 	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
 	void setData(DataResource* data,
-				 std::map<std::string, Element*> elements) override;
+				 torasu::ElementMap elements) override;
 };
 
 /**

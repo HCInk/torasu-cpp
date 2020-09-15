@@ -1,5 +1,7 @@
 #include "../include/torasu/SimpleRenderable.hpp"
 
+#include <iostream>
+
 namespace torasu::tools {
 
 NamedIdentElement::NamedIdentElement(std::string typeIdent)
@@ -25,9 +27,9 @@ DataResource* SimpleDataElement::getData() {
 	}
 }
 
-std::map<std::string, Element*> SimpleDataElement::getElements() {
+torasu::ElementMap SimpleDataElement::getElements() {
 	if (!acceptElements) {
-		return std::map<std::string, Element*>();
+		return torasu::ElementMap();
 	} else {
 		throw std::logic_error("SimpleDataElement-impl-err: getElements(data) is not defined,"
 							   "even though elements are set to be accepted.");
@@ -53,10 +55,10 @@ void SimpleDataElement::setElement(std::string key, Element* elem) {
 }
 
 void SimpleDataElement::setData(DataResource* data,
-								std::map<std::string, Element*> elements) {
+								torasu::ElementMap elements) {
 	if (acceptElements) {
 
-		std::map<std::string, Element*> previousElements = getElements();
+		torasu::ElementMap previousElements = getElements();
 
 		for (auto elemEntry : elements) {
 			setElement(elemEntry.first, elemEntry.second);

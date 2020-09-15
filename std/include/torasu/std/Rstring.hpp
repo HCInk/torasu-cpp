@@ -15,11 +15,11 @@ private:
 	Dstring* str;
 
 protected:
-	virtual torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri);
+	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	explicit Rstring(std::string str);
-	virtual ~Rstring();
+	~Rstring();
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

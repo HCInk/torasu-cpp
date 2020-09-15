@@ -86,9 +86,9 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 		}
 
 		std::vector<std::string> path = split(pathStr, ".");
-		
-		
-		for (size_t i = 0; i < path.size();i++) {
+
+
+		for (size_t i = 0; i < path.size(); i++) {
 			if (!json.is_object()) {
 				if (i == 0) {
 					throw std::runtime_error("Root is not an object! - Dump at path: \n" + json.dump());
@@ -96,7 +96,7 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 					throw std::runtime_error("\"" + combine(path, 0, i-1, ".") + "\" is not an object! - Dump at path: \n" + json.dump());
 				}
 			}
-			
+
 			json = json[path[i]];
 		}
 
@@ -110,8 +110,8 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 	}
 }
 
-std::map<std::string, torasu::Element*> Rjson_prop::getElements() {
-	std::map<std::string, torasu::Element*> elems;
+torasu::ElementMap Rjson_prop::getElements() {
+	torasu::ElementMap elems;
 
 	elems["json"] = jsonRnd;
 
