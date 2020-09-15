@@ -15,6 +15,7 @@ private:
 	std::string pipeline = std::string(TORASU_STD_PL_FILE);
 
 	Renderable* urlRnd;
+	Renderable* headersRnd;
 	bool ownsUrl;
 
 protected:
@@ -22,7 +23,7 @@ protected:
 
 public:
 	explicit Rnet_file(std::string url);
-	explicit Rnet_file(Renderable* url);
+	explicit Rnet_file(Renderable* url, Renderable* headers=nullptr);
 	~Rnet_file();
 
 	torasu::ElementMap getElements() override;

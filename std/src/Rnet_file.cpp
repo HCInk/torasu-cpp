@@ -12,15 +12,33 @@
 
 using namespace std;
 
+namespace {
+	
+inline std::vector<std::string> split(std::string base, std::string delimiter) {
+	std::vector<std::string> final;
+	size_t pos = 0;
+	std::string token;
+	while ((pos = base.find(delimiter)) != std::string::npos) {
+		token = base.substr(0, pos);
+		final.push_back(token);
+		base.erase(0, pos + delimiter.length());
+	}
+	final.push_back(base);
+	return final;
+}
+
+} // namespace
+
+
 namespace torasu::tstd {
 
 Rnet_file::Rnet_file(std::string url)
 	: SimpleRenderable("STD::RNET_FILE", false, true),
-	  urlRnd(new torasu::tstd::Rstring(url)), ownsUrl(true) {}
+	  urlRnd(new torasu::tstd::Rstring(url)), headersRnd(nullptr), ownsUrl(true) {}
 
-Rnet_file::Rnet_file(Renderable* url)
+Rnet_file::Rnet_file(Renderable* url, Renderable* headers)
 	: SimpleRenderable("STD::RNET_FILE", false, true),
-	  urlRnd(url), ownsUrl(false) {}
+	  urlRnd(url),  headersRnd(headers), ownsUrl(false) {}
 
 Rnet_file::~Rnet_file() {
 	if (ownsUrl) delete urlRnd;
@@ -47,16 +65,34 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
 		auto renderId = rib.enqueueRender(urlRnd, rctx, ei);
+		auto renderIdHeaders = headersRnd != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
+		
+		std::string url;
+		{
+			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderId));
 
-		std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderId));
+			auto fetchedRes = segHandle.getFrom(rndRes.get());
 
-		auto fetchedRes = segHandle.getFrom(rndRes.get());
+			if (fetchedRes.getResult() == nullptr) {
+				return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
+			}
 
-		if (fetchedRes.getResult() == nullptr) {
-			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
+			url = fetchedRes.getResult()->getString();
 		}
 
-		std::string url = fetchedRes.getResult()->getString();
+		std::string headers = "";
+		if (headersRnd != nullptr) {
+			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderIdHeaders));
+
+			auto fetchedRes = segHandle.getFrom(rndRes.get());
+
+			if (fetchedRes.getResult() != nullptr) {
+				headers = fetchedRes.getResult()->getString();
+			} else {
+				// TODO Note that the renderable failed to provide the headers
+			}
+
+		}
 
 		// Running Download
 
@@ -67,11 +103,25 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
 		}
 
+		auto headerList = split(headers, "\n");
+
+		struct curl_slist* curlHeaders = nullptr;
+
+		for (auto header : headerList) {
+			if (header.length() > 0) {
+				curlHeaders = curl_slist_append(curlHeaders, header.c_str());
+			}
+		}
+
 		std::string dataout;
 		curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlHeaders);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Rnet_file_WRITE_FUNC);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dataout);
+		
 		res = curl_easy_perform(curl);
+
+		curl_slist_free_all(curlHeaders);
 		curl_easy_cleanup(curl);
 
 		if (res != CURLcode::CURLE_OK) {
