@@ -21,8 +21,8 @@ std::string Dfile::getIdent() {
 	return ident;
 }
 
-DataDump* Dfile::getData() {
-	return NULL; // TODO Dfile-getData
+DataDump* Dfile::dumpResource() {
+	return nullptr; // TODO Dfile-dumpResource
 }
 
 } // namespace torasu::tstd

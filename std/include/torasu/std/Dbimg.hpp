@@ -25,8 +25,8 @@ public:
 	Dbimg(const Dbimg& copy);
 	~Dbimg();
 
-	std::string getIdent();
-	DataDump* getData();
+	std::string getIdent() override;
+	DataDump* dumpResource() override;
 
 	inline uint32_t getWidth() {
 		return width;

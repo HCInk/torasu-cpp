@@ -26,8 +26,8 @@ std::string Dbimg_sequence::getIdent() {
 	return "STD::DBIMG_SEQUENCE";
 }
 
-DataDump* Dbimg_sequence::getData() {
-	return NULL; // TODO DataDump of DRImg
+DataDump* Dbimg_sequence::dumpResource() {
+	return nullptr; // TODO DataDump of Dbimg_sequence
 }
 
 } // namespace torasu::tstd

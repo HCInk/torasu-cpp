@@ -25,7 +25,7 @@ public:
 	std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& getFrames();
 
 	std::string getIdent() override;
-	DataDump* getData() override;
+	DataDump* dumpResource() override;
 };
 
 } // namespace torasu::tstd

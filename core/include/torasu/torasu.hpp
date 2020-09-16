@@ -109,7 +109,7 @@ public:
 	virtual ~DataResource() {}
 
 	virtual std::string getIdent() = 0;
-	virtual DataDump* getData() = 0;
+	virtual DataDump* dumpResource() = 0;
 };
 
 //

@@ -21,8 +21,8 @@ public:
 	explicit Dfile(uint64_t size);
 	~Dfile();
 
-	std::string getIdent();
-	DataDump* getData();
+	std::string getIdent() override;
+	DataDump* dumpResource() override;
 
 	inline uint8_t* getFileData() {
 		return data;

@@ -44,7 +44,7 @@ void DataPackable::parse() {
 	}
 }
 
-DataDump* DataPackable::getData() {
+DataDump* DataPackable::dumpResource() {
 
 	if (!serializedJson.has_value()) {
 		serializedJson = getJson().dump();

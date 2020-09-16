@@ -54,7 +54,7 @@ void simpleDpTest() {
 
 	std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
 
-	DataDump* dump = dpu.getData();
+	DataDump* dump = dpu.dumpResource();
 
 	if (dump->isJson()) {
 		std::cout << "data:" << dump->getData().s << std::endl;

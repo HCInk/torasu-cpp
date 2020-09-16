@@ -35,8 +35,8 @@ size_t Daudio_buffer::getChannelCount() const {
 	return channelCount;
 }
 
-DataDump* Daudio_buffer::getData() {
-	throw std::logic_error("getData() not implemented for Daudio_buffer");
+DataDump* Daudio_buffer::dumpResource() {
+	throw std::logic_error("dumpResource() not implemented for Daudio_buffer");
 }
 
 std::string Daudio_buffer::getIdent() {

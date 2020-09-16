@@ -27,8 +27,8 @@ std::string Dbimg::getIdent() {
 	return ident;
 }
 
-DataDump* Dbimg::getData() {
-	return NULL; // TODO DataDump of DRImg
+DataDump* Dbimg::dumpResource() {
+	return nullptr; // TODO DataDump of Rbimg
 }
 
 Dbimg_FORMAT::Dbimg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
