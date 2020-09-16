@@ -4,6 +4,8 @@
 
 #include "../include/torasu/std/Daudio_buffer.hpp"
 
+#define IDENT "STD::DAUDIO_BUFFER"
+
 namespace torasu::tstd {
 
 Daudio_buffer::Daudio_buffer(size_t channelCount) : channelCount(channelCount) {
@@ -40,7 +42,7 @@ DataDump* Daudio_buffer::dumpResource() {
 }
 
 std::string Daudio_buffer::getIdent() {
-	return "STD::DAUDIO_BUFFER";
+	return IDENT;
 }
 //                                                                                                                         Only delete old ref if not from instantiation
 uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t dataSize,size_t sampleSize, bool fromInit) {
@@ -64,32 +66,10 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 	return data;
 }
 
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format) : bitrate(bitrate),
-	format(format) {}
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format) : ResultFormatSettings(IDENT),  bitrate(bitrate), format(format) {}
 
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const torasu::json& initialJson) : DataPackable(initialJson) {}
-Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const std::string& initialSerializedJson) : DataPackable(
-		initialSerializedJson) {}
-
-int Daudio_buffer_FORMAT::getBitrate() const {
-	return bitrate;
-}
-
-Daudio_buffer_CHFMT Daudio_buffer_FORMAT::getFormat() const {
-	return format;
-}
-
-void Daudio_buffer_FORMAT::setBitrate(int bitrate) {
-	Daudio_buffer_FORMAT::bitrate = bitrate;
-}
-
-void Daudio_buffer_FORMAT::setFormat(Daudio_buffer_CHFMT format) {
-	Daudio_buffer_FORMAT::format = format;
-}
-
-std::string Daudio_buffer_FORMAT::getIdent() {
-	return formatIdent;
-}
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const torasu::json& initialJson) :  ResultFormatSettings(IDENT), DataPackable(initialJson) {}
+Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const std::string& initialSerializedJson) : ResultFormatSettings(IDENT), DataPackable(initialSerializedJson) {}
 
 void Daudio_buffer_FORMAT::load() {
 	auto json = getJson();

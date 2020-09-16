@@ -14,8 +14,6 @@ class Dbimg_FORMAT;
 
 class Dbimg : public DataResource {
 private:
-	std::string ident = std::string("STD::DBIMG");
-
 	uint8_t* data;
 	uint32_t width, height;
 
@@ -42,17 +40,14 @@ public:
 
 };
 
-class Dbimg_FORMAT : public DataPackable {
+class Dbimg_FORMAT : public ResultFormatSettings, public DataPackable {
 private:
-	const std::string formatIdent = std::string("STD::DBIMG");
-	const std::string ident = std::string("STD::DBIMG_F");
-
 	uint32_t width, height;
 
 public:
-	explicit Dbimg_FORMAT(std::string jsonStripped);
-	explicit Dbimg_FORMAT(torasu::json jsonParsed);
 	Dbimg_FORMAT(uint32_t width, uint32_t height);
+	explicit Dbimg_FORMAT(const torasu::json& jsonParsed);
+	explicit Dbimg_FORMAT(const std::string& jsonStripped);
 
 	inline uint32_t getWidth() {
 		return width;
@@ -62,13 +57,8 @@ public:
 		return height;
 	}
 
-	std::string getIdent();
-	void load();
-	torasu::json makeJson();
-
-	inline ResultFormatSettings asFormat() {
-		return ResultFormatSettings(formatIdent, NULL, this);
-	}
+	void load() override;
+	torasu::json makeJson() override;
 
 };
 

@@ -2,6 +2,8 @@
 
 using namespace std;
 
+#define IDENT "STD::DBIMG"
+
 namespace torasu::tstd {
 
 Dbimg::Dbimg(Dbimg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
@@ -24,24 +26,17 @@ Dbimg::~Dbimg() {
 }
 
 std::string Dbimg::getIdent() {
-	return ident;
+	return IDENT;
 }
 
 DataDump* Dbimg::dumpResource() {
 	return nullptr; // TODO DataDump of Rbimg
 }
 
-Dbimg_FORMAT::Dbimg_FORMAT(std::string jsonStripped) : DataPackable(jsonStripped) {}
-Dbimg_FORMAT::Dbimg_FORMAT(torasu::json jsonParsed) : DataPackable(jsonParsed) {}
+Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height)  : ResultFormatSettings(IDENT), width(width), height(height) {}
 
-Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height) {
-	this->width = width;
-	this->height = height;
-}
-
-std::string Dbimg_FORMAT::getIdent() {
-	return ident;
-}
+Dbimg_FORMAT::Dbimg_FORMAT(const torasu::json& jsonParsed) : ResultFormatSettings(IDENT), DataPackable(jsonParsed) {}
+Dbimg_FORMAT::Dbimg_FORMAT(const std::string& jsonStripped) : ResultFormatSettings(IDENT), DataPackable(jsonStripped) {}
 
 void Dbimg_FORMAT::load() {
 	auto json = getJson();

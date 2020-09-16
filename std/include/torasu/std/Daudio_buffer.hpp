@@ -37,12 +37,9 @@ struct Daudio_buffer_CHANNEL {
 /**Format for Daudio_buffer
  * @see Daudio_buffer
  */
-class Daudio_buffer_FORMAT : public DataPackable {
+class Daudio_buffer_FORMAT : public ResultFormatSettings, public DataPackable {
 
 private:
-	const std::string dataIdent = std::string("STD::DAUDIO_BUFFER");
-	const std::string formatIdent = std::string("STD::DAUDIO_BUFFER_F");
-
 	int bitrate;
 	Daudio_buffer_CHFMT format;
 
@@ -53,20 +50,16 @@ public:
 	explicit Daudio_buffer_FORMAT(const torasu::json& initialJson);
 	explicit Daudio_buffer_FORMAT(const std::string& initialSerializedJson);
 
-	int getBitrate() const;
-	Daudio_buffer_CHFMT getFormat() const;
+	inline int getBitrate() const  {
+		return bitrate;
+	}
 
-	void setBitrate(int bitrate);
-	void setFormat(Daudio_buffer_CHFMT format);
-
-	std::string getIdent() override;
+	inline Daudio_buffer_CHFMT getFormat() const {
+		return format;
+	}
 
 	void load() override;
 	torasu::json makeJson() override;
-
-	inline ResultFormatSettings asFormat() {
-		return ResultFormatSettings(formatIdent, NULL, this);
-	}
 
 };
 

@@ -17,7 +17,7 @@
 
 namespace torasu {
 
-class DataPackable : public DataResource {
+class DataPackable : public virtual DataResource {
 private:
 	std::optional<std::string> serializedJson;
 	std::optional<torasu::json> parsedJson;

@@ -71,14 +71,12 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {
 		Dbimg_FORMAT* fmt;
 		if ( !( resSettings->getResultFormatSettings() != NULL
-				&& resSettings->getResultFormatSettings()->getFormat() == "STD::DBIMG"
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings()->getData())) )) {
+				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings())) )) {
 			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
 		}
 
 		tools::RenderInstructionBuilder rib;
-		auto fmtHandle = fmt->asFormat();
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, &fmtHandle);
+		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, fmt);
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();

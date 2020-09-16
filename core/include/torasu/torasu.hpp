@@ -205,32 +205,22 @@ public:
 	}
 };
 
-class ResultFormatSettings {
+#define TORASU_FORMAT_PREFIX "F#"
+
+class ResultFormatSettings : public virtual DataResource {
 private:
-	std::string format;
-	std::set<std::string>* tags;
-	DataResource* data;
+	std::string ident;
 public:
-	inline ResultFormatSettings(std::string format, std::set<std::string>* tags,
-								DataResource* data) {
-		this->format = format;
-		this->tags = tags;
-		this->data = data;
-	}
-	~ResultFormatSettings() {
+	ResultFormatSettings(std::string dataType)
+		: ident(TORASU_FORMAT_PREFIX + dataType) {}
+	virtual ~ResultFormatSettings() {}
 
+	std::string getIdent() override {
+		return ident;
 	}
 
-	inline std::string const getFormat() {
-		return format;
-	}
-
-	inline std::set<std::string>* const getTags() {
-		return tags;
-	}
-
-	inline DataResource* const getData() {
-		return data;
+	virtual std::set<std::string> const getTags() {
+		return std::set<std::string>();
 	}
 
 };
