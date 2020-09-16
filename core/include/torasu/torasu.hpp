@@ -13,6 +13,7 @@
 #include <vector>
 #include <utility>
 #include <stdexcept>
+#include <functional>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -69,39 +70,19 @@ union DDDataPointer {
 	const char* s;
 };
 
-/**
- * @brief Defines how the DD
- */
-enum DDDataPointerType {
-	/**unsigned char*
-	 */
-	DDDataPointerType_BINARY = 0,
-	/**const char*
-	 */
-	DDDataPointerType_CSTR = 1,
-	/**const char* (json conform)
-	 */
-	DDDataPointerType_JSON_CSTR = 2
-};
-
 class DataDump {
-// TODO coditional dereferencing
 private:
 	DDDataPointer data;
 	int size;
-	DDDataPointerType format;
-	void (*freeFunc)(DataDump* data);
+	std::function<void(DataDump*)>* freeFunc;
+	bool json;
 public:
-	inline DataDump(DDDataPointer data, int size, DDDataPointerType format, void (*freeFunc)(DataDump* data)) {
-		this->data = data;
-		this->size = size;
-		this->format = format;
-		this->freeFunc = freeFunc;
-	}
+	inline DataDump(DDDataPointer data, int size, std::function<void(DataDump*)>* freeFunc, bool isJson = false)
+		: data(data), size(size), freeFunc(freeFunc), json(isJson) {}
 
 	~DataDump() {
-		if (freeFunc != NULL) {
-			freeFunc(this);
+		if (freeFunc != nullptr) {
+			(*freeFunc)(this);
 		}
 	}
 
@@ -113,12 +94,12 @@ public:
 		return size;
 	}
 
-	inline DDDataPointerType getFormat() {
-		return format;
+	inline bool isJson() {
+		return json;
 	}
 
 	inline DataDump* newReference() {
-		return new DataDump(data, size, format, freeFunc);
+		return new DataDump(data, size, nullptr, json);
 	}
 };
 

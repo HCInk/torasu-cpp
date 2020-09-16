@@ -55,8 +55,7 @@ DataDump* DataPackable::getData() {
 	DDDataPointer pointer;
 	pointer.s = serJson_cStr;
 
-	return new DataDump(pointer, strlen(serJson_cStr),
-						DDDataPointerType::DDDataPointerType_JSON_CSTR, NULL);
+	return new DataDump(pointer, strlen(serJson_cStr), nullptr, true);
 }
 
 /*

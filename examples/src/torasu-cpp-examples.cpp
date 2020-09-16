@@ -56,10 +56,10 @@ void simpleDpTest() {
 
 	DataDump* dump = dpu.getData();
 
-	if (dump->getFormat() == DDDataPointerType::DDDataPointerType_JSON_CSTR) {
+	if (dump->isJson()) {
 		std::cout << "data:" << dump->getData().s << std::endl;
 	} else {
-		std::cerr << "unexpected DDDPT" << std::endl;
+		std::cerr << "Data is not JSON!" << std::endl;
 	}
 	delete dump;
 
