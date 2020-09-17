@@ -21,6 +21,8 @@
 // Error if a render is enqueued with a null render context
 #define TORASU_CHECK_RENDER_NULL_RCTX
 
+// Error if objects which support manual initialisation via a seperate functions are initialized twice
+#define TORASU_CHECK_DOUBLE_INIT
 
 int TORASU_check_core();
 
@@ -125,6 +127,14 @@ public:
 		if (owns()) {
 			delete dr;
 		}
+	}
+	
+	inline void initialize(DataResource* dr, bool owning) {
+#ifdef TORASU_CHECK_DOUBLE_INIT
+		if (this->dr != nullptr) throw std::logic_error("DataResourceHolder may not be intialized twice!");
+#endif
+		this->dr = dr;
+		this->owning = owning;
 	}
 
 	inline bool owns() const {

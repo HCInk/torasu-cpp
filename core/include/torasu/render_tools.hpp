@@ -147,7 +147,7 @@ public:
 };
 
 template<class T> inline T* getPropertyValue(RenderableProperties* props, std::string key, bool* incorrectType=nullptr) {
-	torasu::DataResourceHolder holder = (*props)[key];
+	auto& holder = (*props)[key];
 	if (holder.get() == nullptr) {
 		return nullptr;
 	}
@@ -191,9 +191,12 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 	for (std::string propKey : rProps) {
 		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];
 		if (segResult->getResult() != nullptr) {
-			(*rp)[propKey] = segResult->canFreeResult() ? 
-				DataResourceHolder(segResult->ejectResult(), true) :
-				DataResourceHolder(segResult->getResult(), false);
+			auto& dr = (*rp)[propKey]; 
+			if (segResult->canFreeResult()) {
+				dr.initialize(segResult->ejectResult(), true);
+			} else {
+				dr.initialize(segResult->getResult(), false);
+			}
 		}
 		segmentKey++;
 	}

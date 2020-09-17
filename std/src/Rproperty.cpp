@@ -18,7 +18,7 @@ Rproperty::~Rproperty() {}
 torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	if (resSettings->getPipeline() == servedPipeline) {
 		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc, { fromProperty }, ri->getExecutionInterface(), ri->getRenderContext());
-		torasu::DataResourceHolder holder = (*rp)[fromProperty];
+		auto& holder = (*rp)[fromProperty];
 		bool owns = holder.owns();
 		torasu::DataResource* value = owns ? holder.eject() : holder.get();
 		delete rp;
