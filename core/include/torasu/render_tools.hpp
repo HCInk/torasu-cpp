@@ -147,11 +147,11 @@ public:
 };
 
 template<class T> inline T* getPropertyValue(RenderableProperties* props, std::string key, bool* incorrectType=nullptr) {
-	torasu::DataResource* value = (*props)[key];
-	if (value == nullptr) {
+	torasu::DataResourceHolder holder = (*props)[key];
+	if (holder.get() == nullptr) {
 		return nullptr;
 	}
-	if (T* casted = dynamic_cast<T*>(value)) {
+	if (T* casted = dynamic_cast<T*>(holder.get())) {
 		return casted;
 	}
 	if (incorrectType != nullptr) {
@@ -191,11 +191,9 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 	for (std::string propKey : rProps) {
 		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];
 		if (segResult->getResult() != nullptr) {
-			if (segResult->canFreeResult()) {
-				(*rp)[propKey] = segResult->ejectResult();
-			} else {
-				throw std::runtime_error("Unejectable Properties are currently unsupported!");
-			}
+			(*rp)[propKey] = segResult->canFreeResult() ? 
+				DataResourceHolder(segResult->ejectResult(), true) :
+				DataResourceHolder(segResult->getResult(), false);
 		}
 		segmentKey++;
 	}

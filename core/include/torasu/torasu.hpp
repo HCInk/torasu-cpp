@@ -32,6 +32,7 @@ class ExecutionInterface;
 // DATA
 class DataDump;
 class DataResource;
+class DataResourceHolder;
 
 // TREE
 class Element;
@@ -110,6 +111,47 @@ public:
 
 	virtual std::string getIdent() = 0;
 	virtual DataDump* dumpResource() = 0;
+};
+
+class DataResourceHolder {
+private:
+	DataResource* dr;
+	bool owning;
+
+public:
+	DataResourceHolder() : dr(nullptr), owning(false) {}
+	DataResourceHolder(DataResource* dr, bool owning) : dr(dr), owning(owning) {}
+	~DataResourceHolder() {
+		if (owns()) {
+			delete dr;
+		}
+	}
+
+	inline bool owns() const {
+		return owning;
+	}
+
+	inline DataResource* const get() const {
+		return dr;
+	}
+
+	/**
+	 * @brief  Ejects the data to take control of manual memory management
+	 * @note   Only available if owns() = true
+	 * @retval The pointer to the result that has been ejected
+	 */
+	inline DataResource* const eject() {
+#ifdef TORASU_CHECK_FALSE_EJECTION
+		if (!owns()) {
+			throw std::runtime_error("Ejected result that wasn't ejectable - owns() = false");
+		}
+#endif
+		owning = false;
+		return dr;
+	}
+
+	
+
 };
 
 //
@@ -289,8 +331,8 @@ enum ResultSegmentStatus {
 class ResultSegment {
 private:
 	ResultSegmentStatus status;
-	DataResource* result;
-	bool freeResult;
+	DataResourceHolder result;
+
 public:
 
 	/**
@@ -298,11 +340,8 @@ public:
 	 * @note  This constructor should only be used if a result wasn't generated
 	 * @param  status: Calculation-status of the segment
 	 */
-	explicit inline ResultSegment(ResultSegmentStatus status) {
-		this->status = status;
-		this->result = NULL;
-		this->freeResult = false;
-	}
+	explicit inline ResultSegment(ResultSegmentStatus status)
+		: status(status), result() {}
 
 	/**
 	 * @brief  Creates a ResultSegment
@@ -310,43 +349,30 @@ public:
 	 * @param  result: The result of the calculation of the segment
 	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
 	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult) {
-		this->status = status;
-		this->result = result;
-		this->freeResult = freeResult;
-	}
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult) 
+		: status(status), result(result, freeResult) {}
 
-	~ResultSegment() {
-		if (freeResult) {
-			delete result;
-		}
-	}
+	~ResultSegment() {}
 
 	inline ResultSegmentStatus const getStatus() {
 		return status;
 	}
 
 	inline DataResource* const getResult() {
-		return result;
+		return result.get();
 	}
 
 	inline bool const canFreeResult() {
-		return freeResult;
+		return result.owns();
 	}
 
 	/**
 	 * @brief  Ejects result to take control of manual memory management
-	 * @note   Only available if canFreeResult() = false
+	 * @note   Only available if canFreeResult() = true
 	 * @retval The pointer to the result that has been ejected
 	 */
 	inline DataResource* const ejectResult() {
-#ifdef TORASU_CHECK_FALSE_EJECTION
-		if (!freeResult) {
-			throw std::runtime_error("Ejected result that wasn't ejectable - canFreeResult() = false");
-		}
-#endif
-		freeResult = false;
-		return result;
+		return result.eject();
 	}
 
 };

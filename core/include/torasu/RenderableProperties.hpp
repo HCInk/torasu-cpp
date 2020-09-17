@@ -12,7 +12,7 @@
 
 namespace torasu {
 
-typedef std::map<std::string, DataResource*> RenderableProperties;
+typedef std::map<std::string, DataResourceHolder> RenderableProperties;
 
 inline bool isPipelineKeyPropertyKey(const std::string& pipelineKey) {
 	return pipelineKey.length() > TORASU_PROPERTY_PREFIX_LEN &&

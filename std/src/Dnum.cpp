@@ -12,9 +12,9 @@ namespace torasu::tstd {
 Dnum::Dnum(string jsonStripped) : DataPackable(jsonStripped) {}
 Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
 
-Dnum::Dnum(double num) {
-	this->num = num;
-}
+Dnum::Dnum(double num) : num(num) {}
+
+Dnum::~Dnum() {}
 
 double Dnum::getNum() {
 	ensureLoaded();

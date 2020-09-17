@@ -21,6 +21,8 @@ public:
 	explicit Dnum(torasu::json jsonParsed);
 	explicit Dnum(double num);
 
+	virtual ~Dnum();
+
 	double getNum();
 
 	std::string getIdent();
