@@ -1,6 +1,7 @@
 #include "../include/torasu/std/EIcore_runner.hpp"
 
 #include <sstream>
+#include <memory>
 
 using namespace std;
 
@@ -60,6 +61,20 @@ EIcore_runner_object::~EIcore_runner_object() {
 }
 
 void EIcore_runner_object::run() {
+	std::vector<std::string> ops;
+	for (auto& rss : *rs) {
+		ops.push_back(rss->getPipeline());
+	}
+
+	ReadyRequest rdyRequest(ops, rctx);
+	std::unique_ptr<ReadyObjects> rdyObjs(rnd->requestReady(rdyRequest));
+
+	bool makeReady = rdyObjs.get()->size() > 0;
+
+	if (makeReady) {
+		ReadyInstruction rdyInstr(*rdyObjs.get(), this);
+		rnd->ready(rdyInstr);
+	}
 
 	RenderInstruction ri(rctx, rs, this);
 
@@ -68,6 +83,11 @@ void EIcore_runner_object::run() {
 	resultLock.lock();
 	result = res;
 	resultLock.unlock();
+	
+	if (makeReady) {
+		UnreadyInstruction urdyInstr(*rdyObjs.get());
+		rnd->unready(urdyInstr);
+	}
 }
 
 RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
