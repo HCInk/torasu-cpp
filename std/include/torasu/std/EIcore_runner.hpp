@@ -83,6 +83,42 @@ public:
 	friend class EIcore_runner;
 };
 
+enum EIcore_runner_rdystate_LOADSTATE {
+	NOT_LAODED,
+	LOADING,
+	LOADED
+};
+
+class EIcore_runner_rdystate {
+public:
+	uint64_t useCount = 0;
+	EIcore_runner_rdystate_LOADSTATE loaded = NOT_LAODED;
+};
+
+class EIcore_runner_elemhandler {
+private:
+	Element* elem;
+ 	EIcore_runner* parent;
+	std::mutex readyStatesLock; // Lock for readyStates and its contents
+	std::map<ReadyObject, EIcore_runner_rdystate> readyStates;
+
+public:
+	static inline EIcore_runner_elemhandler* getHandler(Element* elem, EIcore_runner* parent) {
+		elem->elementExecutionOpaqueLock.lock();
+		if (elem->elementExecutionOpaque == nullptr) {
+			elem->elementExecutionOpaque = new EIcore_runner_elemhandler(elem, parent);
+		}
+		elem->elementExecutionOpaqueLock.unlock();
+		return reinterpret_cast<EIcore_runner_elemhandler*>(elem->elementExecutionOpaque);
+	}
+
+	EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent);
+	~EIcore_runner_elemhandler();
+
+	void readyElement(const ReadyObjects& toReady, ExecutionInterface* ei);
+	void unreadyElement(const ReadyObjects& toUnready);
+};
+
 } // namespace torasu::tstd
 
 #endif // STD_INCLUDE_TORASU_STD_EICORE_RUNNER_HPP_

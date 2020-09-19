@@ -2,6 +2,8 @@
 
 #include <sstream>
 #include <memory>
+#include <thread>
+#include <chrono>
 
 using namespace std;
 
@@ -66,14 +68,15 @@ void EIcore_runner_object::run() {
 		ops.push_back(rss->getPipeline());
 	}
 
+	auto* handler = EIcore_runner_elemhandler::getHandler(rnd, runner);
+
 	ReadyRequest rdyRequest(ops, rctx);
 	std::unique_ptr<ReadyObjects> rdyObjs(rnd->requestReady(rdyRequest));
 
 	bool makeReady = rdyObjs.get() != nullptr;
 
 	if (makeReady) {
-		ReadyInstruction rdyInstr(*rdyObjs.get(), this);
-		rnd->ready(rdyInstr);
+		handler->readyElement(*rdyObjs.get(), this);
 	}
 
 	RenderInstruction ri(rctx, rs, this);
@@ -85,8 +88,7 @@ void EIcore_runner_object::run() {
 	resultLock.unlock();
 	
 	if (makeReady) {
-		UnreadyInstruction urdyInstr(*rdyObjs.get());
-		rnd->unready(urdyInstr);
+		handler->unreadyElement(*rdyObjs.get());
 	}
 }
 
@@ -168,5 +170,107 @@ RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
 	}
 
 }
+
+//
+// EIcore_runner_elemhandler
+//
+
+EIcore_runner_elemhandler::EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent) 
+	: elem(elem), parent(parent) {}
+
+EIcore_runner_elemhandler::~EIcore_runner_elemhandler() {}
+
+void EIcore_runner_elemhandler::readyElement(const ReadyObjects& toReady, ExecutionInterface* ei) {
+	
+	// Index for what objects are
+	//	LOADED: Already ready
+	//	LOADING: Are currently being made ready
+	// 	NOT_LOADED: Are not yet loaded
+
+	ReadyObjects toWait;
+	ReadyObjects toMakeReady;
+
+	readyStatesLock.lock();
+	for (ReadyObject rdyObj : toReady) {
+		EIcore_runner_rdystate& rdyState = readyStates[rdyObj];
+		rdyState.useCount++;
+
+		switch (rdyState.loaded) {
+		case LOADED:
+			break;
+		case NOT_LAODED:
+			toMakeReady.push_back(rdyObj);
+			rdyState.useCount = LOADING;
+			break;
+		case LOADING:
+			toWait.push_back(rdyObj);
+			break;
+		}
+	}
+	readyStatesLock.unlock();
+
+	// Make NOT_LOADED objects ready
+
+	ReadyInstruction rdyInstr(toReady, ei);
+	elem->ready(rdyInstr);
+
+	// Notifiy about the newly made ready elements
+
+	readyStatesLock.lock();
+	for (ReadyObject rdyObj : toMakeReady) {
+		readyStates[rdyObj].loaded = LOADED;
+	}
+	readyStatesLock.unlock();
+
+	// Wait for the LOADING elements
+
+	if (toWait.size() > 0) {
+		auto waitIt = toWait.begin();
+		EIcore_runner_rdystate* rdyState = nullptr;
+		while (true) {
+			readyStatesLock.lock();
+			if (rdyState == nullptr) {
+				rdyState = &readyStates[*waitIt];
+			}
+
+			bool loaded = rdyState->loaded == LOADED;
+
+			readyStatesLock.unlock();
+			if (loaded) {
+				waitIt++;
+				if (waitIt == toWait.end()) {
+					break;
+				}
+			} else {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+	}
+
+	// Finished waiting, desired ready-state is now achieved!
+
+}
+
+void EIcore_runner_elemhandler::unreadyElement(const ReadyObjects& toUnready) {
+
+	ReadyObjects toMakeUnready;
+
+	readyStatesLock.lock();
+
+	for (ReadyObject rdyObj : toUnready) {
+		EIcore_runner_rdystate& rdyState = readyStates[rdyObj];
+		rdyState.useCount--;
+		if (rdyState.useCount <= 0) {
+			rdyState.loaded = NOT_LAODED;
+			toMakeUnready.push_back(rdyObj);
+		}
+	}
+
+	UnreadyInstruction uri(toMakeUnready);
+	elem->unready(uri);
+
+	readyStatesLock.unlock();
+}
+
 
 } // namespace torasu::tstd
