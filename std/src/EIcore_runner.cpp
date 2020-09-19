@@ -69,7 +69,7 @@ void EIcore_runner_object::run() {
 	ReadyRequest rdyRequest(ops, rctx);
 	std::unique_ptr<ReadyObjects> rdyObjs(rnd->requestReady(rdyRequest));
 
-	bool makeReady = rdyObjs.get()->size() > 0;
+	bool makeReady = rdyObjs.get() != nullptr;
 
 	if (makeReady) {
 		ReadyInstruction rdyInstr(*rdyObjs.get(), this);
