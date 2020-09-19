@@ -40,16 +40,29 @@ class DataResourceHolder;
 class Element;
 class Renderable;
 
-// DOWNSTREAM
+// DOWNSTREAM (RENDER)
 class RenderInstruction;
 typedef std::map<std::string, DataResource*> RenderContext; // TODO "Real" RenderContext
 class ResultFormatSettings;
 class ResultSegmentSettings;
 typedef std::vector<ResultSegmentSettings*> ResultSettings;
 
-// UPSTREAM
+// UPSTREAM (RENDER)
 class RenderResult;
 class ResultSegment;
+
+// HELPER (READY)
+typedef uint64_t ReadyObject;
+typedef std::vector<ReadyObject> ReadyObjects;
+
+// DOWNSTREAM (READY)
+class ReadyRequest;
+class ReadyInstruction;
+class UnreadyInstruction;
+
+// UPSTREAM (READY)
+class ObjectReadyResult;
+typedef std::vector<ObjectReadyResult> ElementReadyResult;
 
 //
 // INTERFACES
@@ -177,6 +190,10 @@ public:
 	virtual ~Element() {
 	}
 
+	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
+	virtual ElementReadyResult* ready(const ReadyInstruction& ri) = 0;
+	virtual void unready(const UnreadyInstruction& uri) = 0;
+
 	virtual std::string getType() = 0;
 	virtual DataResource* getData() = 0;
 	virtual ElementMap getElements() = 0;
@@ -199,7 +216,7 @@ public:
 };
 
 //
-// DOWNSTREAM
+// DOWNSTREAM (RENDER)
 //
 
 class RenderInstruction {
@@ -278,7 +295,7 @@ public:
 };
 
 //
-// Upstream
+// Upstream (RENDER)
 //
 
 enum ResultStatus {
@@ -418,6 +435,91 @@ public:
 
 	inline std::map<std::string, ResultSegment*>* const getResults() {
 		return results;
+	}
+};
+
+//
+// DOWNSTREAM (READY)
+//
+
+/**
+ * @brief  Request to fetch which objects need to be made ready to run a desired task (ReadyObjects)
+ */
+class ReadyRequest {
+private: 
+	std::vector<std::string> ops;
+	RenderContext* rctx;
+public:
+	inline ReadyRequest(std::vector<std::string> ops, RenderContext* rctx) 
+		: ops(ops), rctx(rctx)  {}
+	~ReadyRequest() {}
+
+	inline std::vector<std::string>& getOpeations() {
+		return ops;
+	}
+
+	inline RenderContext* getRenderContext() {
+		return rctx;
+	}
+};
+
+/**
+ * @brief  Instruction to make an Element ready
+ */
+class ReadyInstruction {
+private:
+	ReadyObjects objects;
+	ExecutionInterface* ei;
+
+public:
+	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei) 
+		: objects(objects), ei(ei) {}
+	~ReadyInstruction();
+
+	inline ReadyObjects& getObjects() {
+		return objects;
+	}
+
+	inline ExecutionInterface* getExecutionInterface() {
+		return ei;
+	}
+};
+
+/**
+ * @brief  Instruction to unready an Element
+ */
+class UnreadyInstruction {
+private:
+	ReadyObjects objects;
+
+public:
+	inline explicit UnreadyInstruction(ReadyObjects objects) 
+		: objects(objects) {}
+	~UnreadyInstruction();
+
+	inline ReadyObjects& getObjects() {
+		return objects;
+	}
+};
+
+//
+// UPSTREAM (READY)
+//
+
+/**
+ * @brief  Result of making a object inside an Element ready
+ */
+class ObjectReadyResult {
+private:
+	ReadyObject obj;
+
+public:
+	inline explicit ObjectReadyResult(ReadyObject obj) 
+		: obj(obj) {}
+	~ObjectReadyResult();
+
+	inline ReadyObject getObject() {
+		return obj;
 	}
 };
 

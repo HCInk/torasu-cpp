@@ -79,13 +79,29 @@ public:
 };
 
 /**
+ * @brief  Element which overrides Ready-functions whith dummies, so they dont have to be explitily implemented
+ */
+class ReadylessElement : public virtual Element {
+protected:
+	ReadylessElement();
+
+public:
+	virtual ~ReadylessElement();
+
+	ReadyObjects* requestReady(const ReadyRequest& ri) override;
+	ElementReadyResult* ready(const ReadyInstruction& ri) override;
+	void unready(const UnreadyInstruction& uri) override;
+};
+
+/**
  * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
 class SimpleRenderable : public NamedIdentElement,
 	public SimpleDataElement,
-	public IndividualizedSegnentRenderable {
+	public IndividualizedSegnentRenderable,
+	public ReadylessElement {
 
 protected:
 	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements);

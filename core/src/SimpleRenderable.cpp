@@ -132,6 +132,23 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 	return new RenderResult(summarizedStatus, results);
 }
 
+ReadylessElement::ReadylessElement() {}
+ReadylessElement::~ReadylessElement() {}
+
+ReadyObjects* ReadylessElement::requestReady(const ReadyRequest& ri) {
+	return nullptr;
+}
+
+ElementReadyResult* ReadylessElement::ready(const ReadyInstruction& ri) {
+	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
+		"so ready() should never be called!");
+}
+
+void ReadylessElement::unready(const UnreadyInstruction& uri) {
+	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
+		"so unready() should never be called!");
+}
+
 SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
 	: NamedIdentElement(typeIdent),
 	  SimpleDataElement(acceptData, acceptElements) {}
