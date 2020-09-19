@@ -14,6 +14,7 @@
 #include <utility>
 #include <stdexcept>
 #include <functional>
+#include <mutex>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -184,13 +185,12 @@ public:
 typedef std::map<std::string, Element*> ElementMap;
 
 class Element {
-private:
-	void* elementExecutionOpaque = nullptr;
 public:
-	Element() {
-	}
-	virtual ~Element() {
-	}
+	void* elementExecutionOpaque = nullptr;
+	std::mutex elementExecutionOpaqueLock;
+
+	Element() {}
+	virtual ~Element() {}
 
 	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
 	virtual ElementReadyResult* ready(const ReadyInstruction& ri) = 0;
@@ -204,10 +204,6 @@ public:
 						 ElementMap elements) = 0;
 	virtual void setData(DataResource* data) = 0;
 	virtual void setElement(std::string key, Element* elem) = 0;
-
-	void* getExecutionOpaque() {
-		return elementExecutionOpaque;
-	}
 
 };
 
