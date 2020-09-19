@@ -474,7 +474,7 @@ private:
 public:
 	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei) 
 		: objects(objects), ei(ei) {}
-	~ReadyInstruction();
+	~ReadyInstruction() {}
 
 	inline ReadyObjects& getObjects() {
 		return objects;
@@ -495,7 +495,7 @@ private:
 public:
 	inline explicit UnreadyInstruction(ReadyObjects objects) 
 		: objects(objects) {}
-	~UnreadyInstruction();
+	~UnreadyInstruction() {}
 
 	inline ReadyObjects& getObjects() {
 		return objects;
