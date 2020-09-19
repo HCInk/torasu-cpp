@@ -41,6 +41,9 @@ class DataResourceHolder;
 class Element;
 class Renderable;
 
+// HELPER (TREE)
+class ElementExecutionOpaque;
+
 // DOWNSTREAM (RENDER)
 class RenderInstruction;
 typedef std::map<std::string, DataResource*> RenderContext; // TODO "Real" RenderContext
@@ -182,15 +185,23 @@ public:
 // TREE
 //
 
+class ElementExecutionOpaque {
+public:
+	ElementExecutionOpaque() {}
+	virtual ~ElementExecutionOpaque() {}
+};
+
 typedef std::map<std::string, Element*> ElementMap;
 
 class Element {
 public:
-	void* elementExecutionOpaque = nullptr;
+	ElementExecutionOpaque* elementExecutionOpaque = nullptr;
 	std::mutex elementExecutionOpaqueLock;
 
 	Element() {}
-	virtual ~Element() {}
+	virtual ~Element() {
+		if (elementExecutionOpaque != nullptr) delete elementExecutionOpaque; 
+	}
 
 	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
 	virtual ElementReadyResult* ready(const ReadyInstruction& ri) = 0;
@@ -209,10 +220,8 @@ public:
 
 class Renderable : public virtual Element {
 public:
-	Renderable() {
-	}
-	virtual ~Renderable() {
-	}
+	Renderable() {}
+	virtual ~Renderable() {}
 
 	virtual RenderResult* render(RenderInstruction* ri) = 0;
 };

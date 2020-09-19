@@ -95,7 +95,7 @@ public:
 	EIcore_runner_rdystate_LOADSTATE loaded = NOT_LAODED;
 };
 
-class EIcore_runner_elemhandler {
+class EIcore_runner_elemhandler : public ElementExecutionOpaque {
 private:
 	Element* elem;
  	EIcore_runner* parent;
