@@ -184,6 +184,8 @@ public:
 typedef std::map<std::string, Element*> ElementMap;
 
 class Element {
+private:
+	void* elementExecutionOpaque = nullptr;
 public:
 	Element() {
 	}
@@ -202,6 +204,10 @@ public:
 						 ElementMap elements) = 0;
 	virtual void setData(DataResource* data) = 0;
 	virtual void setElement(std::string key, Element* elem) = 0;
+
+	void* getExecutionOpaque() {
+		return elementExecutionOpaque;
+	}
 
 };
 
