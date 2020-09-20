@@ -2,8 +2,6 @@
 
 #include <sstream>
 #include <memory>
-#include <thread>
-#include <chrono>
 
 using namespace std;
 
@@ -44,6 +42,13 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 //
 
 EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack) {
+	
+	if (rnd != nullptr) {
+		this->elemHandler = EIcore_runner_elemhandler::getHandler(rnd, runner);
+	} else {
+		this->elemHandler = nullptr;
+	}
+
 	this->rnd = rnd;
 
 	this->parent = parent;
@@ -68,15 +73,13 @@ void EIcore_runner_object::run() {
 		ops.push_back(rss->getPipeline());
 	}
 
-	auto* handler = EIcore_runner_elemhandler::getHandler(rnd, runner);
-
 	ReadyRequest rdyRequest(ops, rctx);
 	std::unique_ptr<ReadyObjects> rdyObjs(rnd->requestReady(rdyRequest));
 
 	bool makeReady = rdyObjs.get() != nullptr;
 
 	if (makeReady) {
-		handler->readyElement(*rdyObjs.get(), this);
+		elemHandler->readyElement(*rdyObjs.get(), this);
 	}
 
 	RenderInstruction ri(rctx, rs, this);
@@ -88,7 +91,7 @@ void EIcore_runner_object::run() {
 	resultLock.unlock();
 	
 	if (makeReady) {
-		handler->unreadyElement(*rdyObjs.get());
+		elemHandler->unreadyElement(*rdyObjs.get());
 	}
 }
 
@@ -169,6 +172,15 @@ RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
 		throw runtime_error(errMsg.str());
 	}
 
+}
+
+void EIcore_runner_object::lock(LockId lockId) {
+	elemHandler->lock(lockId, &blocked);
+	waitSuspension();
+}
+
+void EIcore_runner_object::unlock(LockId lockId) {
+	elemHandler->unlock(lockId);
 }
 
 //
@@ -272,5 +284,25 @@ void EIcore_runner_elemhandler::unreadyElement(const ReadyObjects& toUnready) {
 	readyStatesLock.unlock();
 }
 
+void EIcore_runner_elemhandler::lock(LockId lockId, volatile bool* blocked) {
+
+	lockStatesLock.lock();
+	auto& lock = lockStates[lockId];
+	lockStatesLock.unlock();
+
+	*blocked = true;
+	lock.lock();
+	*blocked = false;
+
+}
+
+void EIcore_runner_elemhandler::unlock(LockId lockId) {
+	lockStatesLock.lock();
+	auto& lock = lockStates[lockId];
+	lockStatesLock.unlock();
+
+	lock.unlock();	
+	
+}
 
 } // namespace torasu::tstd

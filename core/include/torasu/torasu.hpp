@@ -29,6 +29,9 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// HELPER (INTERFACES)
+typedef uint64_t LockId;
+
 // INTERFACES
 class ExecutionInterface;
 
@@ -77,6 +80,8 @@ public:
 	virtual ~ExecutionInterface() {}
 	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
 	virtual RenderResult* fetchRenderResult(uint64_t renderId) = 0;
+	virtual void lock(LockId lockId=0) = 0;
+	virtual void unlock(LockId lockId=0) = 0;
 };
 
 //

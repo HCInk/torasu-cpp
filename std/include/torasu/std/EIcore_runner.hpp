@@ -4,12 +4,15 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <thread>
+#include <chrono>
 
 #include <torasu/torasu.hpp>
 
 namespace torasu::tstd {
 
 class EIcore_runner_object;
+class EIcore_runner_elemhandler;
 
 class EIcore_runner {
 protected:
@@ -29,6 +32,9 @@ class EIcore_runner_object : public ExecutionInterface {
 private:
 	// Settings
 	const size_t addAmmount = 10;
+	
+	// Object-data: Element Handler (persistent)
+	EIcore_runner_elemhandler* elemHandler;
 
 	// Object-data: Task-Information (persistent)
 	Renderable* rnd;
@@ -41,6 +47,7 @@ private:
 	EIcore_runner* runner;
 	std::vector<int64_t>* prioStack;
 
+
 	// Sub-task-data (locked by "subTasksLock")
 	std::mutex subTasksLock;
 	int64_t renderIdCounter = 0;
@@ -50,6 +57,22 @@ private:
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
 	RenderResult* result = NULL;
+
+	// Progress status
+	std::mutex suspendedLock; // Locks suspended-state
+	volatile bool suspended = false;
+	volatile bool blocked = false;
+
+	inline void waitSuspension() {
+		suspendedLock.lock();
+		bool currentlySuspended = suspended;
+		suspendedLock.unlock();
+		if (currentlySuspended) {
+			while (suspended) {
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			}
+		}
+	}
 
 	inline std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex) {
 		if (subTasks == NULL) {
@@ -77,8 +100,10 @@ protected:
 	}
 
 public:
-	virtual uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio);
-	virtual RenderResult* fetchRenderResult(uint64_t renderId);
+	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) override;
+	RenderResult* fetchRenderResult(uint64_t renderId) override;
+	void lock(LockId lockId) override;
+	void unlock(LockId lockId) override;
 
 	friend class EIcore_runner;
 };
@@ -97,10 +122,17 @@ public:
 
 class EIcore_runner_elemhandler : public ElementExecutionOpaque {
 private:
+	// Information about the element
 	Element* elem;
  	EIcore_runner* parent;
+
+	// Ready-States
 	std::mutex readyStatesLock; // Lock for readyStates and its contents
 	std::map<ReadyObject, EIcore_runner_rdystate> readyStates;
+
+	// Locks
+	std::mutex lockStatesLock; // Lock for lockStates and its contents
+	std::map<LockId, std::mutex> lockStates;
 
 public:
 	static inline EIcore_runner_elemhandler* getHandler(Element* elem, EIcore_runner* parent) {
@@ -117,6 +149,8 @@ public:
 
 	void readyElement(const ReadyObjects& toReady, ExecutionInterface* ei);
 	void unreadyElement(const ReadyObjects& toUnready);
+	void lock(uint64_t lockId, volatile bool* blocked);
+	void unlock(uint64_t lockId);
 };
 
 } // namespace torasu::tstd
