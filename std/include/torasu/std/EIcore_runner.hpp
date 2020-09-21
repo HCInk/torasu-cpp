@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_EICORE_RUNNER_HPP_
 
 #include <vector>
+#include <set>
 #include <map>
 #include <mutex>
 #include <thread>
@@ -14,7 +15,16 @@ namespace torasu::tstd {
 class EIcore_runner_object;
 class EIcore_runner_elemhandler;
 
+struct EIcore_runner_object_cmp {
+	bool operator()(EIcore_runner_object*const& r, EIcore_runner_object*const& l) const;
+};
+
 class EIcore_runner {
+private:
+	// Task-queue stuff (locked by taskQueueLock)
+	std::mutex taskQueueLock;
+	std::set<EIcore_runner_object*, EIcore_runner_object_cmp> taskQueue;
+
 protected:
 	int32_t enqueue(EIcore_runner_object* obj);
 	int64_t interfaceIdCounter = 0;
@@ -106,6 +116,7 @@ public:
 	void unlock(LockId lockId) override;
 
 	friend class EIcore_runner;
+	friend struct EIcore_runner_object_cmp;
 };
 
 enum EIcore_runner_rdystate_LOADSTATE {

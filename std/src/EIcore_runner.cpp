@@ -2,6 +2,7 @@
 
 #include <sstream>
 #include <memory>
+// #include <iostream>
 
 using namespace std;
 
@@ -20,6 +21,22 @@ EIcore_runner::~EIcore_runner() {
 }
 
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
+	taskQueueLock.lock();
+	taskQueue.insert(obj);
+	
+	// std::cout << " ==== TASK QUEUE ====" << std::endl;
+	// for (auto cObj : taskQueue) {
+	// 	std::cout << "- ";
+	// 	for (auto prio : *cObj->prioStack) {
+	// 		std::cout << " " << prio;
+	// 	}
+	// 	std::cout << std::endl;
+	// }
+
+	taskQueueLock.unlock();
+
+
+
 	return -1; // TODO Placeholder
 }
 
@@ -103,6 +120,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 			return result;
 		}
 		resultLock.unlock();
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 
@@ -150,7 +168,7 @@ RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
 		if (obj != NULL) {
 
 			RenderResult* rr = obj->fetchOwnRenderResult();
-			delete obj;
+			// delete obj; // XXX for debugging
 			return rr;
 
 		} else {
@@ -180,6 +198,36 @@ void EIcore_runner_object::lock(LockId lockId) {
 
 void EIcore_runner_object::unlock(LockId lockId) {
 	elemHandler->unlock(lockId);
+}
+
+//
+// EIcore_runner_object_cmp
+//
+
+bool EIcore_runner_object_cmp::operator()(EIcore_runner_object*const& r, EIcore_runner_object*const& l) const {
+	size_t itSizeR = r->prioStack->size();
+	size_t itSizeL = l->prioStack->size();
+	
+	bool lLonger = itSizeL > itSizeR;
+	size_t itSize = lLonger ? itSizeR : itSizeL;
+
+	auto itPrioR = r->prioStack->begin();
+	auto itPrioL = l->prioStack->begin();
+	for (size_t i = 0; i < itSize; i++) {
+
+		if (*itPrioR != *itPrioL) {
+			if (*itPrioR < *itPrioL) { // The higher the value, the smaller the priority
+				return true; // Order R before L 
+			} else {
+				return false; // Order L before R
+			}
+		}
+
+		itPrioR++;
+		itPrioL++;
+	}
+
+	return lLonger; // Order R before L, if the stack of L is longer 
 }
 
 //
