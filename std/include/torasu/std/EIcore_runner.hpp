@@ -10,6 +10,8 @@
 
 #include <torasu/torasu.hpp>
 
+#define TORASU_TSTD_CHECK_STATE_ERRORS true
+
 namespace torasu::tstd {
 
 class EIcore_runner_object;
@@ -19,15 +21,53 @@ struct EIcore_runner_object_cmp {
 	bool operator()(EIcore_runner_object*const& r, EIcore_runner_object*const& l) const;
 };
 
+struct EIcore_runner_thread {
+	std::thread* thread;
+	bool running = true;
+};
+
 class EIcore_runner {
-private:
+protected:
 	// Task-queue stuff (locked by taskQueueLock)
 	std::mutex taskQueueLock;
 	std::set<EIcore_runner_object*, EIcore_runner_object_cmp> taskQueue;
 
-protected:
-	int32_t enqueue(EIcore_runner_object* obj);
+	// Thread-management (locked via threadMgmtLock)
+	volatile bool doRun = true;
+	std::mutex threadMgmtLock;
+	size_t threadCountCurrent = 0;
+	size_t threadCountMax = 1;
+	std::vector<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
+	volatile bool scheduleCleanThreads = false;
+	void cleanThreads();
+	void spawnThread(bool collapse);
+	
+	// Interface creation-counter (not thread-safe)
 	int64_t interfaceIdCounter = 0;
+
+	// Internal functions (not thread-safe)
+	void stop();
+
+	// Internal functions (thread-safe)
+	void run(EIcore_runner_thread& threadHandle, bool collapse);
+	int32_t enqueue(EIcore_runner_object* obj);
+
+	// Thread-management-tools (thread-safe / autolocking threadMgmtLock)
+	inline bool requestNewThread() {
+		threadMgmtLock.lock();
+		if (!doRun) {
+			threadMgmtLock.unlock();
+			return false;
+		}
+		if (threadCountCurrent < threadCountMax) {
+			threadCountCurrent++;
+			threadMgmtLock.unlock();
+			return true;
+		} else {
+			threadMgmtLock.unlock();
+			return false;
+		}
+	}
 public:
 	EIcore_runner();
 	~EIcore_runner();
@@ -37,6 +77,12 @@ public:
 	friend class EIcore_runner_object;
 };
 
+enum EIcore_runner_object_status {
+	PENDING,// Needs executor
+	RUNNING, // Currently running
+	BLOCKED, // Currently blocked, shouldn't be resumed
+	SUSPENDED // Currently suspended, waiting for resume
+};
 
 class EIcore_runner_object : public ExecutionInterface {
 private:
@@ -68,19 +114,43 @@ private:
 	std::mutex resultLock;
 	RenderResult* result = NULL;
 
-	// Progress status
-	std::mutex suspendedLock; // Locks suspended-state
-	volatile bool suspended = false;
-	volatile bool blocked = false;
+	// Progress status (locked by statusLock)
+	std::mutex statusLock; // Locks status
+	volatile EIcore_runner_object_status status = PENDING; // Status of task
 
-	inline void waitSuspension() {
-		suspendedLock.lock();
-		bool currentlySuspended = suspended;
-		suspendedLock.unlock();
-		if (currentlySuspended) {
-			while (suspended) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-			}
+	inline void suspend() {
+		runner->threadMgmtLock.lock();
+		statusLock.lock();
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (status != RUNNING) 
+			throw std::logic_error("suspend() can only be called in state " 
+				+ std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
+		if (parent == nullptr)
+			throw std::logic_error("suspend() can never be called on an interface!");
+#endif
+		// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
+		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
+		runner->threadCountCurrent--;
+		status = BLOCKED;
+		statusLock.unlock();
+		
+		if (runner->threadCountCurrent <= 0) { // Spawn thread if number of running threads reach a critical value
+			runner->spawnThread(false);
+		}
+		runner->threadMgmtLock.unlock();
+	}
+
+	inline void unsuspend() {
+		statusLock.lock();
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (status != BLOCKED) 
+			throw std::logic_error("unsuspend() can only be called in state " 
+				+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
+#endif
+		status = SUSPENDED;
+		statusLock.unlock();
+		while (status == SUSPENDED) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 	}
 
@@ -96,9 +166,10 @@ private:
 
 protected:
 	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
+	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
 	virtual ~EIcore_runner_object();
 
-	void run();
+	RenderResult* run(std::function<void()>* outCleanupFunction);
 	RenderResult* fetchOwnRenderResult();
 
 	inline void setRenderContext(RenderContext* rctx) {
@@ -160,7 +231,7 @@ public:
 
 	void readyElement(const ReadyObjects& toReady, ExecutionInterface* ei);
 	void unreadyElement(const ReadyObjects& toUnready);
-	void lock(uint64_t lockId, volatile bool* blocked);
+	void lock(uint64_t lockId);
 	void unlock(uint64_t lockId);
 };
 
