@@ -119,7 +119,7 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 	// Make prio-stack: {x,x,x,x,prio,id}
 	auto* newPrioStack = new std::vector<int64_t>(*prioStack);
 	newPrioStack->push_back(prio);
-	newPrioStack->push_back(renderId);
+	newPrioStack->push_back(newRenderId);
 
 	EIcore_runner_object* obj = new EIcore_runner_object(rnd, this, runner, newRenderId, newPrioStack);
 
