@@ -26,6 +26,12 @@ struct EIcore_runner_thread {
 	bool running = true;
 };
 
+enum EIcore_runner_THREAD_REQUEST_MODE {
+	NEW, // Request a new thread
+	UNSUSPEND, // From suspension to unsuspend
+	OR_SUSPEND // After transfering run-privilege, will be set to suspended if not
+};
+
 class EIcore_runner {
 protected:
 	// Task-queue stuff (locked by taskQueueLock)
@@ -36,6 +42,7 @@ protected:
 	volatile bool doRun = true;
 	std::mutex threadMgmtLock;
 	size_t threadCountCurrent = 0;
+	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	size_t threadCountMax = 1;
 	std::vector<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
@@ -53,7 +60,7 @@ protected:
 	int32_t enqueue(EIcore_runner_object* obj);
 
 	// Thread-management-tools (thread-safe / autolocking threadMgmtLock)
-	inline bool requestNewThread() {
+	inline bool requestNewThread(EIcore_runner_THREAD_REQUEST_MODE mode=NEW) {
 		threadMgmtLock.lock();
 		if (!doRun) {
 			threadMgmtLock.unlock();
@@ -61,9 +68,11 @@ protected:
 		}
 		if (threadCountCurrent < threadCountMax) {
 			threadCountCurrent++;
+			if (mode == UNSUSPEND) threadCountSuspended--;
 			threadMgmtLock.unlock();
 			return true;
 		} else {
+			if (mode == OR_SUSPEND) threadCountSuspended++;
 			threadMgmtLock.unlock();
 			return false;
 		}
@@ -134,7 +143,7 @@ private:
 		status = BLOCKED;
 		statusLock.unlock();
 		
-		if (runner->threadCountCurrent <= 0) { // Spawn thread if number of running threads reach a critical value
+		if (runner->threadCountCurrent <= 0 && runner->threadCountSuspended <= 0) { // Spawn thread if number of running threads reach a critical value
 			runner->spawnThread(false);
 		}
 		runner->threadMgmtLock.unlock();

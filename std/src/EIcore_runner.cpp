@@ -74,7 +74,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 
 		while (suspended && doRun) {
 			
-			if (requestNewThread()) {
+			if (requestNewThread(UNSUSPEND)) {
 				suspended = false;
 				break;
 			}
@@ -117,7 +117,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 					statusLock.unlock();
 
 					// Try to request a new run-privilege for current thread, if not suspend
-					suspended = !requestNewThread();
+					suspended = !requestNewThread(OR_SUSPEND);
 
 					if (suspended) {
 						break; 	
@@ -314,7 +314,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 			}
 		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
 	}
 }
 
