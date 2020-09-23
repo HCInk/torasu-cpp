@@ -2,7 +2,8 @@
 
 #include <sstream>
 #include <memory>
-// #include <iostream>
+#include <chrono>
+#include <iostream>
 
 using namespace std;
 
@@ -40,7 +41,7 @@ void EIcore_runner::spawnThread(bool collapse) {
 	threadHandle.thread = new std::thread([this, &threadHandle, collapse]() {
 		this->run(threadHandle, collapse);
 	});
-	threadCountCurrent++;
+	registerRunning();
 }
 
 void EIcore_runner::cleanThreads() {
@@ -65,6 +66,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 	
 	size_t retriesWithNone = 0;
 	bool suspended = false;
+  	std::mutex threadWaiter;
 
 	while (doRun) {
 
@@ -76,11 +78,14 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			
 			if (requestNewThread(UNSUSPEND)) {
 				suspended = false;
+				retriesWithNone = 0;
 				break;
 			}
 
 			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(RETRY_WAIT));
+				std::unique_lock<std::mutex> lck(threadWaiter);
+				threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				// retriesWithNone++; // XXX Removed for performance-optimisation-testing
 				continue;
 			} else {
 				break;
@@ -114,6 +119,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 				if (currTask->status == SUSPENDED) { 
 					// Unsuspend / Transfer run-privilege to target
 					currTask->status = RUNNING;
+					currTask->unsuspendCv.notify_all();
 					statusLock.unlock();
 
 					// Try to request a new run-privilege for current thread, if not suspend
@@ -132,12 +138,15 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 
 		if (task == nullptr) { // Wait for task if no task is available / has been suspended
 			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
-				std::this_thread::sleep_for(std::chrono::milliseconds(RETRY_WAIT));
+				std::unique_lock<std::mutex> lck(threadWaiter);
+				if (!suspended) taskCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				// retriesWithNone++; // XXX Removed for performance-optimisation-testing
 				continue;
 			} else {
 				break;
 			}
 		}
+		retriesWithNone = 0;
 
 		//
 		// Running the task
@@ -147,6 +156,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 		RenderResult* result = task->run(&runCleanup);
 		task->resultLock.lock();
 		task->result = result;
+		if (task->resultCv != nullptr) task->resultCv->notify_all();
 		task->resultLock.unlock();
 
 		runCleanup();
@@ -180,7 +190,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 
 	threadMgmtLock.lock();
 	threadHandle.running = false;
-	if (!suspended) threadCountCurrent--;
+	if (!suspended) unregisterRunning();
 	scheduleCleanThreads = true;
 	threadMgmtLock.unlock();
 }
@@ -188,7 +198,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	taskQueueLock.lock();
 	taskQueue.insert(obj);
-	
+	taskCv.notify_one();
 	// std::cout << " ==== TASK QUEUE ====" << std::endl;
 	// for (auto cObj : taskQueue) {
 	// 	std::cout << "- ";
@@ -253,10 +263,8 @@ EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t render
 }
 
 EIcore_runner_object::~EIcore_runner_object() {
-	if (subTasks != NULL) {
-		delete subTasks;
-	}
-
+	if (subTasks != nullptr) delete subTasks;
+	if (resultCv != nullptr) delete resultCv;
 	delete prioStack;
 }
 
@@ -299,22 +307,40 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 	int suspendState = 0;
 
 	while (true) {
-		resultLock.lock();
+
 		if (result != NULL) {
-			if (suspendState == 1) parent->unsuspend();
-			return result;
+			resultLock.lock();
+			if (result != NULL) {
+				auto found = std::chrono::high_resolution_clock::now();
+				std::cout << "RES FETCH " << std::chrono::duration_cast<std::chrono::nanoseconds>(found - const_cast<RenderResult*>(result)->creation).count() << "ns" << std::endl;
+				auto unsuspendStart = std::chrono::high_resolution_clock::now();
+				if (suspendState == 1) parent->unsuspend();
+				auto unsuspendEnd = std::chrono::high_resolution_clock::now();
+				std::cout << "UNSUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(unsuspendEnd - unsuspendStart).count() << "ns" << std::endl;
+				return const_cast<RenderResult*>(result); // casting the volatile away
+			}
+			resultLock.unlock();
 		}
-		resultLock.unlock();
 		if (suspendState == 0) {
 			if (parent->parent != nullptr) { // Check if parent is not an interface
+				auto suspendStart = std::chrono::high_resolution_clock::now();
 				parent->suspend();
+				auto suspendEnd = std::chrono::high_resolution_clock::now();
+				std::cout << "SUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(suspendEnd - suspendStart).count() << "ns" << std::endl;
 				suspendState = 1;
 			} else {
 				suspendState = 2;
 			}
 		}
-
-		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		
+		{
+			std::unique_lock lck(resultLock);
+			if (resultCv == nullptr) {
+				resultCv = new std::condition_variable();
+			}
+			resultCv->wait_for(lck, std::chrono::milliseconds(1));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing			
+		}
 	}
 }
 
@@ -496,7 +522,7 @@ void EIcore_runner_elemhandler::readyElement(const ReadyObjects& toReady, Execut
 					break;
 				}
 			} else {
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing
 			}
 		}
 	}

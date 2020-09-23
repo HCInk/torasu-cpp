@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <chrono>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -425,15 +426,18 @@ private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
 public:
+	std::chrono::_V2::system_clock::time_point creation;
 	explicit inline RenderResult(ResultStatus status) {
 		this->status = status;
 		this->results = NULL;
+		this->creation = std::chrono::high_resolution_clock::now();
 	}
 
 	inline RenderResult(ResultStatus status,
 						std::map<std::string, ResultSegment*>* results) {
 		this->status = status;
 		this->results = results;
+		this->creation = std::chrono::high_resolution_clock::now();
 	}
 
 	~RenderResult() {

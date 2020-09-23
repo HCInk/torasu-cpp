@@ -6,6 +6,7 @@
 #include <map>
 #include <mutex>
 #include <thread>
+#include <condition_variable>
 #include <chrono>
 
 #include <torasu/torasu.hpp>
@@ -37,15 +38,24 @@ protected:
 	// Task-queue stuff (locked by taskQueueLock)
 	std::mutex taskQueueLock;
 	std::set<EIcore_runner_object*, EIcore_runner_object_cmp> taskQueue;
+	std::condition_variable taskCv; // notify-one once task queue gets updated 
 
 	// Thread-management (locked via threadMgmtLock)
-	volatile bool doRun = true;
 	std::mutex threadMgmtLock;
-	size_t threadCountCurrent = 0;
+	volatile bool doRun = true;
+	size_t threadCountCurrent = 0; // The count of the threads, which are currently effectively running
+	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed 
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	size_t threadCountMax = 1;
 	std::vector<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
+	inline void registerRunning() {
+		threadCountCurrent++;
+	}
+	inline void unregisterRunning() {
+		if (doRun) threadSuspensionCv.notify_one();
+		threadCountCurrent--;
+	}
 	void cleanThreads();
 	void spawnThread(bool collapse);
 	
@@ -67,7 +77,7 @@ protected:
 			return false;
 		}
 		if (threadCountCurrent < threadCountMax) {
-			threadCountCurrent++;
+			registerRunning();
 			if (mode == UNSUSPEND) threadCountSuspended--;
 			threadMgmtLock.unlock();
 			return true;
@@ -121,11 +131,13 @@ private:
 
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
-	RenderResult* result = NULL;
+	volatile RenderResult* result = nullptr;
+	std::condition_variable* resultCv = nullptr;
 
 	// Progress status (locked by statusLock)
 	std::mutex statusLock; // Locks status
 	volatile EIcore_runner_object_status status = PENDING; // Status of task
+	std::condition_variable unsuspendCv;
 
 	inline void suspend() {
 		runner->threadMgmtLock.lock();
@@ -139,7 +151,7 @@ private:
 #endif
 		// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
 		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
-		runner->threadCountCurrent--;
+		runner->unregisterRunning();
 		status = BLOCKED;
 		statusLock.unlock();
 		
@@ -150,16 +162,18 @@ private:
 	}
 
 	inline void unsuspend() {
-		statusLock.lock();
+		std::unique_lock lck(statusLock);
 #if TORASU_TSTD_CHECK_STATE_ERRORS
 		if (status != BLOCKED) 
 			throw std::logic_error("unsuspend() can only be called in state " 
 				+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
 #endif
 		status = SUSPENDED;
-		statusLock.unlock();
+		
+		// lck.unlock();
 		while (status == SUSPENDED) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			unsuspendCv.wait_for(lck, std::chrono::milliseconds(1));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing
 		}
 	}
 
