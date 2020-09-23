@@ -170,9 +170,9 @@ private:
 #endif
 		status = SUSPENDED;
 		
-		// lck.unlock();
+		lck.unlock();
 		while (status == SUSPENDED) {
-			unsuspendCv.wait_for(lck, std::chrono::milliseconds(1));
+			// unsuspendCv.wait_for(lck, std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing (186 -> 190)
 			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing
 		}
 	}

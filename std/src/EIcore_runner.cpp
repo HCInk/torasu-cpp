@@ -83,8 +83,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			}
 
 			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
-				std::unique_lock<std::mutex> lck(threadWaiter);
-				threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				// std::unique_lock<std::mutex> lck(threadWaiter); // XXX Removed for performance-optimisation-testing (186 -> 226)
+				// threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
 				// retriesWithNone++; // XXX Removed for performance-optimisation-testing
 				continue;
 			} else {
@@ -138,8 +138,10 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 
 		if (task == nullptr) { // Wait for task if no task is available / has been suspended
 			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
-				std::unique_lock<std::mutex> lck(threadWaiter);
-				if (!suspended) taskCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				// if (!suspended) {
+				// 	std::unique_lock<std::mutex> lck(threadWaiter); // XXX Removed for performance-optimisation-testing (186 -> 242)
+				// 	taskCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				// }
 				// retriesWithNone++; // XXX Removed for performance-optimisation-testing
 				continue;
 			} else {
@@ -334,7 +336,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 		}
 		
 		{
-			std::unique_lock lck(resultLock);
+			std::unique_lock lck(resultLock); // XXX Removed for performance-optimisation-testing (186 -> 205)
 			if (resultCv == nullptr) {
 				resultCv = new std::condition_variable();
 			}
