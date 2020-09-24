@@ -168,8 +168,14 @@ private:
 			throw std::logic_error("unsuspend() can only be called in state " 
 				+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
 #endif
+		std::unique_lock threadLock(runner->threadMgmtLock);
+		if (runner->threadCountCurrent < runner->threadCountMax) {
+			status = RUNNING;
+			runner->registerRunning();
+			return;
+		}
+		threadLock.unlock();
 		status = SUSPENDED;
-		
 		lck.unlock();
 		while (status == SUSPENDED) {
 			// unsuspendCv.wait_for(lck, std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing (186 -> 190)
