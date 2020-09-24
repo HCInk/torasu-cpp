@@ -9,6 +9,7 @@ using namespace std;
 
 #define MAX_RETRIES 50
 #define RETRY_WAIT 10
+#define CYCLE_BUMP_THRESHOLD 10
 
 namespace torasu::tstd {
 
@@ -132,6 +133,20 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 					statusLock.unlock();
 				}
 			}
+		}
+
+		if (threadCountCurrent < threadCountMax) {
+			consecutiveFedCycles++;
+			if (consecutiveFedCycles > CYCLE_BUMP_THRESHOLD*threadCountCurrent) {
+				threadMgmtLock.lock();
+				if (threadCountCurrent < threadCountMax && consecutiveFedCycles > CYCLE_BUMP_THRESHOLD*threadCountCurrent) {
+					spawnThread(NEW);
+					consecutiveFedCycles = 0;
+				}
+				threadMgmtLock.unlock();
+			}
+		} else {
+			consecutiveFedCycles = 0;
 		}
 		
 		taskQueueLock.unlock();

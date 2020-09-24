@@ -47,6 +47,7 @@ protected:
 	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed 
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	size_t threadCountMax = 1;
+	size_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
 	std::vector<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
 	inline void registerRunning() {
