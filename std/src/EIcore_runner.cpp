@@ -351,11 +351,11 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 		}
 		
 		{
-			std::unique_lock lck(resultLock); // XXX Removed for performance-optimisation-testing (186 -> 205)
-			if (resultCv == nullptr) {
-				resultCv = new std::condition_variable();
-			}
-			resultCv->wait_for(lck, std::chrono::milliseconds(1));
+			// std::unique_lock lck(resultLock); // XXX Removed for performance-optimisation-testing (186 -> 205)
+			// if (resultCv == nullptr) {
+			// 	resultCv = new std::condition_variable();
+			// }
+			// resultCv->wait_for(lck, std::chrono::milliseconds(1));
 			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing			
 		}
 	}
