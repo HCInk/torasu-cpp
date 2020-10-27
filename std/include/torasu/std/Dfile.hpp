@@ -31,6 +31,22 @@ public:
 	inline uint64_t getFileSize() {
 		return size;
 	}
+
+	class FileBuilder {
+	private:
+		size_t size = 0;
+		std::map<size_t, std::pair<uint8_t*, size_t>, std::less<size_t>> buffers;
+
+	public:
+		size_t pos = 0;
+
+		FileBuilder();
+		~FileBuilder();
+
+		void write(uint8_t* data, size_t dataSize);
+		Dfile* compile();
+		void clear();
+	};
 };
 
 } // namespace torasu::tstd
