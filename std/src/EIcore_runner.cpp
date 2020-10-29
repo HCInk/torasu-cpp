@@ -7,6 +7,8 @@
 
 using namespace std;
 
+#define TORASU_STD_CHECK_EICORERUNNER
+
 #define MAX_RETRIES 50
 #define RETRY_WAIT 10
 #define CYCLE_BUMP_THRESHOLD 10
@@ -26,14 +28,30 @@ EIcore_runner::~EIcore_runner() {
 }
 
 void EIcore_runner::stop() {
+	std::cout << "(STOP) Waiting for TM-lock to stop..." << std::endl;
 	threadMgmtLock.lock();
+	std::cout << "(STOP) List of threads to stop" << std::endl;
+	for (EIcore_runner_thread& thread : threads) {
+		std::cout << "	" << thread.running << " - " << std::to_address(thread.thread) << std::endl;
+	}
 	doRun = false;
 	threadMgmtLock.unlock();
+	std::cout << "(STOP) Stopping threads..." << std::endl;
 	for (EIcore_runner_thread& thread : threads) {
+#ifdef TORASU_STD_CHECK_EICORERUNNER
+		std::cout << "(STOP) DEL TR " << std::to_address(thread.thread) << std::endl;
+		if (!thread.thread->joinable()) {
+			std::cerr << "(STOP) Trying to join an unjoinable thread! - this is a bug - skipping join of thread." << std::endl;
+		} else {
+			thread.thread->join();
+		}
+#else
 		thread.thread->join();
+#endif
 		delete thread.thread;
 	}
 	threads.clear();
+	std::cout << "(STOP) Stopped threads." << std::endl;
 }
 
 void EIcore_runner::spawnThread(bool collapse) {
@@ -42,16 +60,19 @@ void EIcore_runner::spawnThread(bool collapse) {
 	threadHandle.thread = new std::thread([this, &threadHandle, collapse]() {
 		this->run(threadHandle, collapse);
 	});
+	std::cout << "(SPWAN) Create thread " << std::to_address(threadHandle.thread) << std::endl;
 	registerRunning();
 }
 
 void EIcore_runner::cleanThreads() {
+	std::cout << "(CLEAN) Begin thread-cleanup..." << std::endl;
 	bool found;
 	do {
 		found = false;
 		for (auto it = threads.begin(); it != threads.end(); it++) {
 			auto& thread = *it;
 			if (!thread.running) {
+				std::cout << "(CLEAN) DEL TR " << std::to_address(thread.thread) << std::endl;
 				thread.thread->join();
 				delete thread.thread;
 				threads.erase(it);
@@ -61,6 +82,7 @@ void EIcore_runner::cleanThreads() {
 			}
 		}
 	} while(found);
+	std::cout << "(CLEAN) Finished thread-cleanup." << std::endl;
 }
 
 void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
@@ -68,6 +90,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 	size_t retriesWithNone = 0;
 	bool suspended = false;
   	std::mutex threadWaiter;
+
+	std::cout << " (THREAD) Enter thread " << std::to_address(threadHandle.thread) << std::endl;
 
 	while (doRun) {
 
@@ -210,6 +234,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 	if (!suspended) unregisterRunning();
 	scheduleCleanThreads = true;
 	threadMgmtLock.unlock();
+
+	std::cout << "(THREAD) Stopped running " << std::to_address(threadHandle.thread) << std::endl;
 }
 
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
@@ -405,7 +431,7 @@ RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
 		if (obj != NULL) {
 
 			RenderResult* rr = obj->fetchOwnRenderResult();
-			// delete obj; // XXX for debugging
+			delete obj;
 			return rr;
 
 		} else {

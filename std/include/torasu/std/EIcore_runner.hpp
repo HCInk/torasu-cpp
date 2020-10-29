@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_EICORE_RUNNER_HPP_
 
 #include <vector>
+#include <list>
 #include <set>
 #include <map>
 #include <mutex>
@@ -23,7 +24,7 @@ struct EIcore_runner_object_cmp {
 };
 
 struct EIcore_runner_thread {
-	std::thread* thread;
+	std::thread* thread = nullptr;
 	bool running = true;
 };
 
@@ -48,7 +49,7 @@ protected:
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	size_t threadCountMax = 1;
 	size_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
-	std::vector<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
+	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
 	inline void registerRunning() {
 		threadCountCurrent++;
