@@ -112,6 +112,15 @@ public:
 };
 
 /**
+ * @brief  Create exception that an element only accepts renderables
+ * @param  key: The key of the element slot that was requested
+ * @retval The generated exception
+ */
+inline std::exception makeExceptSlotOnlyRenderables(const std::string& key) {
+	throw std::invalid_argument(std::string("Element slot \"") + key + std::string("\" only accepts Renderables!"));
+}
+
+/**
  * @brief  Shorthand to make setting renderable-slots easier
  * @param  slotKey: Slot key of the slot to be put into
  * @param  rndSlot: Slot address the Renderable should be put into
@@ -143,7 +152,7 @@ inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSl
 			*rndSlot = rnd;
 			return true;
 		} else {
-			throw std::invalid_argument(std::string("Element slot \"") + slotKey + std::string("\" only accepts Renderables!"));
+			throw makeExceptSlotOnlyRenderables(slotKey);
 		}
 	}
 	return false;
