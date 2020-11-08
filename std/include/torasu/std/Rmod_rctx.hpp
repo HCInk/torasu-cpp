@@ -4,31 +4,9 @@
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/Dstring.hpp>
+#include <torasu/std/Dstring_pair.hpp>
 
 namespace torasu::tstd {
-
-class Dmod_rctx_data : public torasu::DataPackable {
-private:
-	std::string rctxKey;
-	std::string valuePipeline;
-
-protected:
-	void load() override;
-	torasu::json makeJson() override;
-
-public:
-	Dmod_rctx_data(std::string jsonStripped);
-	Dmod_rctx_data(torasu::json jsonParsed);
-
-	Dmod_rctx_data(std::string rctxKey, std::string valuePipeline);
-	~Dmod_rctx_data();
-
-	std::string getIdent() override;
-	
-	std::string getRctxKey();
-	std::string getValuePipeline();
-};
 
 class Rmod_rctx : public torasu::Renderable,
 	public torasu::tools::NamedIdentElement,
@@ -37,7 +15,7 @@ class Rmod_rctx : public torasu::Renderable,
 private:
 	Renderable* mainRnd;
 	Renderable* valueRnd;
-	Dmod_rctx_data data;
+	Dstring_pair data;
 
 protected:
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;

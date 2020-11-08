@@ -38,7 +38,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_replace.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rmix_pipelines.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/Rmod_rctx.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/Dstring_pair.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
