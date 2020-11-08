@@ -6,6 +6,10 @@ using namespace std;
 
 namespace torasu::tstd {
 
+//
+//	Dbimg
+//
+
 Dbimg::Dbimg(Dbimg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
 
 Dbimg::Dbimg(uint32_t width, uint32_t height) {
@@ -33,6 +37,14 @@ DataDump* Dbimg::dumpResource() {
 	return nullptr; // TODO DataDump of Rbimg
 }
 
+Dbimg* Dbimg::clone() {
+	return new Dbimg(*this);
+}
+
+//
+//	Dbimg_FORMAT
+//
+
 Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height)  : ResultFormatSettings(IDENT), width(width), height(height) {}
 
 Dbimg_FORMAT::Dbimg_FORMAT(const torasu::json& jsonParsed) : ResultFormatSettings(IDENT), DataPackable(jsonParsed) {}
@@ -58,6 +70,10 @@ torasu::json Dbimg_FORMAT::makeJson() {
 		{"w", width},
 		{"h", height}
 	};
+}
+
+Dbimg_FORMAT* Dbimg_FORMAT::clone() {
+	return new Dbimg_FORMAT(*this);
 }
 
 } // namespace torasu::tstd

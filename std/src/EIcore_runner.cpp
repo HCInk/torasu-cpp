@@ -42,7 +42,7 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 //
 
 EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack) {
-	
+
 	if (rnd != nullptr) {
 		this->elemHandler = EIcore_runner_elemhandler::getHandler(rnd, runner);
 	} else {
@@ -89,7 +89,7 @@ void EIcore_runner_object::run() {
 	resultLock.lock();
 	result = res;
 	resultLock.unlock();
-	
+
 	if (makeReady) {
 		elemHandler->unreadyElement(*rdyObjs.get());
 	}
@@ -187,13 +187,13 @@ void EIcore_runner_object::unlock(LockId lockId) {
 // EIcore_runner_elemhandler
 //
 
-EIcore_runner_elemhandler::EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent) 
+EIcore_runner_elemhandler::EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent)
 	: elem(elem), parent(parent) {}
 
 EIcore_runner_elemhandler::~EIcore_runner_elemhandler() {}
 
 void EIcore_runner_elemhandler::readyElement(const ReadyObjects& toReady, ExecutionInterface* ei) {
-	
+
 	// Index for what objects are
 	//	LOADED: Already ready
 	//	LOADING: Are currently being made ready
@@ -301,8 +301,8 @@ void EIcore_runner_elemhandler::unlock(LockId lockId) {
 	auto& lock = lockStates[lockId];
 	lockStatesLock.unlock();
 
-	lock.unlock();	
-	
+	lock.unlock();
+
 }
 
 } // namespace torasu::tstd

@@ -25,6 +25,7 @@ public:
 
 	std::string getIdent() override;
 	DataDump* dumpResource() override;
+	Dbimg* clone() override;
 
 	inline uint32_t getWidth() {
 		return width;
@@ -37,7 +38,6 @@ public:
 	inline uint8_t* getImageData() {
 		return data;
 	}
-
 };
 
 class Dbimg_FORMAT : public ResultFormatSettings, public DataPackable {
@@ -59,6 +59,7 @@ public:
 
 	void load() override;
 	torasu::json makeJson() override;
+	Dbimg_FORMAT* clone() override;
 
 };
 

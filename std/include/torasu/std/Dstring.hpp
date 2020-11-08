@@ -16,6 +16,10 @@ private:
 
 	std::string string;
 
+protected:
+	void load() override;
+	torasu::json makeJson() override;
+
 public:
 	Dstring(std::string jsonStripped, bool json);
 	Dstring(torasu::json jsonParsed, bool json);
@@ -23,9 +27,8 @@ public:
 
 	std::string getString();
 
-	virtual std::string getIdent();
-	virtual void load();
-	virtual torasu::json makeJson();
+	std::string getIdent() override;
+	Dstring* clone() override;
 };
 
 } // namespace torasu::tstd

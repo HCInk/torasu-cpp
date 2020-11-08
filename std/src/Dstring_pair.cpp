@@ -42,6 +42,10 @@ torasu::json Dstring_pair::makeJson() {
 	return json;
 }
 
+Dstring_pair* Dstring_pair::clone() {
+	return new Dstring_pair(*this);
+}
+
 std::string Dstring_pair::getA() {
 	ensureLoaded();
 	return b;

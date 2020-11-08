@@ -13,7 +13,7 @@ void Dmix_pipelines_conf::load() {
 
 torasu::json Dmix_pipelines_conf::makeJson() {
 	torasu::json json;
-	
+
 	torasu::json elemMap;
 
 	for (auto entry : mappingsById) elemMap[entry.first] = entry.second->pl;
@@ -27,15 +27,19 @@ std::string Dmix_pipelines_conf::getIdent() {
 	return "STD::DMIX_PIPELINES_CONF";
 }
 
+Dmix_pipelines_conf* Dmix_pipelines_conf::clone() {
+	return new Dmix_pipelines_conf(*this);
+}
+
 void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings) {
-	
+
 	// Save previous mappings
 	std::set<PipelineMapping*> oldMappings;
 	for (auto& oldMapping : mappingsById) oldMappings.insert(oldMapping.second);
 
 	// Apply new mappings
 	for (auto& newMapping : newMappings) {
-		
+
 		auto foundIdMapping = mappingsById.find(newMapping.id);
 		PipelineMapping* mapping;
 		if (foundIdMapping != mappingsById.end()) {
@@ -43,7 +47,7 @@ void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings
 			oldMappings.erase(mapping);
 
 			// Update renderable (if given)
-			if (newMapping.rnd != nullptr && mapping->rnd != newMapping.rnd) 
+			if (newMapping.rnd != nullptr && mapping->rnd != newMapping.rnd)
 				mapping->rnd = newMapping.rnd;
 
 			// Remap pipeline if it changed
@@ -81,7 +85,7 @@ void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings
 
 void Dmix_pipelines_conf::updateMapping(size_t id, torasu::Renderable* rnd) {
 	auto foundMapping = mappingsById.find(id);
-	
+
 	if (foundMapping != mappingsById.end()) {
 		foundMapping->second->rnd = rnd;
 	} else {
@@ -112,9 +116,9 @@ Dmix_pipelines_conf::~Dmix_pipelines_conf() {
 //	Rmix_pipelines
 //
 
-Rmix_pipelines::Rmix_pipelines(Renderable* def, std::initializer_list<MixEntry> mixes) 
+Rmix_pipelines::Rmix_pipelines(Renderable* def, std::initializer_list<MixEntry> mixes)
 	: SimpleRenderable("STD::RMIX_PIPELINES", true, true), defRnd(def) {
-	
+
 	std::vector<Dmix_pipelines_conf::PipelineMapping> entries;
 	size_t id = 0;
 	for (auto& entry : mixes) {
@@ -142,12 +146,12 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 		rnd = found->second->rnd;
 
 		// TODO make sanity-check optional
-		if (rnd == nullptr) 
+		if (rnd == nullptr)
 			throw std::runtime_error("Renderable-mapping found for "
-				"PL=" + pipeline + " (ID" + std::to_string(found->second->id) + ") "
-				"contains no Renderable!");
+									 "PL=" + pipeline + " (ID" + std::to_string(found->second->id) + ") "
+									 "contains no Renderable!");
 	} else {
-		// If default-renderable is null, then render only mapped segments, 
+		// If default-renderable is null, then render only mapped segments,
 		// otherwise use defRnd as fallback
 		if (defRnd != nullptr) {
 			rnd = defRnd;
@@ -176,8 +180,8 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 torasu::ElementMap Rmix_pipelines::getElements() {
 	torasu::ElementMap elems;
 	elems[DEFUALT_KEY] = defRnd;
-	
-	for (auto& entry : conf.mappingsById) 
+
+	for (auto& entry : conf.mappingsById)
 		elems[ELEM_KEY_PFX + std::to_string(entry.first)] = entry.second->rnd;
 
 	return elems;
@@ -219,5 +223,5 @@ void Rmix_pipelines::setData(torasu::DataResource* data) {
 }
 
 
-	
+
 } // namespace torasu::tstd

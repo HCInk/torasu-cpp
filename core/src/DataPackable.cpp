@@ -33,8 +33,7 @@ DataPackable::DataPackable(torasu::json initialJson) {
 	parsedJson = initialJson;
 }
 
-DataPackable::~DataPackable() {
-}
+DataPackable::~DataPackable() {}
 
 void DataPackable::parse() {
 	if (serializedJson.has_value()) {
@@ -85,6 +84,10 @@ void DPUniversal::load() {
 json DPUniversal::makeJson() {
 	throw logic_error("makeJson() of DPUniversal should never be called,"
 					  " since it practically doesnt have a 'loaded' state");
+}
+
+DPUniversal* DPUniversal::clone() {
+	return new DPUniversal(*this);
 }
 
 } /* namespace torasu */

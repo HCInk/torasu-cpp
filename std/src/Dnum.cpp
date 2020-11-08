@@ -38,4 +38,8 @@ torasu::json Dnum::makeJson() {
 	return num;
 }
 
+Dnum* Dnum::clone() {
+	return new Dnum(*this);
+}
+
 } // namespace torasu::tstd

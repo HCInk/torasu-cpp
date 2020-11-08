@@ -13,7 +13,7 @@
 using namespace std;
 
 namespace {
-	
+
 inline std::vector<std::string> split(std::string base, std::string delimiter) {
 	std::vector<std::string> final;
 	size_t pos = 0;
@@ -66,7 +66,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		auto renderId = rib.enqueueRender(urlRnd, rctx, ei);
 		auto renderIdHeaders = headersRnd != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
-		
+
 		std::string url;
 		{
 			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderId));
@@ -118,7 +118,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlHeaders);
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Rnet_file_WRITE_FUNC);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &dataout);
-		
+
 		res = curl_easy_perform(curl);
 
 		curl_slist_free_all(curlHeaders);

@@ -4,6 +4,9 @@
 
 namespace torasu::texample {
 
+Dboilerplate::Dboilerplate(std::string jsonStripped) : DataPackable(jsonStripped) {}
+Dboilerplate::Dboilerplate(torasu::json jsonParsed) : DataPackable(jsonParsed) {}
+
 Dboilerplate::Dboilerplate(std::string str, double num)
 	: str(str), num(num) {}
 
@@ -11,6 +14,10 @@ Dboilerplate::~Dboilerplate() {}
 
 std::string Dboilerplate::getIdent() {
 	return "EXAMPLE::DBOILERPLATE";
+}
+
+Dboilerplate* Dboilerplate::clone() {
+	return new Dboilerplate(*this);
 }
 
 void Dboilerplate::load() {

@@ -32,7 +32,7 @@ class EIcore_runner_object : public ExecutionInterface {
 private:
 	// Settings
 	const size_t addAmmount = 10;
-	
+
 	// Object-data: Element Handler (persistent)
 	EIcore_runner_elemhandler* elemHandler;
 
@@ -124,7 +124,7 @@ class EIcore_runner_elemhandler : public ElementExecutionOpaque {
 private:
 	// Information about the element
 	Element* elem;
- 	EIcore_runner* parent;
+	EIcore_runner* parent;
 
 	// Ready-States
 	std::mutex readyStatesLock; // Lock for readyStates and its contents

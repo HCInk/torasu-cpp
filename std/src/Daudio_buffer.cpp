@@ -8,6 +8,10 @@
 
 namespace torasu::tstd {
 
+//
+//	Daudio_buffer
+//
+
 Daudio_buffer::Daudio_buffer(size_t channelCount) : channelCount(channelCount) {
 	channels = new Daudio_buffer_CHANNEL[channelCount];
 	for (size_t i = 0; i < channelCount; ++i) {
@@ -27,6 +31,10 @@ Daudio_buffer::~Daudio_buffer() {
 		delete[] channels[i].data;
 	}
 	delete[] channels;
+}
+
+Daudio_buffer::Daudio_buffer(const Daudio_buffer& original) {
+	throw std::logic_error("Deep-copy of Daudio_buffer not supported yet!");
 }
 
 Daudio_buffer_CHANNEL* Daudio_buffer::getChannels() const {
@@ -66,6 +74,14 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 	return data;
 }
 
+Daudio_buffer* Daudio_buffer::clone() {
+	return new Daudio_buffer(*this);
+}
+
+//
+//	Daudio_buffer_FORMAT
+//
+
 Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format) : ResultFormatSettings(IDENT),  bitrate(bitrate), format(format) {}
 
 Daudio_buffer_FORMAT::Daudio_buffer_FORMAT(const torasu::json& initialJson) :  ResultFormatSettings(IDENT), DataPackable(initialJson) {}
@@ -93,6 +109,10 @@ torasu::json Daudio_buffer_FORMAT::makeJson() {
 		{"rate", bitrate},
 		{"fmt", format},
 	};
+}
+
+Daudio_buffer_FORMAT* Daudio_buffer_FORMAT::clone() {
+	return new Daudio_buffer_FORMAT(*this);
 }
 
 

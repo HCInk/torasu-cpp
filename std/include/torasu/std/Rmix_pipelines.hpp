@@ -17,7 +17,7 @@ private:
 		std::string pl;
 		torasu::Renderable* rnd; // Will not be exported/imported
 	};
-	
+
 	// mappings (managed by applyMappings(...) and updateMapping(...))
 	std::map<size_t, PipelineMapping*> mappingsById;
 	std::map<std::string, PipelineMapping*> mappingsByPl;
@@ -35,6 +35,7 @@ public:
 	~Dmix_pipelines_conf();
 
 	std::string getIdent() override;
+	Dmix_pipelines_conf* clone() override;
 
 	friend Rmix_pipelines;
 };
@@ -64,7 +65,7 @@ public:
 	void setData(torasu::DataResource* data) override;
 
 };
-	
+
 } // namespace torasu::tstd
 
 

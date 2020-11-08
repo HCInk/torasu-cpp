@@ -8,7 +8,7 @@ namespace torasu::tstd {
 //	Rmod_rctx
 //
 
-Rmod_rctx::Rmod_rctx(Renderable* main, Renderable* value, std::string rctxKey, std::string valuePipeline) 
+Rmod_rctx::Rmod_rctx(Renderable* main, Renderable* value, std::string rctxKey, std::string valuePipeline)
 	: NamedIdentElement("STD::RMOD_RCTX"), SimpleDataElement(true, true), data(rctxKey, valuePipeline) {}
 
 Rmod_rctx::~Rmod_rctx() {}
@@ -30,7 +30,7 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	newRctx[data.getA()] = valueDr;
 
 	auto rid = ei->enqueueRender(mainRnd, &newRctx, ri->getResultSettings(), 0);
-	
+
 	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
 
 	return rr;

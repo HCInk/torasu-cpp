@@ -23,7 +23,8 @@ public:
 	~Dstring_pair();
 
 	std::string getIdent() override;
-	
+	Dstring_pair* clone() override;
+
 	std::string getA();
 	std::string getB();
 };

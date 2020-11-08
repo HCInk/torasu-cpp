@@ -18,10 +18,15 @@ protected:
 	torasu::json makeJson() override;
 
 public:
+	Dboilerplate(std::string jsonStripped);
+	Dboilerplate(torasu::json jsonParsed);
+
 	Dboilerplate(std::string str, double num);
 	~Dboilerplate();
 
 	std::string getIdent() override;
+	Dboilerplate* clone() override;
+
 	std::string getStr();
 	double getNum();
 };
