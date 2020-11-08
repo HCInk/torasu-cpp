@@ -186,7 +186,7 @@ torasu::ElementMap Rmix_pipelines::getElements() {
 void Rmix_pipelines::setElement(std::string key, Element* elem) {
 	if (torasu::tools::trySetRenderableSlot(DEFUALT_KEY, &defRnd, true, key, elem)) return;
 
-	if (!key.starts_with(ELEM_KEY_PFX)) throw torasu::tools::makeExceptSlotDoesntExist(key);
+	if (key.substr(0, ELEM_KEY_PFX_LEN) != ELEM_KEY_PFX) throw torasu::tools::makeExceptSlotDoesntExist(key);
 	size_t id;
 	try {
 		id = std::stoul(key.substr(ELEM_KEY_PFX_LEN));
