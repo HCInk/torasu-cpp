@@ -13,9 +13,9 @@ class Rmod_rctx : public torasu::Renderable,
 	public torasu::tools::SimpleDataElement,
 	public torasu::tools::ReadylessElement {
 private:
+	Dstring_pair data;
 	Renderable* mainRnd;
 	Renderable* valueRnd;
-	Dstring_pair data;
 
 protected:
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;

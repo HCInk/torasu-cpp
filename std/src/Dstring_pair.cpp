@@ -48,12 +48,12 @@ Dstring_pair* Dstring_pair::clone() {
 
 std::string Dstring_pair::getA() {
 	ensureLoaded();
-	return b;
+	return a;
 }
 
 std::string Dstring_pair::getB() {
 	ensureLoaded();
-	return a;
+	return b;
 }
 
 } // namespace torasu::tstd
