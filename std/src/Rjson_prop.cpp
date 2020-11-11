@@ -5,6 +5,7 @@
 #include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/Dfile.hpp>
+#include <torasu/std/Dnum.hpp>
 
 namespace {
 
@@ -43,7 +44,7 @@ inline std::string combine(std::vector<std::string> list, size_t begin, size_t e
 namespace torasu::tstd {
 
 Rjson_prop::Rjson_prop(std::string path, Renderable* jsonRnd)
-	: SimpleRenderable("EXAMPLE::RJSON_PROP", true, true),
+	: SimpleRenderable("STD::RJSON_PROP", true, true),
 	  path(new torasu::tstd::Dstring(path)), jsonRnd(jsonRnd) {}
 
 
@@ -53,7 +54,7 @@ Rjson_prop::~Rjson_prop() {
 
 torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	std::string pipeline = resSettings->getPipeline();
-	if (pipeline == TORASU_STD_PL_STRING) {
+	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM) {
 
 		auto* ei = ri->getExecutionInterface();
 		auto* rctx = ri->getRenderContext();
@@ -100,11 +101,20 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 			json = json[path[i]];
 		}
 
-		if (!json.is_string()) {
-			throw std::runtime_error("\"" + combine(path, 0, path.size(), ".") + "\" is not a string! - Dump at path: \n" + json.dump());
+		if (pipeline == TORASU_STD_PL_STRING) {
+			if (!json.is_string()) {
+				throw std::runtime_error("\"" + combine(path, 0, path.size(), ".") + "\" is not a string! - Dump at path: \n" + json.dump());
+			}
+			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json), true);
+		} else if (pipeline == TORASU_STD_PL_NUM) {
+			if (!json.is_number()) {
+				throw std::runtime_error("\"" + combine(path, 0, path.size(), ".") + "\" is not a number! - Dump at path: \n" + json.dump());
+			}
+			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dnum(json), true);
+		} else {
+			throw std::logic_error("Unexpected branching, this is a bug.");
 		}
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json), true);
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}
