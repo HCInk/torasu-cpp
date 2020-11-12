@@ -45,7 +45,7 @@ private:
 
 public:
 
-	explicit Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format);
+	Daudio_buffer_FORMAT(int bitrate, Daudio_buffer_CHFMT format);
 
 	explicit Daudio_buffer_FORMAT(const torasu::json& initialJson);
 	explicit Daudio_buffer_FORMAT(const std::string& initialSerializedJson);
@@ -60,7 +60,7 @@ public:
 
 	void load() override;
 	torasu::json makeJson() override;
-
+	Daudio_buffer_FORMAT* clone() override;
 };
 
 
@@ -74,7 +74,8 @@ private:
 public:
 	explicit Daudio_buffer(size_t channelCount);
 	explicit Daudio_buffer(size_t channelCount, size_t sampleRate, Daudio_buffer_CHFMT format, size_t sampleSize, size_t dataSize);
-	virtual ~Daudio_buffer();
+	~Daudio_buffer();
+	Daudio_buffer(const Daudio_buffer&);
 
 	uint8_t* initChannel(size_t channelIndex, size_t sampleRate, Daudio_buffer_CHFMT format, size_t sampleSize, size_t dataSize, bool fromInit = false);
 	Daudio_buffer_CHANNEL* getChannels() const;
@@ -82,6 +83,7 @@ public:
 
 	std::string getIdent() override;
 	DataDump* dumpResource() override;
+	Daudio_buffer* clone() override;
 
 };
 

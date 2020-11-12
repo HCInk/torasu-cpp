@@ -141,12 +141,12 @@ ReadyObjects* ReadylessElement::requestReady(const ReadyRequest& ri) {
 
 ElementReadyResult* ReadylessElement::ready(const ReadyInstruction& ri) {
 	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
-		"so ready() should never be called!");
+						   "so ready() should never be called!");
 }
 
 void ReadylessElement::unready(const UnreadyInstruction& uri) {
 	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
-		"so unready() should never be called!");
+						   "so unready() should never be called!");
 }
 
 SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)

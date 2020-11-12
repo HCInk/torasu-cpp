@@ -20,9 +20,11 @@ private:
 public:
 	explicit Dfile(uint64_t size);
 	~Dfile();
+	Dfile(const Dfile&);
 
 	std::string getIdent() override;
 	DataDump* dumpResource() override;
+	Dfile* clone() override;
 
 	inline uint8_t* getFileData() {
 		return data;

@@ -191,7 +191,7 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 	for (std::string propKey : rProps) {
 		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];
 		if (segResult->getResult() != nullptr) {
-			auto& dr = (*rp)[propKey]; 
+			auto& dr = (*rp)[propKey];
 			if (segResult->canFreeResult()) {
 				dr.initialize(segResult->ejectResult(), true);
 			} else {

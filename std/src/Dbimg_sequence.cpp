@@ -12,6 +12,14 @@ Dbimg_sequence::~Dbimg_sequence() {
 	}
 }
 
+Dbimg_sequence::Dbimg_sequence(const Dbimg_sequence& original)
+	: time_padding(original.time_padding) {
+
+	for (auto& frame : original.frames) {
+		frames.insert(std::make_pair(frame.first, frame.second->clone()));
+	}
+}
+
 Dbimg* Dbimg_sequence::addFrame(double pts, Dbimg_FORMAT format) {
 	Dbimg* bimg = new Dbimg(format);
 	frames.insert(std::make_pair(pts, bimg));
@@ -28,6 +36,10 @@ std::string Dbimg_sequence::getIdent() {
 
 DataDump* Dbimg_sequence::dumpResource() {
 	return nullptr; // TODO DataDump of Dbimg_sequence
+}
+
+Dbimg_sequence* Dbimg_sequence::clone() {
+	return new Dbimg_sequence(*this);
 }
 
 } // namespace torasu::tstd

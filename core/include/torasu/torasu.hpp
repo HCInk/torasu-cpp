@@ -136,6 +136,7 @@ public:
 
 	virtual std::string getIdent() = 0;
 	virtual DataDump* dumpResource() = 0;
+	virtual DataResource* clone() = 0;
 };
 
 class DataResourceHolder {
@@ -151,7 +152,7 @@ public:
 			delete dr;
 		}
 	}
-	
+
 	inline void initialize(DataResource* dr, bool owning) {
 #ifdef TORASU_CHECK_DOUBLE_INIT
 		if (this->dr != nullptr) throw std::logic_error("DataResourceHolder may not be intialized twice!");
@@ -183,7 +184,7 @@ public:
 		return dr;
 	}
 
-	
+
 
 };
 
@@ -206,7 +207,7 @@ public:
 
 	Element() {}
 	virtual ~Element() {
-		if (elementExecutionOpaque != nullptr) delete elementExecutionOpaque; 
+		if (elementExecutionOpaque != nullptr) delete elementExecutionOpaque;
 	}
 
 	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
@@ -393,7 +394,7 @@ public:
 	 * @param  result: The result of the calculation of the segment
 	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
 	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult) 
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult)
 		: status(status), result(result, freeResult) {}
 
 	~ResultSegment() {}
@@ -466,11 +467,11 @@ public:
  * @brief  Request to fetch which objects need to be made ready to run a desired task (ReadyObjects)
  */
 class ReadyRequest {
-private: 
+private:
 	std::vector<std::string> ops;
 	RenderContext* rctx;
 public:
-	inline ReadyRequest(std::vector<std::string> ops, RenderContext* rctx) 
+	inline ReadyRequest(std::vector<std::string> ops, RenderContext* rctx)
 		: ops(ops), rctx(rctx)  {}
 	~ReadyRequest() {}
 
@@ -492,7 +493,7 @@ private:
 	ExecutionInterface* ei;
 
 public:
-	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei) 
+	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei)
 		: objects(objects), ei(ei) {}
 	~ReadyInstruction() {}
 
@@ -513,7 +514,7 @@ private:
 	ReadyObjects objects;
 
 public:
-	inline explicit UnreadyInstruction(ReadyObjects objects) 
+	inline explicit UnreadyInstruction(ReadyObjects objects)
 		: objects(objects) {}
 	~UnreadyInstruction() {}
 
@@ -534,7 +535,7 @@ private:
 	ReadyObject obj;
 
 public:
-	inline explicit ObjectReadyResult(ReadyObject obj) 
+	inline explicit ObjectReadyResult(ReadyObject obj)
 		: obj(obj) {}
 	~ObjectReadyResult();
 

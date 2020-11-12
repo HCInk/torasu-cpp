@@ -77,14 +77,16 @@ class DPUniversal : public DataPackable {
 private:
 	std::optional<std::string> ident;
 
+protected:
+	void load() override;
+	torasu::json makeJson() override;
+
 public:
 	explicit DPUniversal(std::string jsonStripped);
 	explicit DPUniversal(torasu::json jsonParsed);
 
-	virtual std::string getIdent();
-	virtual void load();
-	virtual torasu::json makeJson();
-
+	std::string getIdent() override;
+	DPUniversal* clone() override;
 };
 
 } /* namespace torasu */

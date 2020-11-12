@@ -38,4 +38,8 @@ torasu::json Dstring::makeJson() {
 	return string;
 }
 
+Dstring* Dstring::clone() {
+	return new Dstring(*this);
+}
+
 } // namespace torasu::tstd

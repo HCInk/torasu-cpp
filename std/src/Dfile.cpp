@@ -8,6 +8,10 @@ using json = torasu::json;
 
 namespace torasu::tstd {
 
+//
+//	Dfile
+//
+
 Dfile::Dfile(uint64_t size) {
 	this->data = new uint8_t[size];
 	this->size = size;
@@ -17,6 +21,11 @@ Dfile::~Dfile() {
 	delete[] data;
 }
 
+Dfile::Dfile(const Dfile& original)
+	: Dfile(original.size) {
+	std::copy(original.data, original.data+size, data);
+}
+
 std::string Dfile::getIdent() {
 	return ident;
 }
@@ -24,6 +33,14 @@ std::string Dfile::getIdent() {
 DataDump* Dfile::dumpResource() {
 	return nullptr; // TODO Dfile-dumpResource
 }
+
+Dfile* Dfile::clone() {
+	return new Dfile(*this);
+}
+
+//
+//	FileBuilder
+//
 
 Dfile::FileBuilder::FileBuilder() {}
 Dfile::FileBuilder::~FileBuilder() {
@@ -36,7 +53,7 @@ void Dfile::FileBuilder::write(uint8_t* data, size_t dataSize) {
 		std::copy(data, data+dataSize, newBuf);
 		buffers.insert( std::pair<size_t, std::pair<uint8_t*, size_t>>(pos, std::pair<uint8_t*, size_t>(newBuf, dataSize)));
 		size += dataSize;
-		// std::cout << " F:: APPEND " << dataSize << " @ " << pos << " (new size " << size << ")" << std::endl;  
+		// std::cout << " F:: APPEND " << dataSize << " @ " << pos << " (new size " << size << ")" << std::endl;
 		pos = size;
 	} else {
 		auto found = buffers.upper_bound(pos);
@@ -52,7 +69,7 @@ void Dfile::FileBuilder::write(uint8_t* data, size_t dataSize) {
 				// std::cout << " F:: .. WRITE O" << bufferOffset << " W" << toWrite << " (" << bufferLeft << ")" << std::endl;
 
 				std::copy(data, data+toWrite, buffer+bufferOffset);
-				
+
 				data += toWrite;
 				dataSize -= toWrite;
 				pos += toWrite;
@@ -68,7 +85,7 @@ void Dfile::FileBuilder::write(uint8_t* data, size_t dataSize) {
 
 Dfile* Dfile::FileBuilder::compile() {
 	auto* file = new torasu::tstd::Dfile(size);
-	
+
 	auto* data = file->getFileData();
 
 	for (auto& buff : buffers) {

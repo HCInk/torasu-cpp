@@ -16,6 +16,10 @@ private:
 
 	double num;
 
+protected:
+	void load() override;
+	torasu::json makeJson() override;
+
 public:
 	explicit Dnum(std::string jsonStripped);
 	explicit Dnum(torasu::json jsonParsed);
@@ -25,9 +29,9 @@ public:
 
 	double getNum();
 
-	std::string getIdent();
-	void load();
-	torasu::json makeJson();
+	std::string getIdent() override;
+	Dnum* clone() override;
+
 };
 
 } // namespace torasu::tstd
