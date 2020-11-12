@@ -13,6 +13,7 @@
 #include <torasu/torasu.hpp>
 
 #define TORASU_TSTD_CHECK_STATE_ERRORS true
+#define TORASU_TSTD_CORE_RUNNER_FULL_WAITS false
 
 namespace torasu::tstd {
 
@@ -36,6 +37,11 @@ enum EIcore_runner_THREAD_REQUEST_MODE {
 
 class EIcore_runner {
 protected:
+	const bool lockQueue = true;
+	// Determins weather interface exposed to managed tasks needs to be concurrent
+	const bool concurrentSubCalls = true;
+	size_t threadCountMax = 0;
+
 	// Task-queue stuff (locked by taskQueueLock)
 	std::mutex taskQueueLock;
 	std::set<EIcore_runner_object*, EIcore_runner_object_cmp> taskQueue;
@@ -44,19 +50,18 @@ protected:
 	// Thread-management (locked via threadMgmtLock)
 	std::mutex threadMgmtLock;
 	volatile bool doRun = true;
-	size_t threadCountCurrent = 0; // The count of the threads, which are currently effectively running
+	size_t threadCountRunning = 0; // The count of the threads, which are currently effectively running
 	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed 
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
-	size_t threadCountMax = 1;
 	size_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
 	inline void registerRunning() {
-		threadCountCurrent++;
+		threadCountRunning++;
 	}
 	inline void unregisterRunning() {
 		if (doRun) threadSuspensionCv.notify_one();
-		threadCountCurrent--;
+		threadCountRunning--;
 	}
 	void cleanThreads();
 	void spawnThread(bool collapse);
@@ -67,30 +72,42 @@ protected:
 	// Internal functions (not thread-safe)
 	void stop();
 
-	// Internal functions (thread-safe)
+	// Internal functions (thread-safe if lockQueue=true)
 	void run(EIcore_runner_thread& threadHandle, bool collapse);
 	int32_t enqueue(EIcore_runner_object* obj);
 
 	// Thread-management-tools (thread-safe / autolocking threadMgmtLock)
+
+	/**
+	 * @brief  Request a new thread
+	 * @param  mode: Szenario in which the thread is requested
+	 * @retval If a thread could be registered
+	 */
 	inline bool requestNewThread(EIcore_runner_THREAD_REQUEST_MODE mode=NEW) {
-		threadMgmtLock.lock();
+		std::unique_lock lockedTM(threadMgmtLock);
 		if (!doRun) {
-			threadMgmtLock.unlock();
 			return false;
 		}
-		if (threadCountCurrent < threadCountMax) {
+		if (threadCountRunning < threadCountMax) {
 			registerRunning();
 			if (mode == UNSUSPEND) threadCountSuspended--;
-			threadMgmtLock.unlock();
 			return true;
 		} else {
 			if (mode == OR_SUSPEND) threadCountSuspended++;
-			threadMgmtLock.unlock();
 			return false;
 		}
 	}
 public:
-	EIcore_runner();
+	/**
+	 * @brief  Creates single-threaded runner, which will do things just-in-time on fetch
+	 * @param  concurrent: Enable/Disable thread-safeness
+	 */
+	EIcore_runner(bool concurrent = true);
+	/**
+	 * @brief  Creates multi-threaded runner
+	 * @param  maxRunning: The maximum number of actively running threads
+	 */
+	EIcore_runner(size_t maxRunning);
 	~EIcore_runner();
 
 	ExecutionInterface* createInterface(std::vector<int64_t>* prioStack=NULL);
@@ -119,10 +136,10 @@ private:
 	ResultSettings* rs = NULL;
 
 	// Object-data: Task-Settings (persistent)
-	int64_t renderId;
-	EIcore_runner_object* parent;
-	EIcore_runner* runner;
-	std::vector<int64_t>* prioStack;
+	EIcore_runner_object*const parent;
+	EIcore_runner*const runner;
+	const int64_t renderId;
+	const std::vector<int64_t>*const prioStack;
 
 
 	// Sub-task-data (locked by "subTasksLock")
@@ -133,7 +150,7 @@ private:
 
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
-	volatile RenderResult* result = nullptr;
+	RenderResult*volatile result = nullptr;
 	std::condition_variable* resultCv = nullptr;
 
 	// Progress status (locked by statusLock)
@@ -142,46 +159,51 @@ private:
 	std::condition_variable unsuspendCv;
 
 	inline void suspend() {
-		runner->threadMgmtLock.lock();
-		statusLock.lock();
+		std::unique_lock lockedTM(runner->threadMgmtLock);
+		{
+			std::unique_lock lockedStatus(statusLock);
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-		if (status != RUNNING) 
-			throw std::logic_error("suspend() can only be called in state " 
-				+ std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
-		if (parent == nullptr)
-			throw std::logic_error("suspend() can never be called on an interface!");
+			if (status != RUNNING) 
+				throw std::logic_error("suspend() can only be called in state " 
+					+ std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
+			if (parent == nullptr)
+				throw std::logic_error("suspend() can never be called on an interface!");
 #endif
-		// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
-		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
-		runner->unregisterRunning();
-		status = BLOCKED;
-		statusLock.unlock();
+			// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
+			// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
+			runner->unregisterRunning();
+			status = BLOCKED;
+		}
 		
-		if (runner->threadCountCurrent <= 0 && runner->threadCountSuspended <= 0) { // Spawn thread if number of running threads reach a critical value
+		if (runner->threadCountRunning <= 0 && runner->threadCountSuspended <= 0) { // Spawn thread if number of running threads reach a critical value
 			runner->spawnThread(false);
 		}
-		runner->threadMgmtLock.unlock();
 	}
 
 	inline void unsuspend() {
-		std::unique_lock lck(statusLock);
+		std::unique_lock lockedStatus(statusLock);
 #if TORASU_TSTD_CHECK_STATE_ERRORS
 		if (status != BLOCKED) 
 			throw std::logic_error("unsuspend() can only be called in state " 
 				+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
 #endif
 		std::unique_lock threadLock(runner->threadMgmtLock);
-		if (runner->threadCountCurrent < runner->threadCountMax) {
+		if (runner->threadCountRunning < runner->threadCountMax) {
 			status = RUNNING;
 			runner->registerRunning();
 			return;
 		}
 		threadLock.unlock();
 		status = SUSPENDED;
-		lck.unlock();
+
+#if TORASU_TSTD_CORE_RUNNER_FULL_WAITS
+		lockedStatus.unlock();
+#endif
 		while (status == SUSPENDED) {
-			// unsuspendCv.wait_for(lck, std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing (186 -> 190)
-			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); // XXX Removed for performance-optimisation-testing
+#if !TORASU_TSTD_CORE_RUNNER_FULL_WAITS
+				unsuspendCv.wait_for(lockedStatus, std::chrono::milliseconds(1));
+				// std::this_thread::sleep_for(std::chrono::milliseconds(1)); 
+#endif
 		}
 	}
 
@@ -196,8 +218,8 @@ private:
 	}
 
 protected:
-	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
-	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, std::vector<int64_t>* prioStack);
+	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>*);
+	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>*);
 	virtual ~EIcore_runner_object();
 
 	RenderResult* run(std::function<void()>* outCleanupFunction);

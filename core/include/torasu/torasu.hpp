@@ -431,14 +431,14 @@ public:
 	explicit inline RenderResult(ResultStatus status) {
 		this->status = status;
 		this->results = NULL;
-		this->creation = std::chrono::high_resolution_clock::now();
+		this->creation = std::chrono::high_resolution_clock::now(); // XXX for measurement purposes
 	}
 
 	inline RenderResult(ResultStatus status,
 						std::map<std::string, ResultSegment*>* results) {
 		this->status = status;
 		this->results = results;
-		this->creation = std::chrono::high_resolution_clock::now();
+		this->creation = std::chrono::high_resolution_clock::now(); // XXX for measurement purposes
 	}
 
 	~RenderResult() {
