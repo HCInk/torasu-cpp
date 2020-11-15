@@ -20,6 +20,7 @@
 #include <torasu/std/Rnet_file.hpp>
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/EIcore_runner.hpp>
+#include <torasu/std/Rsin.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -196,6 +197,33 @@ void jsonPropExample() {
 	}
 }
 
+void mathExample() {
+
+	cout << "//" << endl
+		 << "// Math Example" << endl
+		 << "//" << endl;
+
+	Rnum num(10);
+	Rsin sin(&num);
+
+	auto& tree = sin;
+
+	torasu::tstd::EIcore_runner runner;
+	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+
+
+	tools::RenderInstructionBuilder rib;
+
+	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+
+	RenderContext rctx;
+
+	RenderResult* rr = rib.runRender(&tree, &rctx, ei.get());
+
+	auto result = handle.getFrom(rr);
+	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -213,6 +241,8 @@ int main(int argc, char** argv) {
 	simpleRenderExample2();
 
 	jsonPropExample();
+
+	mathExample();
 
 	// taskDistTest();
 
