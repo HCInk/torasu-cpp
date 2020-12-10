@@ -231,9 +231,9 @@ void slotFunction(
 	torasu::tools::ManagedElementSlot mA(elemA);
 	torasu::tools::ManagedElementSlot mB(elemB);
 	torasu::tools::ManagedElementSlot mC(elemB);
-	torasu::tools::ManagedRenderableSlot mA(rndD);
-	torasu::tools::ManagedRenderableSlot mB(rndE);
-	torasu::tools::ManagedRenderableSlot mC(rndF);
+	torasu::tools::ManagedRenderableSlot mD(rndD);
+	torasu::tools::ManagedRenderableSlot mE(rndE);
+	torasu::tools::ManagedRenderableSlot mF(rndF);
 
 }
 
