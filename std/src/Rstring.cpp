@@ -9,7 +9,7 @@ namespace torasu::tstd {
 
 
 Rstring::Rstring(std::string str)
-	: SimpleRenderable("EXAMPLE::RBOILERPLATE", true, false),
+	: SimpleRenderable("STD::RSTRING", true, false),
 	  str(new torasu::tstd::Dstring(str)) {}
 
 
@@ -35,7 +35,7 @@ void Rstring::setData(torasu::DataResource* data) {
 		delete str;
 		str = castedData;
 	} else {
-		throw std::invalid_argument("The data-type \"Dboilerplate\" is only allowed");
+		throw std::invalid_argument("The data-type \"Dstring\" is only allowed");
 	}
 }
 
