@@ -8,6 +8,7 @@
 #include <torasu/json.hpp>
 #include <torasu/DataPackable.hpp>
 #include <torasu/render_tools.hpp>
+#include <torasu/slot_tools.hpp>
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
@@ -224,6 +225,34 @@ void mathExample() {
 	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 }
 
+void slotFunction(
+		torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
+		torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF) {
+	torasu::tools::ManagedElementSlot mA(elemA);
+	torasu::tools::ManagedElementSlot mB(elemB);
+	torasu::tools::ManagedElementSlot mC(elemB);
+	torasu::tools::ManagedRenderableSlot mA(rndD);
+	torasu::tools::ManagedRenderableSlot mB(rndE);
+	torasu::tools::ManagedRenderableSlot mC(rndF);
+
+}
+
+const auto& IE = torasu::tools::inlineElement;
+const auto& IR = torasu::tools::inlineRenderable;
+
+void slotTests() {
+
+	Renderable* rndA = new Rnum(1);
+
+	Rnum rndB(1);
+
+	slotFunction(rndA, &rndB, IE(new Rnum(10)),
+				rndA, &rndB, IR(new Rnum(7)));
+
+	delete rndA;
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -243,6 +272,8 @@ int main(int argc, char** argv) {
 	jsonPropExample();
 
 	mathExample();
+
+	slotTests();
 
 	// taskDistTest();
 
