@@ -218,9 +218,9 @@ void mathExample() {
 
 	RenderContext rctx;
 
-	RenderResult* rr = rib.runRender(&tree, &rctx, ei.get());
+	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
 
-	auto result = handle.getFrom(rr);
+	auto result = handle.getFrom(rr.get());
 	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 }
 
