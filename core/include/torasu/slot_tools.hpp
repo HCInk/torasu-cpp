@@ -27,6 +27,7 @@ public:
 	inline T& get() {
 		return *elem;
 	}
+
 	inline T& isOwned() {
 		return *elem;
 	}
@@ -35,19 +36,19 @@ public:
 
 };
 
-template<class T> class ManagedSlot : public Slot<T> {
+template<class T> class ManagedSlot : public T {
 public:
-	ManagedSlot(const Slot<T>& slot) : Slot<T>(slot) {}
+	ManagedSlot(const T& slot) : T(slot) {}
 	
 	~ManagedSlot() {
-		if (Slot<T>::owned) delete Slot<T>::elem;
+		if (T::owned) delete T::elem;
 	}
 };
 
 typedef Slot<torasu::Element> ElementSlot;
 typedef Slot<torasu::Renderable> RenderableSlot;
-typedef ManagedSlot<torasu::Element> ManagedElementSlot;
-typedef ManagedSlot<torasu::Renderable> ManagedRenderableSlot;
+typedef ManagedSlot<ElementSlot> ManagedElementSlot;
+typedef ManagedSlot<RenderableSlot> ManagedRenderableSlot;
 
 /**
  * @brief  Creates an ElementSlot which should be freed automatically
