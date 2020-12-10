@@ -5,13 +5,15 @@
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
-#include <torasu/std/Dnum.hpp>
-
 using namespace std;
 
 namespace torasu::tstd {
 
 Rnum::Rnum(double val) : SimpleRenderable("STD::RNUM", true, false) {
+	valdr = new Dnum(val);
+}
+
+Rnum::Rnum(Dnum val) : SimpleRenderable("STD::RNUM", true, false) {
 	valdr = new Dnum(val);
 }
 
@@ -28,7 +30,7 @@ void Rnum::setData(DataResource* data) {
 		delete valdr;
 		valdr = dpnum;
 	} else {
-		throw invalid_argument("The data-type \"DPNum\" is only allowed");
+		throw invalid_argument("The data-type \"DNum\" is only allowed");
 	}
 }
 
