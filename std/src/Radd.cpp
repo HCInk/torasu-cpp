@@ -5,21 +5,16 @@
 #include <chrono>
 #include <iostream>
 
-#include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
 
-#include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dbimg.hpp>
 
 using namespace std;
 
 namespace torasu::tstd {
 
-Radd::Radd(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RADD"), false, true) {
-	this->a = a;
-	this->b = b;
-}
+Radd::Radd(NumSlot a, NumSlot b)
+	: SimpleRenderable(std::string("STD::RADD"), false, true), a(a), b(b) {}
 
 Radd::~Radd() {
 
@@ -36,8 +31,8 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 		auto ei = ri->getExecutionInterface();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a.get(), rctx, ei);
+		auto rendB = rib.enqueueRender(b.get(), rctx, ei);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -82,8 +77,8 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 		auto ei = ri->getExecutionInterface();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a.get(), rctx, ei);
+		auto rendB = rib.enqueueRender(b.get(), rctx, ei);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -156,8 +151,8 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 map<string, Element*> Radd::getElements() {
 	map<string, Element*> elems;
 
-	elems["a"] = a;
-	elems["b"] = b;
+	elems["a"] = a.get();
+	elems["b"] = b.get();
 
 	return elems;
 }

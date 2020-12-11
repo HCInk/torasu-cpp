@@ -22,6 +22,7 @@
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 #include <torasu/std/Rsin.hpp>
+#include <torasu/std/Radd.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -225,6 +226,35 @@ void mathExample() {
 	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 }
 
+
+void inlineMathExample() {
+
+	cout << "//" << endl
+		 << "// Inline Math Example" << endl
+		 << "//" << endl;
+
+	Rnum num(10);
+	Radd add(2, &num);
+	Rsin sin(&add);
+
+	auto& tree = sin;
+
+	torasu::tstd::EIcore_runner runner;
+	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+
+
+	tools::RenderInstructionBuilder rib;
+
+	auto handle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, nullptr);
+
+	RenderContext rctx;
+
+	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
+
+	auto result = handle.getFrom(rr.get());
+	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+}
+
 void slotFunction(
 		torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
 		torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF,
@@ -284,6 +314,8 @@ int main(int argc, char** argv) {
 	jsonPropExample();
 
 	mathExample();
+
+	inlineMathExample();
 
 	slotTests();
 
