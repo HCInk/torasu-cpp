@@ -8,18 +8,14 @@
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
 
-#include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dbimg.hpp>
 
 using namespace std;
 
 namespace torasu::tstd {
 
-Rmultiply::Rmultiply(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true) {
-	this->a = a;
-	this->b = b;
-}
+Rmultiply::Rmultiply(NumSlot a, NumSlot b)
+	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true), a(a), b(b) {}
 
 Rmultiply::~Rmultiply() {
 
@@ -141,8 +137,8 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 map<string, Element*> Rmultiply::getElements() {
 	map<string, Element*> elems;
 
-	elems["a"] = a;
-	elems["b"] = b;
+	elems["a"] = a.get();
+	elems["b"] = b.get();
 
 	return elems;
 }

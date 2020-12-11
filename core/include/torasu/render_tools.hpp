@@ -10,6 +10,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/RenderableProperties.hpp>
+#include <torasu/slot_tools.hpp>
 
 namespace torasu::tools {
 
@@ -131,6 +132,10 @@ public:
 		std::string segKey = getUnusedKey();
 		addSegment(pipeline, segKey, format);
 		return RenderResultSegmentHandle<T>(segKey);
+	}
+
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rctx, ei, prio);
 	}
 
 	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {

@@ -4,9 +4,10 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
+#include <torasu/slot_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/spoilsD.hpp>
+#include <torasu/std/Dstring.hpp>
 
 namespace torasu::tstd {
 
@@ -23,6 +24,24 @@ public:
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;
+};
+
+class StringSlot : public torasu::tools::RenderableSlot {
+public:
+	inline StringSlot() {}
+
+	inline StringSlot(Renderable* rnd)
+		: torasu::tools::RenderableSlot(rnd) {}
+
+	inline StringSlot(torasu::tools::RenderableSlot rnd)
+		: torasu::tools::RenderableSlot(rnd) {}
+
+	inline StringSlot(const char* str)
+		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
+
+	inline StringSlot(std::string str)
+		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
+
 };
 
 } // namespace torasu::tstd

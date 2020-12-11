@@ -3,18 +3,21 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
+
+#include <torasu/std/Rnum.hpp>
 
 namespace torasu::tstd {
 
 class Rsin : public tools::SimpleRenderable {
 private:
-	Renderable* valRnd;
+	tools::ManagedSlot<NumSlot> valRnd;
 
 protected:
 	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
-	Rsin(Renderable* val);
+	Rsin(NumSlot val);
 	~Rsin();
 
 	torasu::ElementMap getElements() override;

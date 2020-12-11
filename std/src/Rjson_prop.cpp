@@ -43,7 +43,7 @@ inline std::string combine(std::vector<std::string> list, size_t begin, size_t e
 
 namespace torasu::tstd {
 
-Rjson_prop::Rjson_prop(std::string path, Renderable* jsonRnd)
+Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd)
 	: SimpleRenderable("STD::RJSON_PROP", true, true),
 	  path(new torasu::tstd::Dstring(path)), jsonRnd(jsonRnd) {}
 
@@ -123,7 +123,7 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 torasu::ElementMap Rjson_prop::getElements() {
 	torasu::ElementMap elems;
 
-	elems["json"] = jsonRnd;
+	elems["json"] = jsonRnd.get();
 
 	return elems;
 }

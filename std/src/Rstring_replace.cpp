@@ -3,7 +3,6 @@
 #include <torasu/render_tools.hpp>
 
 #include <torasu/std/pipeline_names.hpp>
-#include <torasu/std/Dstring.hpp>
 
 namespace {
 
@@ -24,7 +23,7 @@ inline void findAndReplaceAll(std::string* data, const std::string& toSearch, co
 
 namespace torasu::tstd {
 
-Rstring_replace::Rstring_replace(Renderable* src, Renderable* before, Renderable* after)
+Rstring_replace::Rstring_replace(StringSlot src, StringSlot before, StringSlot after)
 	: SimpleRenderable("STD::RSTRING_REPLACE", false, true),
 	  srcRnd(src), beforeRnd(before), afterRnd(after) {}
 
@@ -85,12 +84,16 @@ torasu::ResultSegment* Rstring_replace::renderSegment(torasu::ResultSegmentSetti
 
 torasu::ElementMap Rstring_replace::getElements() {
 	torasu::ElementMap elems;
-	elems["ex"] = srcRnd;
+	elems["src"] = srcRnd.get();
+	elems["old"] = beforeRnd.get();
+	elems["new"] = afterRnd.get();
 	return elems;
 }
 
 void Rstring_replace::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("ex", &srcRnd, false, key, elem)) return;
+	if (torasu::tools::trySetRenderableSlot("src", &srcRnd, false, key, elem)) return;
+	if (torasu::tools::trySetRenderableSlot("old", &beforeRnd, false, key, elem)) return;
+	if (torasu::tools::trySetRenderableSlot("new", &afterRnd, false, key, elem)) return;
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 

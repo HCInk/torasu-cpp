@@ -8,18 +8,14 @@
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
 
-#include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dbimg.hpp>
 
 using namespace std;
 
 namespace torasu::tstd {
 
-Rsubtract::Rsubtract(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true) {
-	this->a = a;
-	this->b = b;
-}
+Rsubtract::Rsubtract(NumSlot a, NumSlot b)
+	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true), a(a), b(b) {}
 
 Rsubtract::~Rsubtract() {
 
@@ -153,11 +149,11 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 }
 
-map<string, Element*> Rsubtract::getElements() {
-	map<string, Element*> elems;
+ElementMap Rsubtract::getElements() {
+	ElementMap elems;
 
-	elems["a"] = a;
-	elems["b"] = b;
+	elems["a"] = a.get();
+	elems["b"] = b.get();
 
 	return elems;
 }

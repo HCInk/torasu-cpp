@@ -5,20 +5,23 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
+
+#include <torasu/std/Rstring.hpp>
 
 namespace torasu::tstd {
 
 class Rstring_replace : public torasu::tools::SimpleRenderable {
 private:
-	Renderable* srcRnd;
-	Renderable* beforeRnd;
-	Renderable* afterRnd;
+	tools::ManagedSlot<StringSlot> srcRnd;
+	tools::ManagedSlot<StringSlot> beforeRnd;
+	tools::ManagedSlot<StringSlot> afterRnd;
 
 protected:
 	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
-	Rstring_replace(Renderable* src, Renderable* before, Renderable* after);
+	Rstring_replace(StringSlot src, StringSlot before, StringSlot after);
 	~Rstring_replace();
 
 	torasu::ElementMap getElements() override;

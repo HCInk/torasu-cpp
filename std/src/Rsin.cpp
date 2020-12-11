@@ -9,15 +9,12 @@
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
 #include <torasu/std/pipeline_names.hpp>
-#include <torasu/std/spoilsD.hpp>
-
-#include <torasu/std/Dnum.hpp>
 
 using namespace std;
 
 namespace torasu::tstd {
 
-Rsin::Rsin(Renderable* val)
+Rsin::Rsin(NumSlot val)
 	: SimpleRenderable(std::string("STD::RSIN"), false, true), valRnd(val) {}
 
 Rsin::~Rsin() {
@@ -68,7 +65,7 @@ ResultSegment* Rsin::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 map<string, Element*> Rsin::getElements() {
 	map<string, Element*> elems;
 
-	elems["v"] = valRnd;
+	elems["v"] = valRnd.get();
 	return elems;
 }
 

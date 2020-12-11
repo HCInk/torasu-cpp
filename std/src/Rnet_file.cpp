@@ -32,17 +32,11 @@ inline std::vector<std::string> split(std::string base, std::string delimiter) {
 
 namespace torasu::tstd {
 
-Rnet_file::Rnet_file(std::string url)
+Rnet_file::Rnet_file(StringSlot url, StringSlot headers)
 	: SimpleRenderable("STD::RNET_FILE", false, true),
-	  urlRnd(new torasu::tstd::Rstring(url)), headersRnd(nullptr), ownsUrl(true) {}
+	  urlRnd(url),  headersRnd(headers) {}
 
-Rnet_file::Rnet_file(Renderable* url, Renderable* headers)
-	: SimpleRenderable("STD::RNET_FILE", false, true),
-	  urlRnd(url),  headersRnd(headers), ownsUrl(false) {}
-
-Rnet_file::~Rnet_file() {
-	if (ownsUrl) delete urlRnd;
-}
+Rnet_file::~Rnet_file() {}
 
 size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* s) {
 	size_t new_len = size*nmemb;
@@ -65,7 +59,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
 		auto renderId = rib.enqueueRender(urlRnd, rctx, ei);
-		auto renderIdHeaders = headersRnd != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
 
 		std::string url;
 		{
@@ -81,7 +75,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		}
 
 		std::string headers = "";
-		if (headersRnd != nullptr) {
+		if (headersRnd.get() != nullptr) {
 			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderIdHeaders));
 
 			auto fetchedRes = segHandle.getFrom(rndRes.get());
@@ -144,13 +138,15 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 torasu::ElementMap Rnet_file::getElements() {
 	torasu::ElementMap elems;
 
-	elems["url"] = urlRnd;
+	elems["url"] = urlRnd.get();
+	if (urlRnd.get() != nullptr) elems["headers"] = headersRnd.get();
 
 	return elems;
 }
 
 void Rnet_file::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("ex", &urlRnd, false, key, elem, &ownsUrl)) return;
+	if (torasu::tools::trySetRenderableSlot("url", &urlRnd, false, key, elem)) return;
+	if (torasu::tools::trySetRenderableSlot("headers", &headersRnd, true, key, elem)) return;
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 

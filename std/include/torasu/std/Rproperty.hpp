@@ -5,12 +5,13 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
 
 namespace torasu::tstd {
 
 class Rproperty : public torasu::tools::SimpleRenderable {
 private:
-	Renderable* propertySrc;
+	tools::ManagedRenderableSlot propertySrc;
 	std::string fromProperty;
 	std::string servedPipeline;
 
@@ -18,7 +19,7 @@ protected:
 	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
-	Rproperty(Renderable* propertySrc, std::string fromProperty, std::string servedPipeline);
+	Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline);
 	~Rproperty();
 
 	torasu::ElementMap getElements() override;
