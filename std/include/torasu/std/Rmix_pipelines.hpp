@@ -4,6 +4,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 #include <torasu/DataPackable.hpp>
+#include <torasu/slot_tools.hpp>
 
 namespace torasu::tstd {
 
@@ -12,17 +13,31 @@ class Rmix_pipelines;
 class Dmix_pipelines_conf : public torasu::DataPackable {
 
 private:
+	// For configuration
+	struct PipelineMappingUnmanaged {
+		size_t id;
+		std::string pl;
+		torasu::tools::RenderableSlot rnd;
+	};
+
+	// For configuration
 	struct PipelineMapping {
 		size_t id;
 		std::string pl;
-		torasu::Renderable* rnd; // Will not be exported/imported
+		torasu::tools::ManagedRenderableSlot rnd; // Will not be exported/imported
+
+		inline PipelineMapping(size_t id, std::string pl, torasu::tools::RenderableSlot rnd) 
+			: id(id), pl(pl), rnd(rnd){}
+
+		inline PipelineMapping(const PipelineMappingUnmanaged& um) 
+			: id(um.id), pl(um.pl), rnd(um.rnd){}
 	};
 
 	// mappings (managed by applyMappings(...) and updateMapping(...))
 	std::map<size_t, PipelineMapping*> mappingsById;
 	std::map<std::string, PipelineMapping*> mappingsByPl;
 
-	void applyMappings(std::vector<PipelineMapping> entries);
+	void applyMappings(std::vector<PipelineMappingUnmanaged> newMappings);
 	void updateMapping(size_t id, torasu::Renderable* rnd);
 
 	void importMappings(const Dmix_pipelines_conf* newMappings);
@@ -44,18 +59,18 @@ class Rmix_pipelines : public torasu::tools::SimpleRenderable {
 public:
 	struct MixEntry {
 		std::string pl;
-		Renderable* rnd;
+		torasu::tools::RenderableSlot rnd;
 	};
 
 private:
-	Renderable* defRnd;
+	torasu::tools::ManagedRenderableSlot defRnd;
 	Dmix_pipelines_conf conf;
 
 protected:
 	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
-	Rmix_pipelines(Renderable* def, std::initializer_list<MixEntry> mixes);
+	Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes);
 	~Rmix_pipelines();
 
 	torasu::ElementMap getElements() override;
