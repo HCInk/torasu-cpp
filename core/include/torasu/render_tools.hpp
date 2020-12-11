@@ -135,7 +135,7 @@ public:
 	}
 
 	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
-		enqueueRender(rnd.get(), rctx, ei, prio);
+		return enqueueRender(rnd.get(), rctx, ei, prio);
 	}
 
 	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
