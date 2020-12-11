@@ -39,7 +39,13 @@ public:
 template<class T> class ManagedSlot : public T {
 public:
 	ManagedSlot(const T& slot) : T(slot) {}
-	
+
+	inline T& operator=(const T& b) {
+		if (T::owned) delete T::elem;
+		T::elem = b.elem;
+		T::owned = b.owned;
+	}
+
 	~ManagedSlot() {
 		if (T::owned) delete T::elem;
 	}
