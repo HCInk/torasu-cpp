@@ -24,11 +24,11 @@ public:
 		return *elem;
 	}
 
-	inline T* get() {
+	inline T* get() const {
 		return elem;
 	}
 
-	inline bool isOwned() {
+	inline bool isOwned() const {
 		return owned;
 	}
 
@@ -40,10 +40,11 @@ template<class T> class ManagedSlot : public T {
 public:
 	ManagedSlot(const T& slot) : T(slot) {}
 
-	inline T& operator=(const T& b) {
+	inline ManagedSlot<T>& operator=(const T& b) {
 		if (T::owned) delete T::elem;
-		T::elem = b.elem;
-		T::owned = b.owned;
+		T::elem = b.get();
+		T::owned = b.isOwned();
+		return *this;
 	}
 
 	~ManagedSlot() {
