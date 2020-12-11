@@ -5,6 +5,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/RenderableProperties.hpp>
+#include <torasu/slot_tools.hpp>
 
 namespace torasu::tools {
 
@@ -149,6 +150,35 @@ inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSl
 				*ownsCurrent = false;
 				delete rndSlot;
 			}
+			*rndSlot = rnd;
+			return true;
+		} else {
+			throw makeExceptSlotOnlyRenderables(slotKey);
+		}
+	}
+	return false;
+}
+
+/**
+ * @brief  Shorthand to make setting renderable-slots easier
+ * @param  slotKey: Slot key of the slot to be put into
+ * @param  rndSlot: Slot the Renderable should be put into
+ * @param  supportNull: If the slot can be set to null (if not an exception will be thrown, when null-assignments happen)
+ * @param  givenKey: The key that is getting set (and which is getting set)
+ * @param  givenElement: The given element to be set
+ * @retval If the element has been set into the slot
+ */
+inline bool trySetRenderableSlot(const char* slotKey, torasu::tools::RenderableSlot* rndSlot, bool supportNull, const std::string& givenKey, torasu::Element* givenElement) {
+	if (givenKey.compare(slotKey) == 0) {
+		if (givenElement == nullptr) {
+			if (supportNull) {
+				*rndSlot = nullptr;
+				return true;
+			} else {
+				throw std::invalid_argument(std::string("Element slot \"") + slotKey + std::string("\" may not be empty!"));
+			}
+		}
+		if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(givenElement)) {
 			*rndSlot = rnd;
 			return true;
 		} else {
