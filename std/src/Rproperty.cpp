@@ -9,7 +9,7 @@ namespace torasu::tstd {
 // TODO Format support
 //
 
-Rproperty::Rproperty(Renderable* propertySrc, std::string fromProperty, std::string servedPipeline)
+Rproperty::Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline)
 	: SimpleRenderable("STD::RPROPERTY", false, true),
 	  propertySrc(propertySrc), fromProperty(fromProperty), servedPipeline(servedPipeline) {}
 
@@ -17,7 +17,7 @@ Rproperty::~Rproperty() {}
 
 torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	if (resSettings->getPipeline() == servedPipeline) {
-		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc, { fromProperty }, ri->getExecutionInterface(), ri->getRenderContext());
+		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc.get(), { fromProperty }, ri->getExecutionInterface(), ri->getRenderContext());
 		auto& holder = (*rp)[fromProperty];
 		bool owns = holder.owns();
 		torasu::DataResource* value = owns ? holder.eject() : holder.get();
@@ -35,7 +35,7 @@ torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* r
 torasu::ElementMap Rproperty::getElements() {
 	torasu::ElementMap elems;
 
-	elems["psrc"] = propertySrc;
+	elems["psrc"] = propertySrc.get();
 
 	return elems;
 }
