@@ -3,6 +3,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/render_tools.hpp>
 
 #include <torasu/std/Dstring_pair.hpp>
 
@@ -14,14 +15,14 @@ class Rmod_rctx : public torasu::Renderable,
 	public torasu::tools::ReadylessElement {
 private:
 	Dstring_pair data;
-	Renderable* mainRnd;
-	Renderable* valueRnd;
+	tools::ManagedRenderableSlot mainRnd;
+	tools::ManagedRenderableSlot valueRnd;
 
 protected:
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 public:
-	Rmod_rctx(Renderable* main, Renderable* value, std::string rctxKey, std::string valuePipeline);
+	Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline);
 	~Rmod_rctx();
 
 	torasu::ElementMap getElements() override;

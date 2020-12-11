@@ -8,7 +8,7 @@ namespace torasu::tstd {
 //	Rmod_rctx
 //
 
-Rmod_rctx::Rmod_rctx(Renderable* main, Renderable* value, std::string rctxKey, std::string valuePipeline)
+Rmod_rctx::Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline)
 	: NamedIdentElement("STD::RMOD_RCTX"), SimpleDataElement(true, true), 
 	data(rctxKey, valuePipeline), mainRnd(main), valueRnd(value) {}
 
@@ -22,7 +22,7 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderInstructionBuilder valRib;
 	valRib.addSegment(data.getB(), "v", nullptr); // TODO Add format-support
 
-	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd, cRctx, ei));
+	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd.get(), cRctx, ei));
 
 	torasu::DataResource* valueDr = (*valrr.get()->getResults())["v"]->getResult(); // Lifetime: Until valrr is destructed
 
@@ -30,7 +30,7 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 	newRctx[data.getA()] = valueDr;
 
-	auto rid = ei->enqueueRender(mainRnd, &newRctx, ri->getResultSettings(), 0);
+	auto rid = ei->enqueueRender(mainRnd.get(), &newRctx, ri->getResultSettings(), 0);
 
 	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
 
@@ -40,8 +40,8 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 torasu::ElementMap Rmod_rctx::getElements() {
 	torasu::ElementMap elems;
-	elems["main"] = mainRnd;
-	elems["val"] = valueRnd;
+	elems["main"] = mainRnd.get();
+	elems["val"] = valueRnd.get();
 	return elems;
 }
 
