@@ -5,9 +5,11 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
 
 #include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/spoilsD.hpp>
+#include <torasu/std/Rnum.hpp>
 
 namespace torasu::tstd {
 
@@ -16,14 +18,14 @@ private:
 	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
 	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
 
-	Renderable* a = NULL;
-	Renderable* b = NULL;
+	tools::ManagedSlot<NumSlot> a;
+	tools::ManagedSlot<NumSlot> b;
 
 protected:
 	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
-	Rdivide(Renderable* a, Renderable* b);
+	Rdivide(NumSlot a, NumSlot b);
 	~Rdivide();
 
 	torasu::ElementMap getElements() override;

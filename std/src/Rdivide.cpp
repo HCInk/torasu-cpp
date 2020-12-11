@@ -8,18 +8,15 @@
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
 
-#include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dbimg.hpp>
 
 using namespace std;
 
 namespace torasu::tstd {
 
-Rdivide::Rdivide(Renderable* a, Renderable* b)
-	: SimpleRenderable(std::string("STD::RDIVIDE"), false, true) {
-	this->a = a;
-	this->b = b;
-}
+Rdivide::Rdivide(NumSlot a, NumSlot b)
+	: SimpleRenderable(std::string("STD::RDIVIDE"), false, true),
+		a(a), b(b) {}
 
 Rdivide::~Rdivide() {
 
@@ -140,11 +137,11 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 
 }
 
-map<string, Element*> Rdivide::getElements() {
-	map<string, Element*> elems;
+ElementMap Rdivide::getElements() {
+	ElementMap elems;
 
-	elems["a"] = a;
-	elems["b"] = b;
+	elems["a"] = a.get();
+	elems["b"] = b.get();
 
 	return elems;
 }

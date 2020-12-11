@@ -5,6 +5,7 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
 
 #include <torasu/std/spoilsD.hpp>
 
@@ -13,13 +14,13 @@ namespace torasu::tstd {
 class Rjson_prop : public torasu::tools::SimpleRenderable {
 private:
 	torasu::tstd::Dstring* path;
-	Renderable* jsonRnd;
+	torasu::tools::ManagedRenderableSlot jsonRnd;
 
 protected:
 	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
-	Rjson_prop(std::string path, Renderable* jsonRnd);
+	Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd);
 	~Rjson_prop();
 
 	torasu::ElementMap getElements() override;

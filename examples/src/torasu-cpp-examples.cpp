@@ -8,6 +8,7 @@
 #include <torasu/json.hpp>
 #include <torasu/DataPackable.hpp>
 #include <torasu/render_tools.hpp>
+#include <torasu/slot_tools.hpp>
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
@@ -21,6 +22,7 @@
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 #include <torasu/std/Rsin.hpp>
+#include <torasu/std/Radd.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -224,6 +226,75 @@ void mathExample() {
 	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 }
 
+
+void inlineMathExample() {
+
+	cout << "//" << endl
+		 << "// Inline Math Example" << endl
+		 << "//" << endl;
+
+	Rnum num(10);
+	Radd add(2, &num);
+	Rsin sin(&add);
+
+	auto& tree = sin;
+
+	torasu::tstd::EIcore_runner runner;
+	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+
+
+	tools::RenderInstructionBuilder rib;
+
+	auto handle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, nullptr);
+
+	RenderContext rctx;
+
+	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
+
+	auto result = handle.getFrom(rr.get());
+	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+}
+
+void slotFunction(
+		torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
+		torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF,
+		torasu::tstd::NumSlot rndNumA, torasu::tstd::NumSlot rndNumB, torasu::tstd::NumSlot rndNumC,
+		torasu::tstd::StringSlot rndStrA, torasu::tstd::StringSlot rndStrB, torasu::tstd::StringSlot rndStrC) {
+	torasu::tools::ManagedElementSlot mA(elemA);
+	torasu::tools::ManagedElementSlot mB(elemB);
+	torasu::tools::ManagedElementSlot mC(elemC);
+	torasu::tools::ManagedRenderableSlot mD(rndD);
+	torasu::tools::ManagedRenderableSlot mE(rndE);
+	torasu::tools::ManagedRenderableSlot mF(rndF);
+	torasu::tools::ManagedSlot<NumSlot> mG(rndNumA);
+	torasu::tools::ManagedRenderableSlot mH(rndNumB);
+	torasu::tools::ManagedSlot<NumSlot> mI(rndNumC);
+	torasu::tools::ManagedRenderableSlot mJ(rndStrA);
+	torasu::tools::ManagedRenderableSlot mK(rndStrB);
+	torasu::tools::ManagedSlot<StringSlot> mL(rndStrC);
+	// Also works but will not be optimal: torasu::tools::ManagedSlot<NumSlot> mL(rndStrC);
+
+}
+
+const auto& IE = torasu::tools::inlineElement;
+const auto& IR = torasu::tools::inlineRenderable;
+
+void slotTests() {
+
+	Renderable* rndA = new Rnum(1);
+
+	Rnum rndB(1);
+	Rstring rndC("TEST2");
+
+	slotFunction(rndA, &rndB, IE(new Rnum(10)),
+				rndA, &rndB, IR(new Rnum(7)),
+				5, &rndB, IR(new Rnum(6)),
+				"TEST1", &rndC, IR(new Rstring("TEST3")));
+
+	delete rndA;
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -243,6 +314,10 @@ int main(int argc, char** argv) {
 	jsonPropExample();
 
 	mathExample();
+
+	inlineMathExample();
+
+	slotTests();
 
 	// taskDistTest();
 

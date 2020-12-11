@@ -31,7 +31,7 @@ Dmix_pipelines_conf* Dmix_pipelines_conf::clone() {
 	return new Dmix_pipelines_conf(*this);
 }
 
-void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings) {
+void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMappingUnmanaged> newMappings) {
 
 	// Save previous mappings
 	std::set<PipelineMapping*> oldMappings;
@@ -47,7 +47,7 @@ void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings
 			oldMappings.erase(mapping);
 
 			// Update renderable (if given)
-			if (newMapping.rnd != nullptr && mapping->rnd != newMapping.rnd)
+			if (newMapping.rnd.get() != nullptr)
 				mapping->rnd = newMapping.rnd;
 
 			// Remap pipeline if it changed
@@ -76,8 +76,12 @@ void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMapping> newMappings
 
 	// Remove old mappings
 	for (auto toRemove : oldMappings) {
-		mappingsById.erase(toRemove->id); // Should always erase one
-		mappingsByPl.erase(toRemove->pl); // Should erase one if pipeline has not been reused by other id
+		// Should always erase one
+		mappingsById.erase(toRemove->id);
+		auto foundPlMapping = mappingsByPl.find(toRemove->pl);
+		// Should erase one if pipeline has not been reused by other id
+		if (foundPlMapping->second == toRemove) mappingsByPl.erase(foundPlMapping);
+		// Free mapping
 		delete toRemove;
 	}
 
@@ -89,21 +93,22 @@ void Dmix_pipelines_conf::updateMapping(size_t id, torasu::Renderable* rnd) {
 	if (foundMapping != mappingsById.end()) {
 		foundMapping->second->rnd = rnd;
 	} else {
-		auto* mapping = new PipelineMapping();
-		mapping->id = id;
-		mapping->pl = ""; // pl.empty(): Signalise that the pipeline is not known yet
-		mapping->rnd = rnd;
+		auto* mapping = new PipelineMapping{
+			id, 
+			"", // pl.empty(): Signalise that the pipeline is not known yet
+			rnd
+		};
 		mappingsById[id] = mapping;
 
 	}
 }
 
 void Dmix_pipelines_conf::importMappings(const Dmix_pipelines_conf* newMappings) {
-	std::vector<Dmix_pipelines_conf::PipelineMapping> mappings;
+	std::vector<Dmix_pipelines_conf::PipelineMappingUnmanaged> mappings;
 	for (auto entry : newMappings->mappingsById) mappings.push_back({
 		entry.second->id,
 		entry.second->pl,
-		nullptr
+		torasu::tools::RenderableSlot()
 	});
 	applyMappings(mappings);
 }
@@ -116,10 +121,10 @@ Dmix_pipelines_conf::~Dmix_pipelines_conf() {
 //	Rmix_pipelines
 //
 
-Rmix_pipelines::Rmix_pipelines(Renderable* def, std::initializer_list<MixEntry> mixes)
+Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes)
 	: SimpleRenderable("STD::RMIX_PIPELINES", true, true), defRnd(def) {
 
-	std::vector<Dmix_pipelines_conf::PipelineMapping> entries;
+	std::vector<Dmix_pipelines_conf::PipelineMappingUnmanaged> entries;
 	size_t id = 0;
 	for (auto& entry : mixes) {
 		entries.push_back({
@@ -140,10 +145,10 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 
 	auto found = conf.mappingsByPl.find(pipeline);
 
-	torasu::Renderable* rnd;
+	Renderable* rnd;
 
 	if (found != conf.mappingsByPl.end()) {
-		rnd = found->second->rnd;
+		rnd = found->second->rnd.get();
 
 		// TODO make sanity-check optional
 		if (rnd == nullptr)
@@ -153,8 +158,8 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 	} else {
 		// If default-renderable is null, then render only mapped segments,
 		// otherwise use defRnd as fallback
-		if (defRnd != nullptr) {
-			rnd = defRnd;
+		if (defRnd.get() != nullptr) {
+			rnd = defRnd.get();
 		} else {
 			return new torasu::ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
 		}
@@ -179,10 +184,10 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 
 torasu::ElementMap Rmix_pipelines::getElements() {
 	torasu::ElementMap elems;
-	elems[DEFUALT_KEY] = defRnd;
+	elems[DEFUALT_KEY] = defRnd.get();
 
 	for (auto& entry : conf.mappingsById)
-		elems[ELEM_KEY_PFX + std::to_string(entry.first)] = entry.second->rnd;
+		elems[ELEM_KEY_PFX + std::to_string(entry.first)] = entry.second->rnd.get();
 
 	return elems;
 }

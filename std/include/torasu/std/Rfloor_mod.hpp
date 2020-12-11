@@ -3,19 +3,22 @@
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
+#include <torasu/slot_tools.hpp>
+
+#include <torasu/std/Rnum.hpp>
 
 namespace torasu::tstd {
 
 class Rfloor_mod : public torasu::tools::SimpleRenderable {
 private:
-	Renderable* valRnd;
-	Renderable* facRnd;
+	tools::ManagedSlot<NumSlot> valRnd;
+	tools::ManagedSlot<NumSlot> facRnd;
 
 protected:
 	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
-	Rfloor_mod(Renderable* val, Renderable* fac);
+	Rfloor_mod(NumSlot val, NumSlot fac);
 	~Rfloor_mod();
 
 	torasu::ElementMap getElements() override;

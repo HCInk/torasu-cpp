@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include <torasu/json.hpp>
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
+#include <torasu/slot_tools.hpp>
 
 namespace torasu::tstd {
 
