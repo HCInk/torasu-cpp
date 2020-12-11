@@ -28,6 +28,8 @@ public:
 
 class StringSlot : public torasu::tools::RenderableSlot {
 public:
+	inline StringSlot() {}
+
 	inline StringSlot(Renderable* rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 

@@ -32,6 +32,8 @@ public:
 
 class NumSlot : public torasu::tools::RenderableSlot {
 public:
+	inline NumSlot() {}
+
 	inline NumSlot(Renderable* rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 
