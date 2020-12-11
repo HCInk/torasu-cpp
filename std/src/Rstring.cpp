@@ -3,7 +3,6 @@
 #include <torasu/render_tools.hpp>
 
 #include <torasu/std/pipeline_names.hpp>
-#include <torasu/std/Dstring.hpp>
 
 namespace torasu::tstd {
 

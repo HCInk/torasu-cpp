@@ -7,7 +7,7 @@
 #include <torasu/slot_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
-#include <torasu/std/spoilsD.hpp>
+#include <torasu/std/Dstring.hpp>
 
 namespace torasu::tstd {
 
