@@ -24,12 +24,12 @@ public:
 		return *elem;
 	}
 
-	inline T& get() {
-		return *elem;
+	inline T* get() {
+		return elem;
 	}
 
-	inline T& isOwned() {
-		return *elem;
+	inline bool isOwned() {
+		return owned;
 	}
 
 	virtual ~Slot() {}
