@@ -9,7 +9,7 @@
 
 namespace torasu::tstd {
 
-Rfloor_mod::Rfloor_mod(Renderable* val, Renderable* fac)
+Rfloor_mod::Rfloor_mod(NumSlot val, NumSlot fac)
 	: SimpleRenderable("STD::RFLOOR_MOD", false, true),
 	  valRnd(val), facRnd(fac) {}
 
@@ -58,8 +58,8 @@ torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* 
 
 torasu::ElementMap Rfloor_mod::getElements() {
 	torasu::ElementMap elems;
-	elems["val"] = valRnd;
-	elems["fac"] = facRnd;
+	elems["val"] = valRnd.get();
+	elems["fac"] = facRnd.get();
 	return elems;
 }
 
