@@ -88,8 +88,6 @@ public:
 // DATA
 //
 
-typedef int (*two_num_operation)(int, int);
-
 union DDDataPointer {
 	unsigned char* b;
 	const char* s;
