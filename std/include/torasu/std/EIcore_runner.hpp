@@ -152,6 +152,7 @@ private:
 	std::mutex resultLock;
 	RenderResult*volatile result = nullptr;
 	std::condition_variable* resultCv = nullptr;
+	std::chrono::_V2::system_clock::time_point* resultCreation = nullptr;
 
 	// Progress status (locked by statusLock)
 	std::mutex statusLock; // Locks status

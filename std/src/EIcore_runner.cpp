@@ -9,7 +9,7 @@ using namespace std;
 
 #define TORASU_STD_CHECK_EICORERUNNER true
 #define TORASU_STD_DBG_EICORERUNNER_THREAD_LOG false
-#define TORASU_STD_DBG_EICORERUNNER_TIMING_LOG false
+#define TORASU_STD_DBG_EICORERUNNER_TIMING_LOG true
 
 #define MAX_RETRIES 50
 #define RETRY_WAIT 10
@@ -229,6 +229,11 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			std::unique_lock lockedRes(task->resultLock);
 
 			task->result = result;
+#if TORASU_STD_DBG_EICORERUNNER_TIMING_LOG
+			task->resultCreation 
+				= new auto(std::chrono::high_resolution_clock::now());
+#endif
+			// XXX shouldn't lockedRes be unlocked now?
 			if (task->resultCv != nullptr) task->resultCv->notify_all();
 
 			std::unique_lock lockedQueue(taskQueueLock);
@@ -317,6 +322,7 @@ EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t render
 EIcore_runner_object::~EIcore_runner_object() {
 	if (subTasks != nullptr) delete subTasks;
 	if (resultCv != nullptr) delete resultCv;
+	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
 }
 
@@ -370,7 +376,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 				if (result != NULL) {
 #if TORASU_STD_DBG_EICORERUNNER_TIMING_LOG
 					auto found = std::chrono::high_resolution_clock::now();
-					std::cout << "RES FETCH " << std::chrono::duration_cast<std::chrono::nanoseconds>(found - const_cast<RenderResult*>(result)->creation).count() << "ns" << std::endl;
+					std::cout << "RES FETCH " << std::chrono::duration_cast<std::chrono::nanoseconds>(found - *resultCreation).count() << "ns" << std::endl;
 					auto unsuspendStart = std::chrono::high_resolution_clock::now();
 #endif
 					if (suspendState == 1) parent->unsuspend();
@@ -399,7 +405,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 			
 			{
 				#if !TORASU_TSTD_CORE_RUNNER_FULL_WAITS
-					std::unique_lock lck(resultLock);
+					std::unique_lock lck(resultLock); // XXX shouldn't this be an indivdual lock?
 					if (resultCv == nullptr) {
 						resultCv = new std::condition_variable();
 					}
