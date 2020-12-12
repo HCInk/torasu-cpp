@@ -237,6 +237,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			if (task->resultCv != nullptr) task->resultCv->notify_all();
 
 			std::unique_lock lockedQueue(taskQueueLock);
+			// std::cout << "TQ-erase " << task << " (thread)" << std::endl;
 			auto found = taskQueue.find(task);
 			taskQueue.erase(found);
 		}
@@ -274,6 +275,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	if (lockQueue) taskQueueLock.lock();
 	taskQueue.insert(obj);
+
+	// std::cout << "TQ-insert " << obj << " (enqueue)" << std::endl;
 	if (threadCountMax > 0) taskCv.notify_one();
 	// std::cout << " ==== TASK QUEUE ====" << std::endl;
 	// for (auto cObj : taskQueue) {
@@ -452,39 +455,92 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 	return newRenderId;
 }
 
-RenderResult* EIcore_runner_object::fetchRenderResult(uint64_t renderId) {
+void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t requestCount) {
 	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->lockQueue;
 	if (lockSubTasks) subTasksLock.lock();
 
-	if (subTasks != NULL && /*renderId >= 0 &&*/ ((uint32_t)renderId) < subTaskSize) {
+	struct FetchSet {
+		RenderResult** result;
+		EIcore_runner_object* task;
+	};
 
-		auto it = subTasks->begin()+renderId;
-		EIcore_runner_object* obj = *it;
-		*it = NULL;
-		if (lockSubTasks) subTasksLock.unlock();
+	std::vector<FetchSet> toFetch(requestCount);
+	 
+
+	// Run not yet done jobs
+	for (int reqi = requestCount-1; reqi >= 0; reqi--) {
+		int64_t renderId = requests[reqi].renderId;
+
+		if (subTasks != NULL && ((uint32_t)renderId) < subTaskSize) {
+
+			auto it = subTasks->begin()+renderId;
+			EIcore_runner_object* task = *it;
+			*it = NULL;
+			if (lockSubTasks) subTasksLock.unlock();
 
 
-		if (obj != NULL) {
+			if (task != NULL) {
+				
+				auto& fs = toFetch[requestCount-reqi-1]; 
+				// ^ in reverse, so that the last expected tasks to finish will be waited first,
+				// so less waits/suspends will be triggered
 
-			RenderResult* rr = obj->fetchOwnRenderResult();
-			delete obj;
-			return rr;
+				fs.task = task;
+				fs.result = &requests[reqi].result;
+
+				if (task->status == PENDING) {
+					std::unique_lock statLock(task->statusLock);
+					if (task->status == PENDING) {
+
+						// Run task if pending
+
+						task->status = RUNNING;
+						statLock.unlock();
+
+						std::function<void()> cleanup;
+						*fs.result = task->run(&cleanup);
+						// ^ Result can be updated without locking since there are currently no other threads accessing this
+						fs.task = nullptr;
+						cleanup();
+
+						if (runner->threadCountMax > 0) { // Queue is not used in 0-thread mode
+							std::unique_lock lockedQueue(runner->taskQueueLock);
+							auto& taskQueue = runner->taskQueue;
+							// std::cout << "TQ-erase " << task << " (fetch-run)" << std::endl;
+							auto found = taskQueue.find(task);
+							if (found == taskQueue.end()) 
+								throw std::logic_error("Sanity-Check: Couldn't find matching task in queue!");
+							taskQueue.erase(found);
+						}
+						delete task;
+
+					}
+				}
+
+			} else {
+				std::ostringstream errMsg;
+				errMsg << "The object the given render-id ("
+					<< renderId
+					<< "), is reffering to, has already been fetched and freed!";
+				throw runtime_error(errMsg.str());
+			}
 
 		} else {
+			if (lockSubTasks) subTasksLock.unlock();
 			std::ostringstream errMsg;
-			errMsg << "The object the given render-id ("
-				   << renderId
-				   << "), is reffering to, has already been fetched and freed!";
+			errMsg << "The given render-id ("
+				<< renderId
+				<< ") was never created!";
 			throw runtime_error(errMsg.str());
 		}
 
-	} else {
-		if (lockSubTasks) subTasksLock.unlock();
-		std::ostringstream errMsg;
-		errMsg << "The given render-id ("
-			   << renderId
-			   << ") was never created!";
-		throw runtime_error(errMsg.str());
+	}
+
+	// Fetch results
+	for (auto& fs : toFetch) {
+		if (fs.task == nullptr) continue; // Skip already fetched tasks
+		*fs.result = fs.task->fetchOwnRenderResult();
+		delete fs.task;
 	}
 
 }

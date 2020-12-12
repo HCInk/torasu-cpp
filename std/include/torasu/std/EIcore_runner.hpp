@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_EICORE_RUNNER_HPP_
 #define STD_INCLUDE_TORASU_STD_EICORE_RUNNER_HPP_
 
+#include <stdlib.h>
+
 #include <vector>
 #include <list>
 #include <set>
@@ -57,9 +59,20 @@ protected:
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
 	inline void registerRunning() {
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (threadCountRunning >= threadCountMax) {
+			throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
+		}
+#endif
 		threadCountRunning++;
 	}
-	inline void unregisterRunning() {
+	inline void unregisterRunning() {	
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (threadCountRunning <= 0) {
+			throw std::logic_error("Sanity-Check: Trying to unregister thread, even if no threads are running!");
+		}
+#endif
+		
 		if (doRun) threadSuspensionCv.notify_one();
 		threadCountRunning--;
 	}
@@ -236,7 +249,7 @@ protected:
 
 public:
 	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) override;
-	RenderResult* fetchRenderResult(uint64_t renderId) override;
+	void fetchRenderResults(ResultPair* requests, size_t requestCount) override;
 	void lock(LockId lockId) override;
 	void unlock(LockId lockId) override;
 
