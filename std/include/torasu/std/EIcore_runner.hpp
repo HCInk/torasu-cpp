@@ -11,6 +11,7 @@
 #include <thread>
 #include <condition_variable>
 #include <chrono>
+#include <iostream>
 
 #include <torasu/torasu.hpp>
 
@@ -42,7 +43,7 @@ protected:
 	const bool lockQueue = true;
 	// Determins weather interface exposed to managed tasks needs to be concurrent
 	const bool concurrentSubCalls = true;
-	size_t threadCountMax = 0;
+	int64_t threadCountMax = 0;
 
 	// Task-queue stuff (locked by taskQueueLock)
 	std::mutex taskQueueLock;
@@ -52,29 +53,141 @@ protected:
 	// Thread-management (locked via threadMgmtLock)
 	std::mutex threadMgmtLock;
 	volatile bool doRun = true;
-	size_t threadCountRunning = 0; // The count of the threads, which are currently effectively running
+	int64_t threadCountRunning = 0; // The count of the threads, which are currently effectively running - without guest-threads
 	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed 
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
-	size_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
+	int64_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
+
+	std::set<std::thread::id> registered;
+	std::map<std::thread::id, bool> registeredGuest;
+	std::map<EIcore_runner_object*, std::thread::id> resMap;
+	std::mutex registerLock;
+	std::mutex resLock;
+
+	enum RegisterReason {
+		INTERNAL,
+		RESURRECT,
+		GUEST
+	};
+
+	inline void giveRes(EIcore_runner_object* obj) {
+		std::unique_lock resLck(resLock);
+		if (resMap.contains(obj)) {
+			throw std::logic_error("Sanity-Check: Trying to ressurect a task, which still has another ressurection pending!");
+		}
+		auto tid = std::this_thread::get_id();
+		std::cout << "Res-creation by " << tid << " for " << std::to_address(obj) << std::endl;
+		resMap[obj] = tid;
+
+	}
+
+	inline void recieveRes(EIcore_runner_object* obj) {
+		std::unique_lock resLck(resLock);
+		auto found = resMap.find(obj);
+		if (found == resMap.end()) {
+			throw std::logic_error("Sanity-Check: Ressurection was recieved, but was never noted!");
+		}
+		auto tid = std::this_thread::get_id();
+		std::cout << "Ressurect by " << found->second << " to " << tid << " (" << std::to_address(obj) << ")" << std::endl;
+		resMap.erase(found);
+		registerRunning(tid, RESURRECT);
+	}
+
+	inline void registerRunning(std::thread::id tid, RegisterReason reason=INTERNAL) {
+		std::unique_lock regLck(registerLock);
+		if (reason == GUEST) {
+			std::cout << "Register guest-thread " << tid << std::endl;
+
+			if (registeredGuest.contains(tid)) {
+				throw std::logic_error("Sanity-Check: Trying to register a guest-thread, which was already registered!");
+			}
+			registeredGuest[tid] = true;
+
+		} else {
+			std::cout << "Register thread " << tid << std::endl;
+			auto foundGuest = registeredGuest.find(tid);
+			if (foundGuest != registeredGuest.end()) {
+				if (foundGuest->second == true) {
+					throw std::logic_error("Sanity-Check: Guest-thread is already registered as running!");
+				}
+				registeredGuest[tid] = true;
+			} else {
+				if (registered.contains(tid)) {
+					throw std::logic_error("Sanity-Check: Trying to register a thread, which was already registered!");
+				}
+				registered.insert(tid);
+			}
+
+			if (reason != RESURRECT) {
+				if (threadCountRunning >= threadCountMax) {
+					throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
+				}
+
+				threadCountRunning++;
+			}
+		}
+	}
+
+	inline void registerRunning(RegisterReason reason) {
+		registerRunning(std::this_thread::get_id(), reason);
+	}
+
+	inline void unregisterRunning(RegisterReason reason) {
+		std::unique_lock regLck(registerLock);
+		auto tid = std::this_thread::get_id();
+		if (reason == GUEST) {
+			std::cout << "Unregister guest-thread " << tid << std::endl;
+
+			if (!registeredGuest.contains(tid)) {
+				throw std::logic_error("Sanity-Check: Trying to unregister a guest-thread, which was never registered in the first place!");
+			}
+			registeredGuest.erase(tid);
+
+		} else {
+			std::cout << "Unregister thread " << tid << std::endl;
+			if (threadCountRunning <= 0) {
+				throw std::logic_error("Sanity-Check: Trying to unregister thread, even if no threads are running!");
+			}
+
+			
+			auto foundGuest = registeredGuest.find(tid);
+			if (foundGuest != registeredGuest.end()) {
+
+				if (foundGuest->second == false) {
+					throw std::logic_error("Sanity-Check: Guest-thread is already registered as not running!");
+				}
+				registeredGuest[tid] = false;
+
+			} else {
+				if (!registered.contains(tid)) {
+					throw std::logic_error("Sanity-Check: Trying to unregister a thread, which was never registered in the first place!");
+				}
+				registered.erase(tid);
+			}
+			
+			if (doRun) threadSuspensionCv.notify_one();
+			threadCountRunning--;
+		}
+	}
+
 	inline void registerRunning() {
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-		if (threadCountRunning >= threadCountMax) {
-			throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
-		}
-#endif
+		registerRunning(std::this_thread::get_id());
+#else
 		threadCountRunning++;
-	}
-	inline void unregisterRunning() {	
-#if TORASU_TSTD_CHECK_STATE_ERRORS
-		if (threadCountRunning <= 0) {
-			throw std::logic_error("Sanity-Check: Trying to unregister thread, even if no threads are running!");
-		}
 #endif
-		
+	}
+
+
+	inline void unregisterRunning() {
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		unregisterRunning(INTERNAL);
+#else
 		if (doRun) threadSuspensionCv.notify_one();
 		threadCountRunning--;
+#endif
 	}
 	void cleanThreads();
 	void spawnThread(bool collapse);
@@ -102,8 +215,12 @@ protected:
 			return false;
 		}
 		if (threadCountRunning < threadCountMax) {
-			registerRunning();
-			if (mode == UNSUSPEND) threadCountSuspended--;
+			if (mode == NEW) {
+				spawnThread(true); // spwan handles the registration itself
+			} else {
+				registerRunning();
+				if (mode == UNSUSPEND) threadCountSuspended--;
+			}
 			return true;
 		} else {
 			if (mode == OR_SUSPEND) threadCountSuspended++;
@@ -219,6 +336,11 @@ private:
 				// std::this_thread::sleep_for(std::chrono::milliseconds(1)); 
 #endif
 		}
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		runner->recieveRes(this);
+#endif
+
 	}
 
 	inline std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex) {

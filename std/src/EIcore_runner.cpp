@@ -80,13 +80,30 @@ void EIcore_runner::spawnThread(bool collapse) {
 #if TORASU_STD_DBG_EICORERUNNER_THREAD_LOG
 	std::cout << "(SPWAN) Create thread " << std::to_address(threadHandle.thread) << std::endl;
 #endif
-	registerRunning();
+	registerRunning(threadHandle.thread->get_id());
 }
 
 void EIcore_runner::cleanThreads() {
 #if TORASU_STD_DBG_EICORERUNNER_THREAD_LOG
 	std::cout << "(CLEAN) Begin thread-cleanup..." << std::endl;
 #endif
+
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	{ // Wait for registration...
+		
+		auto tid = std::this_thread::get_id();
+		for (;;) {
+			{
+				std::unique_lock lockedTM(threadMgmtLock);
+				if (registered.find(tid) != registered.end()) break;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+
+	}
+#endif
+
 	bool found;
 	do {
 		found = false;
@@ -166,10 +183,17 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			} else if (currTask->status == SUSPENDED) {
 				std::unique_lock lockedStatus(statusLock);
 				if (currTask->status == SUSPENDED) { 
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+					giveRes(currTask);
+#endif
+
 					// Unsuspend / Transfer run-privilege to target
 					currTask->status = RUNNING;
 					currTask->unsuspendCv.notify_all();
 					lockedStatus.unlock();
+
+
 
 					// Try to request a new run-privilege for current thread, if not suspend
 					suspended = !requestNewThread(OR_SUSPEND);
@@ -205,11 +229,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 		if (threadCountRunning < threadCountMax) {
 			consecutiveFedCycles++;
 			if (consecutiveFedCycles > CYCLE_BUMP_THRESHOLD*threadCountRunning) {
-				std::unique_lock lockedTM(threadMgmtLock);
-				if (threadCountRunning < threadCountMax && consecutiveFedCycles > CYCLE_BUMP_THRESHOLD*threadCountRunning) {
-					spawnThread(NEW);
-					consecutiveFedCycles = 0;
-				}
+				requestNewThread(NEW);
+				consecutiveFedCycles = 0;
 			}
 		} else {
 			consecutiveFedCycles = 0;
@@ -395,7 +416,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 #if TORASU_STD_DBG_EICORERUNNER_TIMING_LOG
 					auto suspendStart = std::chrono::high_resolution_clock::now();
 #endif
-					parent->suspend();
+					parent->suspend(); // Suspend the parent, which is waiting for the result
 #if TORASU_STD_DBG_EICORERUNNER_TIMING_LOG
 					auto suspendEnd = std::chrono::high_resolution_clock::now();
 					std::cout << "SUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(suspendEnd - suspendStart).count() << "ns" << std::endl;
@@ -465,7 +486,9 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 	};
 
 	std::vector<FetchSet> toFetch(requestCount);
-	 
+	
+	// register guest-thread if called over interface (parent == nullptr)
+	if (parent == nullptr) runner->registerRunning(EIcore_runner::GUEST); 
 
 	// Run not yet done jobs
 	for (int reqi = requestCount-1; reqi >= 0; reqi--) {
@@ -535,6 +558,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 		}
 
 	}
+	if (parent == nullptr) runner->unregisterRunning(EIcore_runner::GUEST);
 
 	// Fetch results
 	for (auto& fs : toFetch) {
