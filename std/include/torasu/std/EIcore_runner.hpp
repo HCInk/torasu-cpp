@@ -60,135 +60,58 @@ protected:
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
 
-	std::set<std::thread::id> registered;
-	std::map<std::thread::id, bool> registeredGuest;
-	std::map<EIcore_runner_object*, std::thread::id> resMap;
-	std::mutex registerLock;
-	std::mutex resLock;
+	struct EIcore_runner_dbg {
+		enum RegisterReason {
+			INTERNAL,
+			RESURRECT,
+			GUEST,
+			RUNNER,
+			RUNNER_CLOSE_SUSPENDED
 
-	enum RegisterReason {
-		INTERNAL,
-		RESURRECT,
-		GUEST
+		};
+
+		static std::string regReasonName(RegisterReason reason);
+
+		std::mutex registerLock;
+		std::map<std::thread::id, std::pair<RegisterReason, bool>> registered;
+		int64_t guestCount;
+		std::mutex resLock;
+		std::map<EIcore_runner_object*, std::thread::id> resMap;
+
 	};
 
-	inline void giveRes(EIcore_runner_object* obj) {
-		std::unique_lock resLck(resLock);
-		if (resMap.contains(obj)) {
-			throw std::logic_error("Sanity-Check: Trying to ressurect a task, which still has another ressurection pending!");
-		}
-		auto tid = std::this_thread::get_id();
-		std::cout << "Res-creation by " << tid << " for " << std::to_address(obj) << std::endl;
-		resMap[obj] = tid;
+	EIcore_runner_dbg* dbg;
 
-	}
+	void dbg_init();
+	void dbg_cleanup();
 
-	inline void recieveRes(EIcore_runner_object* obj) {
-		std::unique_lock resLck(resLock);
-		auto found = resMap.find(obj);
-		if (found == resMap.end()) {
-			throw std::logic_error("Sanity-Check: Ressurection was recieved, but was never noted!");
-		}
-		auto tid = std::this_thread::get_id();
-		std::cout << "Ressurect by " << found->second << " to " << tid << " (" << std::to_address(obj) << ")" << std::endl;
-		resMap.erase(found);
-		registerRunning(tid, RESURRECT);
-	}
+	void dbg_giveRes(EIcore_runner_object* obj);
 
-	inline void registerRunning(std::thread::id tid, RegisterReason reason=INTERNAL) {
-		std::unique_lock regLck(registerLock);
-		if (reason == GUEST) {
-			std::cout << "Register guest-thread " << tid << std::endl;
+	void dbg_recieveRes(EIcore_runner_object* obj);
 
-			if (registeredGuest.contains(tid)) {
-				throw std::logic_error("Sanity-Check: Trying to register a guest-thread, which was already registered!");
-			}
-			registeredGuest[tid] = true;
+	void dbg_registerRunning(std::thread::id tid, EIcore_runner_dbg::RegisterReason reason=EIcore_runner_dbg::INTERNAL);
 
-		} else {
-			std::cout << "Register thread " << tid << std::endl;
-			auto foundGuest = registeredGuest.find(tid);
-			if (foundGuest != registeredGuest.end()) {
-				if (foundGuest->second == true) {
-					throw std::logic_error("Sanity-Check: Guest-thread is already registered as running!");
-				}
-				registeredGuest[tid] = true;
-			} else {
-				if (registered.contains(tid)) {
-					throw std::logic_error("Sanity-Check: Trying to register a thread, which was already registered!");
-				}
-				registered.insert(tid);
-			}
+	void dbg_registerRunning(EIcore_runner_dbg::RegisterReason reason);
 
-			if (reason != RESURRECT) {
-				if (threadCountRunning >= threadCountMax) {
-					throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
-				}
-
-				threadCountRunning++;
-			}
-		}
-	}
-
-	inline void registerRunning(RegisterReason reason) {
-		registerRunning(std::this_thread::get_id(), reason);
-	}
-
-	inline void unregisterRunning(RegisterReason reason) {
-		std::unique_lock regLck(registerLock);
-		auto tid = std::this_thread::get_id();
-		if (reason == GUEST) {
-			std::cout << "Unregister guest-thread " << tid << std::endl;
-
-			if (!registeredGuest.contains(tid)) {
-				throw std::logic_error("Sanity-Check: Trying to unregister a guest-thread, which was never registered in the first place!");
-			}
-			registeredGuest.erase(tid);
-
-		} else {
-			std::cout << "Unregister thread " << tid << std::endl;
-			if (threadCountRunning <= 0) {
-				throw std::logic_error("Sanity-Check: Trying to unregister thread, even if no threads are running!");
-			}
-
-			
-			auto foundGuest = registeredGuest.find(tid);
-			if (foundGuest != registeredGuest.end()) {
-
-				if (foundGuest->second == false) {
-					throw std::logic_error("Sanity-Check: Guest-thread is already registered as not running!");
-				}
-				registeredGuest[tid] = false;
-
-			} else {
-				if (!registered.contains(tid)) {
-					throw std::logic_error("Sanity-Check: Trying to unregister a thread, which was never registered in the first place!");
-				}
-				registered.erase(tid);
-			}
-			
-			if (doRun) threadSuspensionCv.notify_one();
-			threadCountRunning--;
-		}
-	}
+	void dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reason);
 
 	inline void registerRunning() {
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-		registerRunning(std::this_thread::get_id());
+		dbg_registerRunning(std::this_thread::get_id());
 #else
 		threadCountRunning++;
 #endif
 	}
 
-
 	inline void unregisterRunning() {
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-		unregisterRunning(INTERNAL);
+		dbg_unregisterRunning(EIcore_runner_dbg::INTERNAL);
 #else
 		if (doRun) threadSuspensionCv.notify_one();
 		threadCountRunning--;
 #endif
 	}
+
 	void cleanThreads();
 	void spawnThread(bool collapse);
 	
@@ -338,7 +261,7 @@ private:
 		}
 
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-		runner->recieveRes(this);
+		runner->dbg_recieveRes(this);
 #endif
 
 	}

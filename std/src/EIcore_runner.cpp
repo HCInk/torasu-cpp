@@ -11,6 +11,10 @@ using namespace std;
 #define TORASU_STD_DBG_EICORERUNNER_THREAD_LOG false
 #define TORASU_STD_DBG_EICORERUNNER_TIMING_LOG true
 
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+#define TORASU_STD_EICORERUNNER_INIT_DBG true
+#endif
+
 #define MAX_RETRIES 50
 #define RETRY_WAIT 10
 #define CYCLE_BUMP_THRESHOLD 10
@@ -22,15 +26,25 @@ namespace torasu::tstd {
 //
 
 EIcore_runner::EIcore_runner(bool concurrent) 
-	: lockQueue(concurrent) {}
+	: lockQueue(concurrent) {
+#if TORASU_STD_EICORERUNNER_INIT_DBG
+	dbg_init();
+#endif
+}
 
 EIcore_runner::EIcore_runner(size_t maxRunning) 
 	: threadCountMax(maxRunning) {
+#if TORASU_STD_EICORERUNNER_INIT_DBG
+	dbg_init();
+#endif
 	spawnThread(false);
 }
 
 EIcore_runner::~EIcore_runner() {
 	if (threadCountMax > 0) stop();
+#if TORASU_STD_EICORERUNNER_INIT_DBG
+	dbg_cleanup();
+#endif
 }
 
 void EIcore_runner::stop() {
@@ -80,7 +94,13 @@ void EIcore_runner::spawnThread(bool collapse) {
 #if TORASU_STD_DBG_EICORERUNNER_THREAD_LOG
 	std::cout << "(SPWAN) Create thread " << std::to_address(threadHandle.thread) << std::endl;
 #endif
-	registerRunning(threadHandle.thread->get_id());
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	dbg_registerRunning(threadHandle.thread->get_id(), EIcore_runner_dbg::RUNNER);
+#else
+	registerRunning();
+#endif
+
 }
 
 void EIcore_runner::cleanThreads() {
@@ -96,7 +116,7 @@ void EIcore_runner::cleanThreads() {
 		for (;;) {
 			{
 				std::unique_lock lockedTM(threadMgmtLock);
-				if (registered.find(tid) != registered.end()) break;
+				if (dbg->registered.find(tid) != dbg->registered.end()) break;
 			}
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
@@ -185,7 +205,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 				if (currTask->status == SUSPENDED) { 
 
 #if TORASU_TSTD_CHECK_STATE_ERRORS
-					giveRes(currTask);
+					dbg_giveRes(currTask);
 #endif
 
 					// Unsuspend / Transfer run-privilege to target
@@ -285,7 +305,15 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 	{
 		std::unique_lock lockedTM(threadMgmtLock);
 		threadHandle.running = false;
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (suspended) {
+			dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED);
+		} else {
+			dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::RUNNER);
+		}
+#else
 		if (!suspended) unregisterRunning();
+#endif
 		scheduleCleanThreads = true;
 	}
 #if TORASU_STD_DBG_EICORERUNNER_THREAD_LOG
@@ -487,8 +515,10 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 
 	std::vector<FetchSet> toFetch(requestCount);
 	
+#if TORASU_TSTD_CHECK_STATE_ERRORS
 	// register guest-thread if called over interface (parent == nullptr)
-	if (parent == nullptr) runner->registerRunning(EIcore_runner::GUEST); 
+	if (parent == nullptr) runner->dbg_registerRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
+#endif
 
 	// Run not yet done jobs
 	for (int reqi = requestCount-1; reqi >= 0; reqi--) {
@@ -558,7 +588,10 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 		}
 
 	}
-	if (parent == nullptr) runner->unregisterRunning(EIcore_runner::GUEST);
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	if (parent == nullptr) runner->dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
+#endif
 
 	// Fetch results
 	for (auto& fs : toFetch) {
@@ -731,6 +764,162 @@ void EIcore_runner_elemhandler::unlock(LockId lockId) {
 	lockStatesLock.unlock();
 
 	lock.unlock();
+
+}
+
+//
+// Run-registration sanity-checing
+//
+
+void EIcore_runner::dbg_init() {
+	dbg = new EIcore_runner_dbg();
+}
+
+void EIcore_runner::dbg_cleanup() {
+	delete dbg;
+}
+
+std::string EIcore_runner::EIcore_runner_dbg::regReasonName(RegisterReason reason) {
+	switch (reason) {
+	case INTERNAL:
+		return "INTERNAL";
+	case RESURRECT:
+		return "RESURRECT";
+	case GUEST:
+		return "GUEST";
+	case RUNNER:
+		return "RUNNER";
+	case RUNNER_CLOSE_SUSPENDED:
+		return "RUNNER_CLOSE_SUSPENDED";
+	default:
+		return "UNKOWN";
+	}
+}
+
+
+void EIcore_runner::dbg_giveRes(EIcore_runner_object* obj) {
+	std::unique_lock resLck(dbg->resLock);
+	if (dbg->resMap.find(obj) != dbg->resMap.end()) {
+		throw std::logic_error("Sanity-Check: Trying to ressurect a task, which still has another ressurection pending!");
+	}
+	auto tid = std::this_thread::get_id();
+	std::cout << "Res-creation by " << tid << " for " << std::to_address(obj) << std::endl;
+	dbg->resMap[obj] = tid;
+	dbg_unregisterRunning(EIcore_runner_dbg::RESURRECT);
+
+}
+
+void EIcore_runner::dbg_recieveRes(EIcore_runner_object* obj) {
+	std::unique_lock resLck(dbg->resLock);
+	auto found = dbg->resMap.find(obj);
+	if (found == dbg->resMap.end()) {
+		throw std::logic_error("Sanity-Check: Ressurection was recieved, but was never noted!");
+	}
+	auto tid = std::this_thread::get_id();
+	std::cout << "Ressurect by " << found->second << " to " << tid << " (" << std::to_address(obj) << ")" << std::endl;
+	dbg->resMap.erase(found);
+	dbg_registerRunning(tid, EIcore_runner_dbg::RESURRECT);
+}
+
+void EIcore_runner::dbg_registerRunning(std::thread::id tid, EIcore_runner_dbg::RegisterReason reason) {
+	auto& RRN = EIcore_runner_dbg::regReasonName;
+	auto& registered = dbg->registered;
+	std::cout << "Register-thread (" << RRN(reason) << ") " << tid << std::endl;
+	std::unique_lock regLck(dbg->registerLock);
+	if (reason == EIcore_runner_dbg::GUEST || reason == EIcore_runner_dbg::RUNNER) {
+
+		if (registered.find(tid) != registered.end()) {
+			throw std::logic_error("Sanity-Check: Trying to register a new " + RRN(reason) + "-thread, but the thread is already/still registeerd!");
+		}
+		registered[tid] = std::pair<EIcore_runner_dbg::RegisterReason, bool>(reason, true);
+
+	} else {
+		auto foundGuest = registered.find(tid);
+		if (foundGuest != registered.end()) {
+			if (foundGuest->second.second == true) {
+				throw std::logic_error("Sanity-Check: " + RRN(foundGuest->second.first) + "-thread is already registered as running!");
+			}
+			foundGuest->second.second = true;
+		} else {
+			throw std::logic_error("Sanity-Check: " + RRN(reason) + "-register was called on an target, which is not registered!");
+		}
+	}
+
+	if (reason == EIcore_runner_dbg::GUEST) {
+
+		dbg->guestCount++;
+
+	} else if (reason != EIcore_runner_dbg::RESURRECT) {
+		if (threadCountRunning >= threadCountMax) {
+			throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
+		}
+
+		threadCountRunning++;
+	}
+}
+
+void EIcore_runner::dbg_registerRunning(EIcore_runner_dbg::RegisterReason reason) {
+	dbg_registerRunning(std::this_thread::get_id(), reason);
+}
+
+void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reason) {
+	auto& RRN = EIcore_runner_dbg::regReasonName;
+	auto& registered = dbg->registered;
+	std::unique_lock regLck(dbg->registerLock);
+	auto tid = std::this_thread::get_id();
+	std::cout << "Unregister-thread (" << RRN(reason) << ") " << tid << std::endl;
+	
+	auto found = registered.find(tid);
+	if (reason == EIcore_runner_dbg::GUEST || reason == EIcore_runner_dbg::RUNNER || reason == EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) {
+		
+		if (found == registered.end()) {
+			throw std::logic_error("Sanity-Check: Trying to unregister a thread, which is not registered!");
+		}
+		if (reason == EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) {
+			if (found->second.first != EIcore_runner_dbg::RUNNER) {
+				throw std::logic_error("Sanity-Check: Trying to unregister a thread, with the wrong reason!"
+					"(Registered as " + RRN(found->second.first) + " but was unregistered with" 
+					+ RRN(EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) + " which requires the RR " 
+					+ RRN(EIcore_runner_dbg::RUNNER) + ")");
+			}
+			if (found->second.second == true) {
+				throw std::logic_error("Sanity-Check: Trying to unregister a " + RRN(reason) + "thread, which is registered as running (and supposed not to run)!");
+			}
+		} else {
+			if (found->second.first != reason) {
+				throw std::logic_error("Sanity-Check: Trying to unregister a thread, with the wrong reason!"
+					"(Registered as " + RRN(found->second.first) + " but unregistered with " + RRN(found->second.first) + ")");
+			}
+			if (found->second.second == false) {
+				throw std::logic_error("Sanity-Check: Trying to unregister a " + RRN(reason) + "thread, which is registered as not running!");
+			}
+		}
+		registered.erase(found);
+
+	} else {
+
+		if (found != registered.end()) {
+
+			if (found->second.second == false) {
+				throw std::logic_error("Sanity-Check: " + RRN(found->second.first) + "-thread is already registered as not running!");
+			}
+			found->second.second = false;
+
+		} else {
+			throw std::logic_error("Sanity-Check: Trying to unregister a thread, which is not registered!");
+		}
+	}
+	if (reason == EIcore_runner_dbg::GUEST) {
+		dbg->guestCount--;
+	} else if (reason != EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED && reason != EIcore_runner_dbg::RESURRECT) {
+
+		if (threadCountRunning+dbg->guestCount <= 0) {
+			throw std::logic_error("Sanity-Check: Trying to unregister thread, even if no threads are running!");
+		}
+
+		if (doRun) threadSuspensionCv.notify_one();
+		threadCountRunning--;
+	}
 
 }
 
