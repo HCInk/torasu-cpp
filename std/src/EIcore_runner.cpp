@@ -883,7 +883,7 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 					+ RRN(EIcore_runner_dbg::RUNNER) + ")");
 			}
 			if (found->second.second == true) {
-				throw std::logic_error("Sanity-Check: Trying to unregister a " + RRN(reason) + "thread, which is registered as running (and supposed not to run)!");
+				throw std::logic_error("Sanity-Check: Thread has to be stopped for " + RRN(EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) + "!");
 			}
 		} else {
 			if (found->second.first != reason) {
