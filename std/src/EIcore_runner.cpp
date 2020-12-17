@@ -7,16 +7,16 @@
 
 using namespace std;
 
-#define CHECK_STATE_ERRORS false
-#define CHECK_REGISTRATION_ERRORS false
-#define LOG_REGISTRATIONS_RUNNER false
-#define LOG_REGISTRATIONS_GUESTS false
-#define LOG_REGISTRATIONS_RESURRECT false
-#define LOG_REGISTRATIONS_INTERNAL false
+#define CHECK_STATE_ERRORS true
+#define CHECK_REGISTRATION_ERRORS true
+#define LOG_REGISTRATIONS_RUNNER true
+#define LOG_REGISTRATIONS_GUESTS true
+#define LOG_REGISTRATIONS_RESURRECT true
+#define LOG_REGISTRATIONS_INTERNAL true
 #define RUNNER_FULL_WAITS false
 #define CHECK_THREADS true
 #define LOG_THREADS false
-#define LOG_TIMING false
+#define LOG_TIMING true
 
 #if LOG_REGISTRATIONS_RUNNER || LOG_REGISTRATIONS_GUESTS || LOG_REGISTRATIONS_REVIVES || LOG_REGISTRATIONS_INTERNAL
 #define CHECK_REGISTRATION_ERRORS true
@@ -46,7 +46,7 @@ EIcore_runner::EIcore_runner(bool concurrent)
 EIcore_runner::EIcore_runner(size_t maxRunning) 
 	: threadCountMax(maxRunning) {
 #if INIT_DBG
-	dbg_cleanup();
+	dbg_init();
 #endif
 	spawnThread(false);
 }
@@ -159,22 +159,6 @@ void EIcore_runner::cleanThreads() {
 	std::cout << "(CLEAN) Begin thread-cleanup..." << std::endl;
 #endif
 
-
-#if CHECK_REGISTRATION_ERRORS
-	{ // Wait for registration...
-		
-		auto tid = std::this_thread::get_id();
-		for (;;) {
-			{
-				std::unique_lock lockedTM(threadMgmtLock);
-				if (dbg->registered.find(tid) != dbg->registered.end()) break;
-			}
-			std::this_thread::sleep_for(std::chrono::milliseconds(1));
-		}
-
-	}
-#endif
-
 	bool found;
 	do {
 		found = false;
@@ -201,13 +185,37 @@ void EIcore_runner::cleanThreads() {
 // EIcore_runner: Thread-looop
 
 void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
-	
+#if LOG_THREADS
+	std::cout << " (THREAD) Enter thread " << std::to_address(threadHandle.thread) << std::endl;
+#endif
+
 	size_t retriesWithNone = 0;
 	bool suspended = false;
   	std::mutex threadWaiter;
 
+
+#if CHECK_REGISTRATION_ERRORS
+	{ // Wait for registration...
+		
+		auto tid = std::this_thread::get_id();
+
 #if LOG_THREADS
-	std::cout << " (THREAD) Enter thread " << std::to_address(threadHandle.thread) << std::endl;
+		std::cout << " (THREAD) Waiting for registration... " << tid << std::endl;
+#endif
+
+		for (;;) {
+			{
+				std::unique_lock lockedTM(threadMgmtLock);
+				if (dbg->registered.find(tid) != dbg->registered.end()) break;
+			}
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+		}
+
+#if LOG_THREADS
+		std::cout << " (THREAD) Found registration " << tid << std::endl;
+#endif
+
+	}
 #endif
 
 	while (doRun) {
@@ -1017,7 +1025,6 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 	auto& registered = dbg->registered;
 	std::unique_lock regLck(dbg->registerLock);
 	auto tid = std::this_thread::get_id();
-	std::cout << "Unregister-thread (" << RRN(reason) << ") " << tid << std::endl;
 	
 	auto found = registered.find(tid);
 	if (reason == EIcore_runner_dbg::GUEST || reason == EIcore_runner_dbg::RUNNER || reason == EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) {
