@@ -22,7 +22,7 @@
 using namespace torasu;
 using namespace torasu::tstd;
 
-TEST_CASE( "Simple numeric render test", "[single-file]" ) {
+TEST_CASE( "Simple numeric render test", "[simple-numeric]" ) {
 
 	// Creating "tree" to be rendered
 
@@ -69,7 +69,7 @@ TEST_CASE( "Simple numeric render test", "[single-file]" ) {
 
 auto& IR = torasu::tools::inlineRenderable;
 
-TEST_CASE( "Advanced numeric render test", "[single-file]" ) {
+TEST_CASE( "Advanced numeric render test", "[simple-numeric]" ) {
 
 	// Creating "tree" to be rendered
 
@@ -228,7 +228,7 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 
 }
 
-TEST_CASE( "2K Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "2K Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -237,7 +237,7 @@ TEST_CASE( "2K Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "2K Numeric burst (noQueue)", "[single-file]" ) {
+TEST_CASE( "2K Numeric burst (noQueue)", "[runner-test]" ) {
 	
 	EIcore_runner runner(false);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -247,7 +247,7 @@ TEST_CASE( "2K Numeric burst (noQueue)", "[single-file]" ) {
 }
 
 
-TEST_CASE( "2K Numeric burst (noQueue, not concurrent)", "[single-file]" ) {
+TEST_CASE( "2K Numeric burst (noQueue, not concurrent)", "[runner-test]" ) {
 	
 	EIcore_runner runner(false, false);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -256,7 +256,7 @@ TEST_CASE( "2K Numeric burst (noQueue, not concurrent)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "2K Numeric burst (1-thread)", "[single-file]" ) {
+TEST_CASE( "2K Numeric burst (1-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)1);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -265,7 +265,7 @@ TEST_CASE( "2K Numeric burst (1-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "2K Numeric burst (2-thread)", "[single-file]" ) {
+TEST_CASE( "2K Numeric burst (2-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)2);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -274,7 +274,7 @@ TEST_CASE( "2K Numeric burst (2-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "2K Numeric burst (8-thread)", "[single-file]" ) {
+TEST_CASE( "2K Numeric burst (8-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)8);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -283,7 +283,7 @@ TEST_CASE( "2K Numeric burst (8-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*100 Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "500*100 Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -292,7 +292,7 @@ TEST_CASE( "500*100 Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*100 Numeric Burst (1-thread)", "[single-file]" ) {
+TEST_CASE( "500*100 Numeric Burst (1-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)1);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -301,7 +301,7 @@ TEST_CASE( "500*100 Numeric Burst (1-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*100 Numeric Burst (2-thread)", "[single-file]" ) {
+TEST_CASE( "500*100 Numeric Burst (2-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)2);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -310,7 +310,7 @@ TEST_CASE( "500*100 Numeric Burst (2-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*100 Numeric Burst (8-thread)", "[single-file]" ) {
+TEST_CASE( "500*100 Numeric Burst (8-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)8);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -319,7 +319,7 @@ TEST_CASE( "500*100 Numeric Burst (8-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*100*1 Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "500*100*1 Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -328,7 +328,7 @@ TEST_CASE( "500*100*1 Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*10*10 Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "500*10*10 Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -337,7 +337,7 @@ TEST_CASE( "500*10*10 Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*10*10 Numeric Burst (1-thread)", "[single-file]" ) {
+TEST_CASE( "500*10*10 Numeric Burst (1-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)1);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -346,7 +346,7 @@ TEST_CASE( "500*10*10 Numeric Burst (1-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*10*10 Numeric Burst (2-thread)", "[single-file]" ) {
+TEST_CASE( "500*10*10 Numeric Burst (2-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)2);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -355,7 +355,7 @@ TEST_CASE( "500*10*10 Numeric Burst (2-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "500*10*10 Numeric Burst (8-thread)", "[single-file]" ) {
+TEST_CASE( "500*10*10 Numeric Burst (8-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)8);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -364,7 +364,7 @@ TEST_CASE( "500*10*10 Numeric Burst (8-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*10*100 Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "50*10*100 Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -373,7 +373,7 @@ TEST_CASE( "50*10*100 Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*10*100 Numeric Burst (1-thread)", "[single-file]" ) {
+TEST_CASE( "50*10*100 Numeric Burst (1-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)1);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -382,7 +382,7 @@ TEST_CASE( "50*10*100 Numeric Burst (1-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*10*100 Numeric Burst (2-thread)", "[single-file]" ) {
+TEST_CASE( "50*10*100 Numeric Burst (2-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)2);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -391,7 +391,7 @@ TEST_CASE( "50*10*100 Numeric Burst (2-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*10*100 Numeric Burst (8-thread)", "[single-file]" ) {
+TEST_CASE( "50*10*100 Numeric Burst (8-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)8);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -400,7 +400,7 @@ TEST_CASE( "50*10*100 Numeric Burst (8-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*100*100 Numeric Burst (0-thread)", "[single-file]" ) {
+TEST_CASE( "50*100*100 Numeric Burst (0-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner;
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -409,7 +409,7 @@ TEST_CASE( "50*100*100 Numeric Burst (0-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*100*100 Numeric Burst (1-thread)", "[single-file]" ) {
+TEST_CASE( "50*100*100 Numeric Burst (1-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)1);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -418,7 +418,7 @@ TEST_CASE( "50*100*100 Numeric Burst (1-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*100*100 Numeric Burst (2-thread)", "[single-file]" ) {
+TEST_CASE( "50*100*100 Numeric Burst (2-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)2);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
@@ -427,7 +427,7 @@ TEST_CASE( "50*100*100 Numeric Burst (2-thread)", "[single-file]" ) {
 
 }
 
-TEST_CASE( "50*100*100 Numeric Burst (8-thread)", "[single-file]" ) {
+TEST_CASE( "50*100*100 Numeric Burst (8-thread)", "[runner-test]" ) {
 	
 	EIcore_runner runner((size_t)8);
 	std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
