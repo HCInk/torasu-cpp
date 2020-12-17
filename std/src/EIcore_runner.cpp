@@ -48,7 +48,7 @@ EIcore_runner::EIcore_runner(size_t maxRunning)
 #if INIT_DBG
 	dbg_init();
 #endif
-	spawnThread(false);
+	if (maxRunning > 0) spawnThread(false);
 }
 
 EIcore_runner::~EIcore_runner() {
@@ -232,7 +232,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 				break;
 			}
 
-			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
+			if (!collapse || retriesWithNone < MAX_RETRIES) {
 #if !RUNNER_FULL_WAITS
 					std::unique_lock<std::mutex> lck(threadWaiter);
 					threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
@@ -243,6 +243,10 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 				break;
 			}
 			
+		}
+
+		if (suspended) { // Shutdown when still suspended
+			break;
 		}
 
 		//
