@@ -12,6 +12,8 @@
 #include <condition_variable>
 #include <chrono>
 #include <iostream>
+#include <string>
+#include <utility>
 
 #include <torasu/torasu.hpp>
 
@@ -110,7 +112,7 @@ protected:
 	void stop();
 
 	// Internal functions (thread-safe if concurrentInterface=true)
-	void run(EIcore_runner_thread& threadHandle, bool collapse);
+	void run(const EIcore_runner_thread& threadHandle, bool collapse);
 	int32_t enqueue(EIcore_runner_object* obj);
 
 	// Thread-management-tools (thread-safe / autolocking threadMgmtLock)
@@ -126,12 +128,12 @@ public:
 	 * @brief  Creates single-threaded runner, which will do things just-in-time on fetch
 	 * @param  concurrent: Enable/Disable thread-safeness
 	 */
-	EIcore_runner(bool concurrent = true);
+	explicit EIcore_runner(bool concurrent = true);
 	/**
 	 * @brief  Creates multi-threaded runner
 	 * @param  maxRunning: The maximum number of actively running threads
 	 */
-	EIcore_runner(size_t maxRunning);
+	explicit EIcore_runner(size_t maxRunning);
 	~EIcore_runner();
 
 	ExecutionInterface* createInterface(std::vector<int64_t>* prioStack=NULL);
