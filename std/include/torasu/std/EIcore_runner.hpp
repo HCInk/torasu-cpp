@@ -38,9 +38,15 @@ enum EIcore_runner_THREAD_REQUEST_MODE {
 
 class EIcore_runner {
 protected:
-	const bool lockQueue = true;
+	// Weather the central queue should be used
+	const bool useQueue = true;
+	// Determins weather the tree has to be thread-safe - set to true if multiple threads are running the same tree
+	const bool concurrentTree = true;
 	// Determins weather interface exposed to managed tasks needs to be concurrent
+	const bool concurrentInterface = true;
+	// Determins weather the queueing/fetching of tasks inside the runner has to be thread-safe 
 	const bool concurrentSubCalls = true;
+	// The maximum ammount of threads to be run by the 
 	int64_t threadCountMax = 0;
 
 	// Task-queue stuff (locked by taskQueueLock)
@@ -103,7 +109,7 @@ protected:
 	// Internal functions (not thread-safe)
 	void stop();
 
-	// Internal functions (thread-safe if lockQueue=true)
+	// Internal functions (thread-safe if concurrentInterface=true)
 	void run(EIcore_runner_thread& threadHandle, bool collapse);
 	int32_t enqueue(EIcore_runner_object* obj);
 

@@ -37,7 +37,7 @@ namespace torasu::tstd {
 //
 
 EIcore_runner::EIcore_runner(bool concurrent) 
-	: lockQueue(concurrent) {
+	: useQueue(concurrent), concurrentTree(concurrent), concurrentInterface(concurrent) {
 #if INIT_DBG
 	dbg_init();
 #endif
@@ -48,11 +48,11 @@ EIcore_runner::EIcore_runner(size_t maxRunning)
 #if INIT_DBG
 	dbg_init();
 #endif
-	if (maxRunning > 0) spawnThread(false);
+	if (threadCountMax > 0) spawnThread(false);
 }
 
 EIcore_runner::~EIcore_runner() {
-	if (threadCountMax > 0) stop();
+	stop();
 #if INIT_DBG
 	dbg_cleanup();
 #endif
@@ -253,7 +253,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 		// Get task
 		//
 
-		if (lockQueue) taskQueueLock.lock();
+		taskQueueLock.lock();
 
 		EIcore_runner_object* task = nullptr;
 
@@ -292,7 +292,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 			}
 		}
 		
-		if (lockQueue) taskQueueLock.unlock();
+		taskQueueLock.unlock();
 
 		if (task == nullptr) { // Wait for task if no task is available / has been suspended
 			consecutiveFedCycles = 0;
@@ -391,11 +391,11 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 // EIcore_runner: Runner-specifc interfacing
 
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
-	if (lockQueue) taskQueueLock.lock();
+	if (concurrentInterface) taskQueueLock.lock();
 	taskQueue.insert(obj);
 
 	// std::cout << "TQ-insert " << obj << " (enqueue)" << std::endl;
-	if (threadCountMax > 0) taskCv.notify_one();
+	taskCv.notify_one();
 	// std::cout << " ==== TASK QUEUE ====" << std::endl;
 	// for (auto cObj : taskQueue) {
 	// 	std::cout << "- ";
@@ -405,7 +405,7 @@ int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	// 	std::cout << std::endl;
 	// }
 
-	if (lockQueue) taskQueueLock.unlock();
+	if (concurrentInterface) taskQueueLock.unlock();
 
 
 
@@ -623,7 +623,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 
 uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
 	
-	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->lockQueue;
+	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
 	if (lockSubTasks) subTasksLock.lock();
 	// Select renderId
 	uint64_t newRenderId = renderIdCounter;
@@ -645,13 +645,13 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 
 	if (lockSubTasks) subTasksLock.unlock();
 
-	if (runner->threadCountMax > 0) runner->enqueue(obj);
+	if (runner->useQueue) runner->enqueue(obj);
 
 	return newRenderId;
 }
 
 void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t requestCount) {
-	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->lockQueue;
+	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
 	if (lockSubTasks) subTasksLock.lock();
 
 	struct FetchSet {
@@ -702,7 +702,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 						fs.task = nullptr;
 						cleanup();
 
-						if (runner->threadCountMax > 0) { // Queue is not used in 0-thread mode
+						if (runner->useQueue) { // Queue is not used in noQueue-mode
 							std::unique_lock lockedQueue(runner->taskQueueLock);
 							auto& taskQueue = runner->taskQueue;
 							// std::cout << "TQ-erase " << task << " (fetch-run)" << std::endl;
@@ -749,7 +749,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 }
 
 void EIcore_runner_object::lock(LockId lockId) {
-	if (runner->threadCountMax > 0) {
+	if (runner->concurrentTree) {
 		suspend();
 		elemHandler->lock(lockId);
 		unsuspend();
@@ -757,7 +757,7 @@ void EIcore_runner_object::lock(LockId lockId) {
 }
 
 void EIcore_runner_object::unlock(LockId lockId) {
-	if (runner->threadCountMax > 0) {
+	if (runner->concurrentTree) {
 		elemHandler->unlock(lockId);
 	}
 }
