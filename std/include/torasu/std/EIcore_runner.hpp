@@ -179,8 +179,8 @@ private:
 	volatile EIcore_runner_object_status status = PENDING; // Status of task
 	std::condition_variable unsuspendCv;
 
-	void EIcore_runner_object::suspend();
-	void EIcore_runner_object::unsuspend();
+	void suspend();
+	void unsuspend();
 
 	std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex);
 
