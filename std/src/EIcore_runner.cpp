@@ -554,66 +554,67 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 }
 
 RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
-	
-	if (runner->threadCountMax <= 0) {
+	/*
+	if (!runner->useQueue) {
 		// Singlethreaded just-in-time
 		std::function<void()> cleanup;
 		result = run(&cleanup); 
 		cleanup();
 		return result;
-	} else {
-		// Multithreaded, getting waiting for result to come in
+	} else {*/
 
-		// 0 = Not set to sleep yet, 1=Set to sleep, 2=cant be set to sleep
-		int suspendState = 0;
+	// Multithreaded, getting waiting for result to come in
 
-		while (true) {
+	// 0 = Not set to sleep yet, 1=Set to sleep, 2=cant be set to sleep
+	int suspendState = 0;
 
+	while (true) {
+
+		if (result != NULL) {
+			std::unique_lock lockedResult(resultLock);
 			if (result != NULL) {
-				std::unique_lock lockedResult(resultLock);
-				if (result != NULL) {
 #if LOG_TIMING
-					auto found = std::chrono::high_resolution_clock::now();
-					std::cout << "RES FETCH " << std::chrono::duration_cast<std::chrono::nanoseconds>(found - *resultCreation).count() << "ns" << std::endl;
-					auto unsuspendStart = std::chrono::high_resolution_clock::now();
+				auto found = std::chrono::high_resolution_clock::now();
+				std::cout << "RES FETCH " << std::chrono::duration_cast<std::chrono::nanoseconds>(found - *resultCreation).count() << "ns" << std::endl;
+				auto unsuspendStart = std::chrono::high_resolution_clock::now();
 #endif
-					if (suspendState == 1) parent->unsuspend();
+				if (suspendState == 1) parent->unsuspend();
 #if LOG_TIMING
-					auto unsuspendEnd = std::chrono::high_resolution_clock::now();
-					std::cout << "UNSUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(unsuspendEnd - unsuspendStart).count() << "ns" << std::endl;
+				auto unsuspendEnd = std::chrono::high_resolution_clock::now();
+				std::cout << "UNSUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(unsuspendEnd - unsuspendStart).count() << "ns" << std::endl;
 #endif
-					return const_cast<RenderResult*>(result); // casting the volatile away
-				}
-			}
-			if (suspendState == 0) {
-				if (parent->parent != nullptr) { // Check if parent is not an interface
-#if LOG_TIMING
-					auto suspendStart = std::chrono::high_resolution_clock::now();
-#endif
-					parent->suspend(); // Suspend the parent, which is waiting for the result
-#if LOG_TIMING
-					auto suspendEnd = std::chrono::high_resolution_clock::now();
-					std::cout << "SUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(suspendEnd - suspendStart).count() << "ns" << std::endl;
-#endif
-					suspendState = 1;
-				} else {
-					suspendState = 2;
-				}
-			}
-			
-			{
-				#if !RUNNER_FULL_WAITS
-					std::unique_lock lck(resultLock); // XXX shouldn't this be an indivdual lock?
-					if (resultCv == nullptr) {
-						resultCv = new std::condition_variable();
-					}
-					resultCv->wait_for(lck, std::chrono::milliseconds(1));
-					// std::this_thread::sleep_for(std::chrono::milliseconds(1));	
-				#endif
+				return const_cast<RenderResult*>(result); // casting the volatile away
 			}
 		}
-
+		if (suspendState == 0) {
+			if (parent->parent != nullptr) { // Check if parent is not an interface
+#if LOG_TIMING
+				auto suspendStart = std::chrono::high_resolution_clock::now();
+#endif
+				parent->suspend(); // Suspend the parent, which is waiting for the result
+#if LOG_TIMING
+				auto suspendEnd = std::chrono::high_resolution_clock::now();
+				std::cout << "SUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(suspendEnd - suspendStart).count() << "ns" << std::endl;
+#endif
+				suspendState = 1;
+			} else {
+				suspendState = 2;
+			}
+		}
+		
+		{
+			#if !RUNNER_FULL_WAITS
+				std::unique_lock lck(resultLock); // XXX shouldn't this be an indivdual lock?
+				if (resultCv == nullptr) {
+					resultCv = new std::condition_variable();
+				}
+				resultCv->wait_for(lck, std::chrono::milliseconds(1));
+				// std::this_thread::sleep_for(std::chrono::milliseconds(1));	
+			#endif
+		}
 	}
+
+	/*}*/
 
 }
 
