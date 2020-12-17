@@ -112,7 +112,7 @@ protected:
 	void stop();
 
 	// Internal functions (thread-safe if concurrentInterface=true)
-	void run(const EIcore_runner_thread& threadHandle, bool collapse);
+	void run(EIcore_runner_thread* threadHandle, bool collapse);
 	int32_t enqueue(EIcore_runner_object* obj);
 
 	// Thread-management-tools (thread-safe / autolocking threadMgmtLock)

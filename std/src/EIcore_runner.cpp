@@ -140,7 +140,7 @@ void EIcore_runner::spawnThread(bool collapse) {
 	threads.push_back({});
 	EIcore_runner_thread& threadHandle = threads.back();
 	threadHandle.thread = new std::thread([this, &threadHandle, collapse]() {
-		this->run(threadHandle, collapse);
+		this->run(&threadHandle, collapse);
 	});
 #if LOG_THREADS
 	std::cout << "(SPWAN) Create thread " << std::to_address(threadHandle.thread) << std::endl;
@@ -184,7 +184,7 @@ void EIcore_runner::cleanThreads() {
 
 // EIcore_runner: Thread-looop
 
-void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
+void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 #if LOG_THREADS
 	std::cout << " (THREAD) Enter thread " << std::to_address(threadHandle.thread) << std::endl;
 #endif
@@ -371,7 +371,7 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 
 	{
 		std::unique_lock lockedTM(threadMgmtLock);
-		threadHandle.running = false;
+		threadHandle->running = false;
 #if CHECK_REGISTRATION_ERRORS
 		if (suspended) {
 			dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED);
