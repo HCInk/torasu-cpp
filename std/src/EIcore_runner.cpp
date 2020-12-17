@@ -22,7 +22,7 @@ using namespace std;
 namespace torasu::tstd {
 
 //
-// EICoreRunner
+// EIcore_runner
 //
 
 EIcore_runner::EIcore_runner(bool concurrent) 
@@ -35,7 +35,7 @@ EIcore_runner::EIcore_runner(bool concurrent)
 EIcore_runner::EIcore_runner(size_t maxRunning) 
 	: threadCountMax(maxRunning) {
 #if TORASU_STD_EICORERUNNER_INIT_DBG
-	dbg_init();
+	dbg_cleanup();
 #endif
 	spawnThread(false);
 }
@@ -46,6 +46,46 @@ EIcore_runner::~EIcore_runner() {
 	dbg_cleanup();
 #endif
 }
+
+// EIcore_runner: Registration Helpers
+
+inline void EIcore_runner::registerRunning() {
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	dbg_registerRunning(std::this_thread::get_id());
+#else
+	threadCountRunning++;
+#endif
+}
+
+inline void EIcore_runner::unregisterRunning() {
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	dbg_unregisterRunning(EIcore_runner_dbg::INTERNAL);
+#else
+	if (doRun) threadSuspensionCv.notify_one();
+	threadCountRunning--;
+#endif
+}
+
+inline bool EIcore_runner::requestNewThread(EIcore_runner_THREAD_REQUEST_MODE mode) {
+	std::unique_lock lockedTM(threadMgmtLock);
+	if (!doRun) {
+		return false;
+	}
+	if (threadCountRunning < threadCountMax) {
+		if (mode == NEW) {
+			spawnThread(true); // spwan handles the registration itself
+		} else {
+			registerRunning();
+			if (mode == UNSUSPEND) threadCountSuspended--;
+		}
+		return true;
+	} else {
+		if (mode == OR_SUSPEND) threadCountSuspended++;
+		return false;
+	}
+}
+
+// EIcore_runner: Thread management
 
 void EIcore_runner::stop() {
 #if TORASU_STD_DBG_EICORERUNNER_THREAD_LOG
@@ -144,6 +184,8 @@ void EIcore_runner::cleanThreads() {
 	std::cout << "(CLEAN) Finished thread-cleanup." << std::endl;
 #endif
 }
+
+// EIcore_runner: Thread-looop
 
 void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 	
@@ -321,6 +363,8 @@ void EIcore_runner::run(EIcore_runner_thread& threadHandle, bool collapse) {
 #endif
 }
 
+// EIcore_runner: Runner-specifc interfacing
+
 int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	if (lockQueue) taskQueueLock.lock();
 	taskQueue.insert(obj);
@@ -358,7 +402,7 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 }
 
 //
-// EICoreRunnerObject
+// EIcore_runner_object
 //
 
 // Subtask Constructor
@@ -377,6 +421,83 @@ EIcore_runner_object::~EIcore_runner_object() {
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
 }
+
+// EIcore_runner_object: Suspension Functions
+
+inline void EIcore_runner_object::suspend() {
+	std::unique_lock lockedTM(runner->threadMgmtLock);
+	{
+		std::unique_lock lockedStatus(statusLock);
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+		if (status != RUNNING) 
+			throw std::logic_error("suspend() can only be called in state " 
+				+ std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
+		if (parent == nullptr)
+			throw std::logic_error("suspend() can never be called on an interface!");
+#endif
+		// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
+		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
+		runner->unregisterRunning();
+		status = BLOCKED;
+	}
+	
+	if (runner->threadCountRunning <= 0 && runner->threadCountSuspended <= 0) { // Spawn thread if number of running threads reach a critical value
+		runner->spawnThread(false);
+	}
+}
+
+inline void EIcore_runner_object::unsuspend() {
+	std::unique_lock lockedStatus(statusLock);
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	if (status != BLOCKED) 
+		throw std::logic_error("unsuspend() can only be called in state " 
+			+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
+#endif
+	std::unique_lock threadLock(runner->threadMgmtLock);
+	if (runner->threadCountRunning < runner->threadCountMax) {
+		status = RUNNING;
+		runner->registerRunning();
+		return;
+	}
+	threadLock.unlock();
+	status = SUSPENDED;
+
+#if TORASU_TSTD_CORE_RUNNER_FULL_WAITS
+	lockedStatus.unlock();
+#endif
+	while (status == SUSPENDED) {
+#if !TORASU_TSTD_CORE_RUNNER_FULL_WAITS
+			unsuspendCv.wait_for(lockedStatus, std::chrono::milliseconds(1));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); 
+#endif
+	}
+
+#if TORASU_TSTD_CHECK_STATE_ERRORS
+	runner->dbg_recieveRes(this);
+#endif
+}
+
+// EIcore_runner_object: Helper Functions
+
+inline std::vector<EIcore_runner_object*>* EIcore_runner_object::getSubTaskMemory(size_t maxIndex) {
+	if (subTasks == NULL) {
+		subTasks = new std::vector<EIcore_runner_object*>(addAmmount);
+	}
+	while (subTasks->size() <= maxIndex) {
+		subTasks->resize(subTasks->size() + addAmmount);
+	}
+	return subTasks;
+}
+
+inline void EIcore_runner_object::setRenderContext(RenderContext* rctx) {
+	this->rctx = rctx;
+}
+
+inline void EIcore_runner_object::setResultSettings(ResultSettings* rs) {
+	this->rs = rs;
+}
+
+// EICoreRunnerObject: Execution Functions
 
 RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
 	std::vector<std::string> ops;
@@ -472,7 +593,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 }
 
 //
-// Execution Interface
+// torasu::ExecutionInterface implementation in EIcore_runner_object
 //
 
 uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
