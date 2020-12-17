@@ -15,8 +15,6 @@
 
 #include <torasu/torasu.hpp>
 
-#define TORASU_TSTD_CHECK_STATE_ERRORS true
-#define TORASU_TSTD_CORE_RUNNER_FULL_WAITS false
 
 namespace torasu::tstd {
 
