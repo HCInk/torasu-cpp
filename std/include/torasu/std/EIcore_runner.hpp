@@ -128,7 +128,7 @@ public:
 	 * @brief  Creates single-threaded runner, which will do things just-in-time on fetch
 	 * @param  concurrent: Enable/Disable thread-safeness
 	 */
-	explicit EIcore_runner(bool concurrent = true);
+	explicit EIcore_runner(bool useQueue = true, bool concurrent = true);
 	/**
 	 * @brief  Creates multi-threaded runner
 	 * @param  maxRunning: The maximum number of actively running threads

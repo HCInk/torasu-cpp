@@ -36,8 +36,8 @@ namespace torasu::tstd {
 // EIcore_runner
 //
 
-EIcore_runner::EIcore_runner(bool concurrent) 
-	: useQueue(concurrent), concurrentTree(concurrent), concurrentInterface(concurrent) {
+EIcore_runner::EIcore_runner(bool useQueue, bool concurrent) 
+	: useQueue(useQueue), concurrentTree(concurrent), concurrentInterface(concurrent) {
 #if INIT_DBG
 	dbg_init();
 #endif
