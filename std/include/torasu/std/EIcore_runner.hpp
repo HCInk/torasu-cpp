@@ -24,7 +24,7 @@ class EIcore_runner_object;
 class EIcore_runner_elemhandler;
 
 struct EIcore_runner_object_cmp {
-	bool operator()(EIcore_runner_object*const& r, EIcore_runner_object*const& l) const;
+	bool operator()(EIcore_runner_object* const& r, EIcore_runner_object* const& l) const;
 };
 
 struct EIcore_runner_thread {
@@ -46,21 +46,21 @@ protected:
 	const bool concurrentTree = true;
 	// Determins weather interface exposed to managed tasks needs to be concurrent
 	const bool concurrentInterface = true;
-	// Determins weather the queueing/fetching of tasks inside the runner has to be thread-safe 
+	// Determins weather the queueing/fetching of tasks inside the runner has to be thread-safe
 	const bool concurrentSubCalls = true;
-	// The maximum ammount of threads to be run by the 
+	// The maximum ammount of threads to be run by the
 	int64_t threadCountMax = 0;
 
 	// Task-queue stuff (locked by taskQueueLock)
 	std::mutex taskQueueLock;
 	std::set<EIcore_runner_object*, EIcore_runner_object_cmp> taskQueue;
-	std::condition_variable taskCv; // notify-one once task queue gets updated 
+	std::condition_variable taskCv; // notify-one once task queue gets updated
 
 	// Thread-management (locked via threadMgmtLock)
 	std::mutex threadMgmtLock;
 	volatile bool doRun = true;
 	int64_t threadCountRunning = 0; // The count of the threads, which are currently effectively running - without guest-threads
-	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed 
+	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	int64_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
@@ -91,7 +91,7 @@ protected:
 	void dbg_init();
 	void dbg_cleanup();
 
-	// Registration-Debug (thread safe, but shpuldn't have to be) 
+	// Registration-Debug (thread safe, but shpuldn't have to be)
 	// TODO Panic if used "un-threasafe"
 	void dbg_giveRes(EIcore_runner_object* obj);
 	void dbg_recieveRes(EIcore_runner_object* obj);
@@ -104,7 +104,7 @@ protected:
 
 	void cleanThreads();
 	void spawnThread(bool collapse);
-	
+
 	// Interface creation-counter (not thread-safe)
 	int64_t interfaceIdCounter = 0;
 
@@ -162,10 +162,10 @@ private:
 	ResultSettings* rs = NULL;
 
 	// Object-data: Task-Settings (persistent)
-	EIcore_runner_object*const parent;
-	EIcore_runner*const runner;
+	EIcore_runner_object* const parent;
+	EIcore_runner* const runner;
 	const int64_t renderId;
-	const std::vector<int64_t>*const prioStack;
+	const std::vector<int64_t>* const prioStack;
 
 
 	// Sub-task-data (locked by "subTasksLock")
@@ -176,7 +176,7 @@ private:
 
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
-	RenderResult*volatile result = nullptr;
+	RenderResult* volatile result = nullptr;
 	std::condition_variable* resultCv = nullptr;
 	std::chrono::_V2::system_clock::time_point* resultCreation = nullptr;
 

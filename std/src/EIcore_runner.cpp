@@ -19,11 +19,11 @@ using namespace std;
 #define LOG_TIMING false
 
 #if LOG_REGISTRATIONS_RUNNER || LOG_REGISTRATIONS_GUESTS || LOG_REGISTRATIONS_REVIVES || LOG_REGISTRATIONS_INTERNAL
-#define CHECK_REGISTRATION_ERRORS true
+	#define CHECK_REGISTRATION_ERRORS true
 #endif
 
 #if CHECK_REGISTRATION_ERRORS
-#define INIT_DBG true
+	#define INIT_DBG true
 #endif
 
 #define MAX_RETRIES 50
@@ -36,14 +36,14 @@ namespace torasu::tstd {
 // EIcore_runner
 //
 
-EIcore_runner::EIcore_runner(bool useQueue, bool concurrent) 
+EIcore_runner::EIcore_runner(bool useQueue, bool concurrent)
 	: useQueue(useQueue), concurrentTree(concurrent), concurrentInterface(concurrent) {
 #if INIT_DBG
 	dbg_init();
 #endif
 }
 
-EIcore_runner::EIcore_runner(size_t maxRunning) 
+EIcore_runner::EIcore_runner(size_t maxRunning)
 	: threadCountMax(maxRunning) {
 #if INIT_DBG
 	dbg_init();
@@ -191,12 +191,13 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 
 	size_t retriesWithNone = 0;
 	bool suspended = false;
-  	std::mutex threadWaiter;
+	std::mutex threadWaiter;
 
 
 #if CHECK_REGISTRATION_ERRORS
-	{ // Wait for registration...
-		
+	{
+		// Wait for registration...
+
 		auto tid = std::this_thread::get_id();
 
 #if LOG_THREADS
@@ -225,7 +226,7 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 		//
 
 		while (suspended && doRun) {
-			
+
 			if (requestNewThread(UNSUSPEND)) {
 				suspended = false;
 				retriesWithNone = 0;
@@ -234,15 +235,15 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 
 			if (!collapse || retriesWithNone < MAX_RETRIES) {
 #if !RUNNER_FULL_WAITS
-					std::unique_lock<std::mutex> lck(threadWaiter);
-					threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
-					retriesWithNone++;
+				std::unique_lock<std::mutex> lck(threadWaiter);
+				threadSuspensionCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				retriesWithNone++;
 #endif
 				continue;
 			} else {
 				break;
 			}
-			
+
 		}
 
 		if (suspended) { // Shutdown when still suspended
@@ -262,14 +263,14 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 
 			if (currTask->status == PENDING) {
 				std::unique_lock lockedStatus(statusLock);
-				if (currTask->status == PENDING) { 
+				if (currTask->status == PENDING) {
 					currTask->status = RUNNING;
 					task = currTask;
 					break;
 				}
 			} else if (currTask->status == SUSPENDED) {
 				std::unique_lock lockedStatus(statusLock);
-				if (currTask->status == SUSPENDED) { 
+				if (currTask->status == SUSPENDED) {
 
 #if CHECK_REGISTRATION_ERRORS
 					dbg_giveRes(currTask);
@@ -286,24 +287,24 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 					suspended = !requestNewThread(OR_SUSPEND);
 
 					if (suspended) {
-						break; 	
+						break;
 					}
 				}
 			}
 		}
-		
+
 		taskQueueLock.unlock();
 
 		if (task == nullptr) { // Wait for task if no task is available / has been suspended
 			consecutiveFedCycles = 0;
 			if ((!collapse || retriesWithNone < MAX_RETRIES)) {
-				#if !RUNNER_FULL_WAITS
-					if (!suspended) {
-						std::unique_lock<std::mutex> lck(threadWaiter);
-						taskCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
-					}
-					retriesWithNone++;
-				#endif
+#if !RUNNER_FULL_WAITS
+				if (!suspended) {
+					std::unique_lock<std::mutex> lck(threadWaiter);
+					taskCv.wait_for(lck, std::chrono::milliseconds(RETRY_WAIT));
+				}
+				retriesWithNone++;
+#endif
 				continue;
 			} else {
 				break;
@@ -338,7 +339,7 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 
 			task->result = result;
 #if LOG_TIMING
-			task->resultCreation 
+			task->resultCreation
 				= new auto(std::chrono::high_resolution_clock::now());
 #endif
 			// XXX shouldn't lockedRes be unlocked now?
@@ -432,13 +433,13 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 
 // Subtask Constructor
 EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>* prioStack)
-	: elemHandler(rnd != nullptr ? EIcore_runner_elemhandler::getHandler(rnd, runner) : nullptr), 
-		rnd(rnd), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
+	: elemHandler(rnd != nullptr ? EIcore_runner_elemhandler::getHandler(rnd, runner) : nullptr),
+	  rnd(rnd), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
 
 // Interface Constructor
-EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>* prioStack) 
-	: elemHandler(nullptr), rnd(nullptr), parent(nullptr), runner(runner), 
-		renderId(renderId), prioStack(prioStack), status(RUNNING) {}
+EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>* prioStack)
+	: elemHandler(nullptr), rnd(nullptr), parent(nullptr), runner(runner),
+	  renderId(renderId), prioStack(prioStack), status(RUNNING) {}
 
 EIcore_runner_object::~EIcore_runner_object() {
 	if (subTasks != nullptr) delete subTasks;
@@ -454,18 +455,18 @@ inline void EIcore_runner_object::suspend() {
 	{
 		std::unique_lock lockedStatus(statusLock);
 #if CHECK_STATE_ERRORS
-		if (status != RUNNING) 
-			throw std::logic_error("suspend() can only be called in state " 
-				+ std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
+		if (status != RUNNING)
+			throw std::logic_error("suspend() can only be called in state "
+								   + std::to_string(RUNNING) + " (RUNNING), but it was called in " + std::to_string(status));
 		if (parent == nullptr)
 			throw std::logic_error("suspend() can never be called on an interface!");
 #endif
 		// By setting own state to BLOCKED/SUSPENDED the thread is nolonger effectivly running and will free a thread
-		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege 
+		// In ornder to be set to RUNNING another thread has to suspend itself or request another thread-privilege
 		runner->unregisterRunning();
 		status = BLOCKED;
 	}
-	
+
 	if (runner->threadCountRunning <= 0 && runner->threadCountSuspended <= 0) { // Spawn thread if number of running threads reach a critical value
 		runner->spawnThread(false);
 	}
@@ -474,9 +475,9 @@ inline void EIcore_runner_object::suspend() {
 inline void EIcore_runner_object::unsuspend() {
 	std::unique_lock lockedStatus(statusLock);
 #if CHECK_STATE_ERRORS
-	if (status != BLOCKED) 
-		throw std::logic_error("unsuspend() can only be called in state " 
-			+ std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
+	if (status != BLOCKED)
+		throw std::logic_error("unsuspend() can only be called in state "
+							   + std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
 #endif
 	std::unique_lock threadLock(runner->threadMgmtLock);
 	if (runner->threadCountRunning < runner->threadCountMax) {
@@ -492,8 +493,8 @@ inline void EIcore_runner_object::unsuspend() {
 #endif
 	while (status == SUSPENDED) {
 #if !RUNNER_FULL_WAITS
-			unsuspendCv.wait_for(lockedStatus, std::chrono::milliseconds(1));
-			// std::this_thread::sleep_for(std::chrono::milliseconds(1)); 
+		unsuspendCv.wait_for(lockedStatus, std::chrono::milliseconds(1));
+		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
 #endif
 	}
 
@@ -554,16 +555,6 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 }
 
 RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
-	/*
-	if (!runner->useQueue) {
-		// Singlethreaded just-in-time
-		std::function<void()> cleanup;
-		result = run(&cleanup); 
-		cleanup();
-		return result;
-	} else {*/
-
-	// Multithreaded, getting waiting for result to come in
 
 	// 0 = Not set to sleep yet, 1=Set to sleep, 2=cant be set to sleep
 	int suspendState = 0;
@@ -601,20 +592,18 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 				suspendState = 2;
 			}
 		}
-		
+
 		{
-			#if !RUNNER_FULL_WAITS
-				std::unique_lock lck(resultLock); // XXX shouldn't this be an indivdual lock?
-				if (resultCv == nullptr) {
-					resultCv = new std::condition_variable();
-				}
-				resultCv->wait_for(lck, std::chrono::milliseconds(1));
-				// std::this_thread::sleep_for(std::chrono::milliseconds(1));	
-			#endif
+#if !RUNNER_FULL_WAITS
+			std::unique_lock lck(resultLock); // XXX shouldn't this be an indivdual lock?
+			if (resultCv == nullptr) {
+				resultCv = new std::condition_variable();
+			}
+			resultCv->wait_for(lck, std::chrono::milliseconds(1));
+			// std::this_thread::sleep_for(std::chrono::milliseconds(1));
+#endif
 		}
 	}
-
-	/*}*/
 
 }
 
@@ -623,7 +612,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 //
 
 uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
-	
+
 	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
 	if (lockSubTasks) subTasksLock.lock();
 	// Select renderId
@@ -661,7 +650,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 	};
 
 	std::vector<FetchSet> toFetch(requestCount);
-	
+
 #if CHECK_REGISTRATION_ERRORS
 	// register guest-thread if called over interface (parent == nullptr)
 	if (parent == nullptr) runner->dbg_registerRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
@@ -680,8 +669,8 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 
 
 			if (task != NULL) {
-				
-				auto& fs = toFetch[requestCount-reqi-1]; 
+
+				auto& fs = toFetch[requestCount-reqi-1];
 				// ^ in reverse, so that the last expected tasks to finish will be waited first,
 				// so less waits/suspends will be triggered
 
@@ -708,7 +697,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 							auto& taskQueue = runner->taskQueue;
 							// std::cout << "TQ-erase " << task << " (fetch-run)" << std::endl;
 							auto found = taskQueue.find(task);
-							if (found == taskQueue.end()) 
+							if (found == taskQueue.end())
 								throw std::logic_error("Sanity-Check: Couldn't find matching task in queue!");
 							taskQueue.erase(found);
 						}
@@ -720,8 +709,8 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 			} else {
 				std::ostringstream errMsg;
 				errMsg << "The object the given render-id ("
-					<< renderId
-					<< "), is reffering to, has already been fetched and freed!";
+					   << renderId
+					   << "), is reffering to, has already been fetched and freed!";
 				throw runtime_error(errMsg.str());
 			}
 
@@ -729,8 +718,8 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 			if (lockSubTasks) subTasksLock.unlock();
 			std::ostringstream errMsg;
 			errMsg << "The given render-id ("
-				<< renderId
-				<< ") was never created!";
+				   << renderId
+				   << ") was never created!";
 			throw runtime_error(errMsg.str());
 		}
 
@@ -767,10 +756,10 @@ void EIcore_runner_object::unlock(LockId lockId) {
 // EIcore_runner_object_cmp
 //
 
-bool EIcore_runner_object_cmp::operator()(EIcore_runner_object*const& r, EIcore_runner_object*const& l) const {
+bool EIcore_runner_object_cmp::operator()(EIcore_runner_object* const& r, EIcore_runner_object* const& l) const {
 	size_t itSizeR = r->prioStack->size();
 	size_t itSizeL = l->prioStack->size();
-	
+
 	bool lLonger = itSizeL > itSizeR;
 	size_t itSize = lLonger ? itSizeR : itSizeL;
 
@@ -780,7 +769,7 @@ bool EIcore_runner_object_cmp::operator()(EIcore_runner_object*const& r, EIcore_
 
 		if (*itPrioR != *itPrioL) {
 			if (*itPrioR < *itPrioL) { // The higher the value, the smaller the priority
-				return true; // Order R before L 
+				return true; // Order R before L
 			} else {
 				return false; // Order L before R
 			}
@@ -790,7 +779,7 @@ bool EIcore_runner_object_cmp::operator()(EIcore_runner_object*const& r, EIcore_
 		itPrioL++;
 	}
 
-	return lLonger; // Order R before L, if the stack of L is longer 
+	return lLonger; // Order R before L, if the stack of L is longer
 }
 
 //
@@ -997,12 +986,12 @@ void EIcore_runner::dbg_registerRunning(std::thread::id tid, EIcore_runner_dbg::
 #if LOG_REGISTRATIONS_INTERNAL
 		std::cout << "Register-thread (" << RRN(reason) << ") " << tid << std::endl;
 #endif
-		auto foundGuest = registered.find(tid);
-		if (foundGuest != registered.end()) {
-			if (foundGuest->second.second == true) {
-				throw std::logic_error("Sanity-Check: " + RRN(foundGuest->second.first) + "-thread is already registered as running!");
+		auto found = registered.find(tid);
+		if (found != registered.end()) {
+			if (found->second.second == true) {
+				throw std::logic_error("Sanity-Check: " + RRN(found->second.first) + "-thread is already registered as running!");
 			}
-			foundGuest->second.second = true;
+			found->second.second = true;
 		} else {
 			throw std::logic_error("Sanity-Check: " + RRN(reason) + "-register was called on an target, which is not registered!");
 		}
@@ -1030,7 +1019,7 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 	auto& registered = dbg->registered;
 	std::unique_lock regLck(dbg->registerLock);
 	auto tid = std::this_thread::get_id();
-	
+
 	auto found = registered.find(tid);
 	if (reason == EIcore_runner_dbg::GUEST || reason == EIcore_runner_dbg::RUNNER || reason == EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) {
 
@@ -1050,9 +1039,9 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 		if (reason == EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) {
 			if (found->second.first != EIcore_runner_dbg::RUNNER) {
 				throw std::logic_error("Sanity-Check: Trying to unregister a thread, with the wrong reason!"
-					"(Registered as " + RRN(found->second.first) + " but was unregistered with" 
-					+ RRN(EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) + " which requires the RR " 
-					+ RRN(EIcore_runner_dbg::RUNNER) + ")");
+									   "(Registered as " + RRN(found->second.first) + " but was unregistered with"
+									   + RRN(EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) + " which requires the RR "
+									   + RRN(EIcore_runner_dbg::RUNNER) + ")");
 			}
 			if (found->second.second == true) {
 				throw std::logic_error("Sanity-Check: Thread has to be stopped for " + RRN(EIcore_runner_dbg::RUNNER_CLOSE_SUSPENDED) + "!");
@@ -1060,7 +1049,7 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 		} else {
 			if (found->second.first != reason) {
 				throw std::logic_error("Sanity-Check: Trying to unregister a thread, with the wrong reason!"
-					"(Registered as " + RRN(found->second.first) + " but unregistered with " + RRN(found->second.first) + ")");
+									   "(Registered as " + RRN(found->second.first) + " but unregistered with " + RRN(found->second.first) + ")");
 			}
 			if (found->second.second == false) {
 				throw std::logic_error("Sanity-Check: Trying to unregister a " + RRN(reason) + "thread, which is registered as not running!");
