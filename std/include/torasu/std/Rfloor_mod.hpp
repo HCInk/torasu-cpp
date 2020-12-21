@@ -1,5 +1,5 @@
-#ifndef STD_INCLUDE_TORASU_STD_RMOD_HPP_
-#define STD_INCLUDE_TORASU_STD_RMOD_HPP_
+#ifndef STD_INCLUDE_TORASU_STD_RFLOOR_MOD_HPP_
+#define STD_INCLUDE_TORASU_STD_RFLOOR_MOD_HPP_
 
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
@@ -29,4 +29,4 @@ public:
 
 } // namespace torasu::tstd
 
-#endif // STD_INCLUDE_TORASU_STD_RMOD_HPP_
+#endif // STD_INCLUDE_TORASU_STD_RFLOOR_MOD_HPP_
