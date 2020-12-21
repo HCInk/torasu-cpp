@@ -34,16 +34,16 @@ class NumSlot : public torasu::tools::RenderableSlot {
 public:
 	inline NumSlot() {}
 
-	inline NumSlot(Renderable* rnd)
+	/* implciit */ inline NumSlot(Renderable* rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 
-	inline NumSlot(torasu::tools::RenderableSlot rnd)
+	/* implciit */ inline NumSlot(torasu::tools::RenderableSlot rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 
-	inline NumSlot(double num)
+	/* implciit */ inline NumSlot(double num)
 		: torasu::tools::RenderableSlot(new Rnum(num), true) {}
 
-	inline NumSlot(Dnum num)
+	/* implciit */ inline NumSlot(Dnum num)
 		: torasu::tools::RenderableSlot(new Rnum(num), true) {}
 
 };

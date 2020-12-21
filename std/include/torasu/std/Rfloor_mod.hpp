@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_RFLOOR_MOD_HPP_
 #define STD_INCLUDE_TORASU_STD_RFLOOR_MOD_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 #include <torasu/slot_tools.hpp>

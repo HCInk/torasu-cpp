@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_RSIN_HPP_
 #define STD_INCLUDE_TORASU_STD_RSIN_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 #include <torasu/slot_tools.hpp>
@@ -17,7 +19,7 @@ protected:
 	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
-	Rsin(NumSlot val);
+	explicit Rsin(NumSlot val);
 	~Rsin();
 
 	torasu::ElementMap getElements() override;

@@ -1,6 +1,10 @@
 #ifndef STD_INCLUDE_TORASU_STD_RMIX_PIPELINES_HPP_
 #define STD_INCLUDE_TORASU_STD_RMIX_PIPELINES_HPP_
 
+#include <map>
+#include <vector>
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/SimpleRenderable.hpp>
 #include <torasu/DataPackable.hpp>
@@ -26,10 +30,10 @@ private:
 		std::string pl;
 		torasu::tools::ManagedRenderableSlot rnd; // Will not be exported/imported
 
-		inline PipelineMapping(size_t id, std::string pl, torasu::tools::RenderableSlot rnd)
+		explicit inline PipelineMapping(size_t id, std::string pl, torasu::tools::RenderableSlot rnd)
 			: id(id), pl(pl), rnd(rnd) {}
 
-		inline PipelineMapping(const PipelineMappingUnmanaged& um)
+		explicit inline PipelineMapping(const PipelineMappingUnmanaged& um)
 			: id(um.id), pl(um.pl), rnd(um.rnd) {}
 	};
 

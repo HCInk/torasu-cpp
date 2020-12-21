@@ -3,7 +3,9 @@
 
 #include <string>
 #include <vector>
-#include <torasu/json.hpp>
+#include <functional>
+#include <map>
+#include <utility>
 
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>

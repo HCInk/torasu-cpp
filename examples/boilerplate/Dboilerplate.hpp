@@ -18,8 +18,8 @@ protected:
 	torasu::json makeJson() override;
 
 public:
-	Dboilerplate(std::string jsonStripped);
-	Dboilerplate(torasu::json jsonParsed);
+	explicit Dboilerplate(std::string jsonStripped);
+	explicit Dboilerplate(torasu::json jsonParsed);
 
 	Dboilerplate(std::string str, double num);
 	~Dboilerplate();

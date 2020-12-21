@@ -14,10 +14,10 @@ public:
 	inline Slot()
 		: elem(nullptr) {}
 
-	inline Slot(T* elem)
+	/* implciit */ inline Slot(T* elem)
 		: elem(elem) {}
 
-	inline Slot(T* elem, bool owned)
+	/* implciit */ inline Slot(T* elem, bool owned)
 		: elem(elem), owned(owned) {}
 
 	inline T& operator*() {

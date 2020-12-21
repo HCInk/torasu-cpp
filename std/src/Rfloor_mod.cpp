@@ -69,4 +69,4 @@ void Rfloor_mod::setElement(std::string key, torasu::Element* elem) {
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 
-} // namespace torasu::texample
+} // namespace torasu::tstd

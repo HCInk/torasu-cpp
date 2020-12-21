@@ -348,7 +348,7 @@ class ResultFormatSettings : public virtual DataResource {
 private:
 	std::string ident;
 public:
-	ResultFormatSettings(std::string dataType)
+	explicit ResultFormatSettings(std::string dataType)
 		: ident(TORASU_FORMAT_PREFIX + dataType) {}
 	virtual ~ResultFormatSettings() {}
 

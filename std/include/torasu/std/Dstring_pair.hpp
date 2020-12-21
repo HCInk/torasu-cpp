@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_DSTRING_PAIR_HPP_
 #define STD_INCLUDE_TORASU_STD_DSTRING_PAIR_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/DataPackable.hpp>
 
@@ -16,8 +18,8 @@ protected:
 	torasu::json makeJson() override;
 
 public:
-	Dstring_pair(std::string jsonStripped);
-	Dstring_pair(torasu::json jsonParsed);
+	explicit Dstring_pair(std::string jsonStripped);
+	explicit Dstring_pair(torasu::json jsonParsed);
 
 	Dstring_pair(std::string a, std::string b);
 	~Dstring_pair();
