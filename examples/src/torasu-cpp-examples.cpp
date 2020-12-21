@@ -256,10 +256,10 @@ void inlineMathExample() {
 }
 
 void slotFunction(
-		torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
-		torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF,
-		torasu::tstd::NumSlot rndNumA, torasu::tstd::NumSlot rndNumB, torasu::tstd::NumSlot rndNumC,
-		torasu::tstd::StringSlot rndStrA, torasu::tstd::StringSlot rndStrB, torasu::tstd::StringSlot rndStrC) {
+	torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
+	torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF,
+	torasu::tstd::NumSlot rndNumA, torasu::tstd::NumSlot rndNumB, torasu::tstd::NumSlot rndNumC,
+	torasu::tstd::StringSlot rndStrA, torasu::tstd::StringSlot rndStrB, torasu::tstd::StringSlot rndStrC) {
 	torasu::tools::ManagedElementSlot mA(elemA);
 	torasu::tools::ManagedElementSlot mB(elemB);
 	torasu::tools::ManagedElementSlot mC(elemC);
@@ -287,9 +287,9 @@ void slotTests() {
 	Rstring rndC("TEST2");
 
 	slotFunction(rndA, &rndB, IE(new Rnum(10)),
-				rndA, &rndB, IR(new Rnum(7)),
-				5, &rndB, IR(new Rnum(6)),
-				"TEST1", &rndC, IR(new Rstring("TEST3")));
+				 rndA, &rndB, IR(new Rnum(7)),
+				 5, &rndB, IR(new Rnum(6)),
+				 "TEST1", &rndC, IR(new Rstring("TEST3")));
 
 	delete rndA;
 

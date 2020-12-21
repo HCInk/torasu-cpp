@@ -36,7 +36,7 @@ torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* 
 
 		auto* fetchedVal = segHandle.getFrom(valRes.get()).getResult();
 		auto* fetchedFac = segHandle.getFrom(facRes.get()).getResult();
-		
+
 		if (fetchedVal == nullptr) {
 			return new torasu::ResultSegment(ResultSegmentStatus_OK_WARN, new torasu::tstd::Dnum(0), true);
 		}

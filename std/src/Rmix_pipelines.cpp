@@ -94,7 +94,7 @@ void Dmix_pipelines_conf::updateMapping(size_t id, torasu::Renderable* rnd) {
 		foundMapping->second->rnd = rnd;
 	} else {
 		auto* mapping = new PipelineMapping{
-			id, 
+			id,
 			"", // pl.empty(): Signalise that the pipeline is not known yet
 			rnd
 		};

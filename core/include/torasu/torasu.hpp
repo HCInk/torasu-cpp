@@ -92,7 +92,7 @@ public:
 	virtual ~ExecutionInterface() {}
 
 	/**
-	 * @brief  Enqueue a renderable to be processed asynchronously 
+	 * @brief  Enqueue a renderable to be processed asynchronously
 	 * @note   This oepration is usually expected to not take long, since it usually just enqueues a task
 	 * @param  rend: The renderable to be enqueued
 	 * @param  rctx: The context the renderable should be executed with
@@ -480,7 +480,7 @@ public:
 	explicit inline RenderResult(ResultStatus status)
 		: status(status), results(nullptr) {}
 
-	inline RenderResult(ResultStatus status, std::map<std::string, ResultSegment*>* results) 
+	inline RenderResult(ResultStatus status, std::map<std::string, ResultSegment*>* results)
 		: status(status), results(results) {}
 
 	~RenderResult() {

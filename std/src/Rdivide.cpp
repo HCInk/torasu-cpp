@@ -16,7 +16,7 @@ namespace torasu::tstd {
 
 Rdivide::Rdivide(NumSlot a, NumSlot b)
 	: SimpleRenderable(std::string("STD::RDIVIDE"), false, true),
-		a(a), b(b) {}
+	  a(a), b(b) {}
 
 Rdivide::~Rdivide() {
 

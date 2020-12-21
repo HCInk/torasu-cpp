@@ -26,11 +26,11 @@ private:
 		std::string pl;
 		torasu::tools::ManagedRenderableSlot rnd; // Will not be exported/imported
 
-		inline PipelineMapping(size_t id, std::string pl, torasu::tools::RenderableSlot rnd) 
-			: id(id), pl(pl), rnd(rnd){}
+		inline PipelineMapping(size_t id, std::string pl, torasu::tools::RenderableSlot rnd)
+			: id(id), pl(pl), rnd(rnd) {}
 
-		inline PipelineMapping(const PipelineMappingUnmanaged& um) 
-			: id(um.id), pl(um.pl), rnd(um.rnd){}
+		inline PipelineMapping(const PipelineMappingUnmanaged& um)
+			: id(um.id), pl(um.pl), rnd(um.rnd) {}
 	};
 
 	// mappings (managed by applyMappings(...) and updateMapping(...))
