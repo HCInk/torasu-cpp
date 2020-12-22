@@ -12,12 +12,15 @@
 
 // TORASU STD
 #include <torasu/std/torasu_std.hpp>
+#include <torasu/std/Rstring.hpp>
 #include <torasu/std/Rnum.hpp>
 #include <torasu/std/Dnum.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 #include <torasu/std/Radd.hpp>
 #include <torasu/std/Rmultiply.hpp>
 #include <torasu/std/Rsin.hpp>
+#include <torasu/std/Rfallback.hpp>
+#include <torasu/std/simple_render.hpp>
 
 using namespace torasu;
 using namespace torasu::tstd;
@@ -428,3 +431,62 @@ METHOD_AS_TEST_CASE ( RunnerTest::b_50b100t100_0t, "50*100*100 Numeric Burst (0-
 METHOD_AS_TEST_CASE ( RunnerTest::b_50b100t100_1t, "50*100*100 Numeric Burst (1-thread)", "[class]" )
 METHOD_AS_TEST_CASE ( RunnerTest::b_50b100t100_2t, "50*100*100 Numeric Burst (2-thread)", "[class]" )
 METHOD_AS_TEST_CASE ( RunnerTest::b_50b100t100_8t, "50*100*100 Numeric Burst (8-thread)", "[class]" )
+
+class FallbackTest {
+public:
+	static void singleFallback() {
+		torasu::tstd::Rfallback fallback(
+			{
+				IR(new torasu::tstd::Rnum(10))
+			}
+		);
+
+		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
+
+		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.result != nullptr);
+		CHECK(srr.result->getNum() == 10);
+
+	}
+
+
+	static void firstFallback() {
+		torasu::tstd::Rfallback fallback(
+			{
+				IR(new torasu::tstd::Rnum(3)),
+				IR(new torasu::tstd::Rnum(5)),
+			}
+		);
+
+		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
+
+		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.result != nullptr);
+		CHECK(srr.result->getNum() == 3);
+
+	}
+
+	static void invalidSegmentFallback() {
+		torasu::tstd::Rfallback fallback(
+			{
+				IR( new torasu::tstd::Rstring("test") ),
+				IR( new torasu::tstd::Rnum(10) )
+			}
+		);
+
+		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
+
+		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.result != nullptr);
+		CHECK(srr.result->getNum() == 10);
+
+	}
+
+};
+
+METHOD_AS_TEST_CASE ( FallbackTest::singleFallback, "Single Fallback", "[class]" )
+METHOD_AS_TEST_CASE ( FallbackTest::firstFallback, "First fallback", "[class]" )
+METHOD_AS_TEST_CASE ( FallbackTest::invalidSegmentFallback, "Invalid segment fallback", "[class]" )
