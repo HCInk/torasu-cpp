@@ -23,6 +23,8 @@
 #include <torasu/std/EIcore_runner.hpp>
 #include <torasu/std/Rsin.hpp>
 #include <torasu/std/Radd.hpp>
+#include <torasu/std/Rfallback.hpp>
+#include <torasu/std/simple_render.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -199,6 +201,29 @@ void jsonPropExample() {
 	}
 }
 
+
+void jsonFallbackExample() {
+
+	//
+	// Json Fallback Example
+	//
+
+	cout << "//" << endl
+		 << "// Json Fallback Example" << endl
+		 << "//" << endl;
+
+	torasu::tstd::Rnet_file jsonFile("https://dummy.restapiexample.com/api/v1/employee/2");
+	torasu::tstd::Rjson_prop json1("data.employee_namae", &jsonFile, true);
+	torasu::tstd::Rjson_prop json2("data.employee_name", &jsonFile);
+
+	torasu::tstd::Rfallback tree({&json1, &json2});
+
+	auto resStr = torasu::tstd::renderString(&tree);
+
+	std::cout << "EXEC-RES: \"" << resStr.getString() << "\"" << std::endl;
+
+}
+
 void mathExample() {
 
 	cout << "//" << endl
@@ -312,6 +337,8 @@ int main(int argc, char** argv) {
 	simpleRenderExample2();
 
 	jsonPropExample();
+
+	jsonFallbackExample();
 
 	mathExample();
 
