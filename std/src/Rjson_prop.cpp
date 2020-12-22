@@ -43,14 +43,13 @@ inline std::string combine(std::vector<std::string> list, size_t begin, size_t e
 
 namespace torasu::tstd {
 
-Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd)
+Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional)
 	: SimpleRenderable("STD::RJSON_PROP", true, true),
-	  path(new torasu::tstd::Dstring(path)), jsonRnd(jsonRnd) {}
+	  config(new torasu::tstd::Dstring_pair(path, optional ? "opt" : "def")),
+	  jsonRnd(jsonRnd) {}
 
 
-Rjson_prop::~Rjson_prop() {
-	delete path;
-}
+Rjson_prop::~Rjson_prop() {}
 
 torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	std::string pipeline = resSettings->getPipeline();
@@ -80,7 +79,7 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 
 		auto json = torasu::json::parse(std::string(dataPtr, srcJson->getFileSize()));
 
-		std::string pathStr = this->path->getString();
+		std::string pathStr = this->config->getA();
 
 		if (pathStr.length() <= 0) {
 			throw std::logic_error("Path sting may not be empty!");
@@ -88,27 +87,49 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 
 		std::vector<std::string> path = split(pathStr, ".");
 
+		bool optional = this->config->getB() == "opt";
 
 		for (size_t i = 0; i < path.size(); i++) {
 			if (!json.is_object()) {
-				if (i == 0) {
-					throw std::runtime_error("Root is not an object! - Dump at path: \n" + json.dump());
+				if (optional) { // Return invalid-segment if set to optional
+					return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 				} else {
-					throw std::runtime_error("\"" + combine(path, 0, i-1, ".") + "\" is not an object! - Dump at path: \n" + json.dump());
+					if (i == 0) {
+						throw std::runtime_error("Root is not an object! - Dump at path: \n" + json.dump());
+					} else {
+						throw std::runtime_error("\"" + combine(path, 0, i-1, ".") + "\" is not an object! - Dump at path: \n" + json.dump());
+					}
 				}
+
 			}
 
 			json = json[path[i]];
 		}
 
+		if (json.is_null()) {
+			if (optional) { // Return invalid-segment if set to optional
+				return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+			} else {
+				throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" does not exist!");
+			}
+		}
+
 		if (pipeline == TORASU_STD_PL_STRING) {
 			if (!json.is_string()) {
-				throw std::runtime_error("\"" + combine(path, 0, path.size(), ".") + "\" is not a string! - Dump at path: \n" + json.dump());
+				if (optional) { // Return invalid-segment if set to optional
+					return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+				} else {
+					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a string! - Dump at path: \n" + json.dump());
+				}
 			}
 			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json), true);
 		} else if (pipeline == TORASU_STD_PL_NUM) {
 			if (!json.is_number()) {
-				throw std::runtime_error("\"" + combine(path, 0, path.size(), ".") + "\" is not a number! - Dump at path: \n" + json.dump());
+				if (optional) { // Return invalid-segment if set to optional
+					return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+				} else {
+					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a number! - Dump at path: \n" + json.dump());
+				}
 			}
 			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dnum(json), true);
 		} else {
@@ -134,15 +155,14 @@ void Rjson_prop::setElement(std::string key, torasu::Element* elem) {
 }
 
 torasu::DataResource* Rjson_prop::getData() {
-	return path;
+	return config.get();
 }
 
 void Rjson_prop::setData(torasu::DataResource* data) {
-	if (auto* castedData = dynamic_cast<torasu::tstd::Dstring*>(data)) {
-		delete data;
-		data = castedData;
+	if (auto* castedData = dynamic_cast<torasu::tstd::Dstring_pair*>(data)) {
+		config = std::unique_ptr<torasu::tstd::Dstring_pair>(castedData);
 	} else {
-		throw std::invalid_argument("The data-type \"Dstring\" is only allowed");
+		throw std::invalid_argument("The data-type \"Dstring_pair\" is only allowed");
 	}
 }
 
