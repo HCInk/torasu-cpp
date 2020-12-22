@@ -9,8 +9,7 @@
 
 namespace torasu::tstd {
 
-template<class T> class SimpleResult {
-public:
+template<class T> struct SimpleResult {
 	std::shared_ptr<RenderResult> rr;
 	torasu::ResultStatus rStat;
 	torasu::tools::CastedRenderSegmentResult<T> rs;
@@ -40,7 +39,7 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 	// Finding results
 
 	torasu::tools::CastedRenderSegmentResult<T> found = handle.getFrom(rr);
-	return SimpleResult<T>(std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getStatus(), found.getResult());
+	return {std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getStatus(), found.getResult()};
 }
 
 } // namespace torasu::tstd
