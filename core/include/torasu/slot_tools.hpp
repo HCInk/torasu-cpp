@@ -38,6 +38,7 @@ public:
 
 template<class T> class ManagedSlot : public T {
 public:
+	ManagedSlot() {}
 	ManagedSlot(const T& slot) : T(slot) {}
 
 	inline ManagedSlot<T>& operator=(const T& b) {
