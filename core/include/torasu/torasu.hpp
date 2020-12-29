@@ -133,6 +133,8 @@ struct LogInstruction {
 	 * @brief  Interface to send the log-messages to
 	 */
 	LogInterface* li;
+
+	LogInstruction(LogInterface* li) : li(li) {}
 };
 
 //
