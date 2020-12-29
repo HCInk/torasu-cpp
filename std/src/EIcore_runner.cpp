@@ -540,7 +540,9 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		elemHandler->readyElement(*rdyObjs, this);
 	}
 
-	RenderInstruction ri(rctx, rs, this);
+	LogInstruction li(nullptr); // TODO Implement logging interface
+
+	RenderInstruction ri(rctx, rs, this, li);
 
 	RenderResult* res = rnd->render(&ri);
 

@@ -29,6 +29,12 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// LOGGING
+typedef size_t LogId;
+class LogEntry;
+class LogInterface;
+struct LogInstruction;
+
 // HELPER (INTERFACES)
 typedef uint64_t LockId;
 
@@ -71,12 +77,63 @@ class UnreadyInstruction;
 class ObjectReadyResult;
 typedef std::vector<ObjectReadyResult> ElementReadyResult;
 
+//
 // LOGGING
+//
 
-typedef size_t LogId;
-class LogEntry;
-class LogInterface;
-struct LogInstruction;
+enum LogLevel {
+	DEBUG = -10,
+	INFO = -5,
+	WARN = 0,
+	ERROR = 10,
+	SERVERE_ERROR = 20,
+	DATA = 90
+};
+
+
+/**
+ * @brief  Entry/Message to be logged
+ */
+class LogEntry {
+public:
+	const LogLevel level;
+	const std::string message;
+
+	inline LogEntry(LogLevel level, std::string message) 
+		: level(level), message(message) {}
+
+};
+
+class LogInterface {
+
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  entry: The entry to be logged
+	 * @param  tag: Weather the log should be tagged
+	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
+	 */
+	inline LogId log(LogEntry entry, bool tag) {
+		return log(LogEntry(entry), tag);
+	}
+
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  entry: The entry to be logged (will be managed by the interface)
+	 * @param  tag: Weather the log should be tagged
+	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
+	 */
+	virtual LogId log(LogEntry* entry, bool tag) = 0;
+};
+
+/**
+ * @brief  Tells the process, which gets this how messages should be logged
+ */
+struct LogInstruction {
+	/**
+	 * @brief  Interface to send the log-messages to
+	 */
+	LogInterface* li;
+};
 
 //
 // INTERFACES
@@ -299,10 +356,11 @@ private:
 	RenderContext* rctx;
 	ResultSettings* rs;
 	ExecutionInterface* ei;
+	LogInstruction li;
 
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei)
-		: rctx(rctx), rs(rs), ei(ei) {}
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li)
+		: rctx(rctx), rs(rs), ei(ei), li(li) {}
 
 	~RenderInstruction() {}
 
@@ -591,64 +649,6 @@ public:
 	inline ReadyObject getObject() {
 		return obj;
 	}
-};
-
-//
-// LOGGING
-//
-
-enum LogLevel {
-	DEBUG,
-	INFO,
-	WARN,
-	ERROR,
-	SERVERE_ERROR,
-	DATA
-};
-
-
-/**
- * @brief  Entry/Message to be logged
- */
-class LogEntry {
-public:
-	const LogLevel level;
-	const std::string message;
-
-	inline LogEntry(LogLevel level, std::string message) 
-		: level(level), message(message) {}
-
-};
-
-class LogInterface {
-
-	/**
-	 * @brief  Logs an entry to the logging system
-	 * @param  entry: The entry to be logged
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
-	 */
-	inline LogId log(LogEntry entry, bool tag) {
-		return log(LogEntry(entry), tag);
-	}
-
-	/**
-	 * @brief  Logs an entry to the logging system
-	 * @param  entry: The entry to be logged (will be managed by the interface)
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
-	 */
-	virtual LogId log(LogEntry* entry, bool tag) = 0;
-};
-
-/**
- * @brief  Tells the process, which gets this how messages should be logged
- */
-struct LogInstruction {
-	/**
-	 * @brief  Interface to send the log-messages to
-	 */
-	LogInterface* li;
 };
 
 } /* namespace torasu */
