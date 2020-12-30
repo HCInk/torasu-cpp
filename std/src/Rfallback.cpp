@@ -34,7 +34,7 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 	for (auto& slot : slots) {
 		torasu::ResultSettings rs = {resSettings};
-		auto rid = ei->enqueueRender(slot.second.get(), ri->getRenderContext(), &rs, 0);
+		auto rid = ei->enqueueRender(slot.second.get(), ri->getRenderContext(), &rs, ri->getLogInstruction(), 0);
 
 		std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rid));
 

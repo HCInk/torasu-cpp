@@ -29,10 +29,11 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a.get(), rctx, ei);
-		auto rendB = rib.enqueueRender(b.get(), rctx, ei);
+		auto rendA = rib.enqueueRender(a.get(), rctx, ei, li);
+		auto rendB = rib.enqueueRender(b.get(), rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -75,10 +76,11 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a.get(), rctx, ei);
-		auto rendB = rib.enqueueRender(b.get(), rctx, ei);
+		auto rendA = rib.enqueueRender(a.get(), rctx, ei, li);
+		auto rendB = rib.enqueueRender(b.get(), rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);

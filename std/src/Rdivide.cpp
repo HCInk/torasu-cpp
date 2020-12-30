@@ -31,10 +31,11 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a, rctx, ei, li);
+		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -77,10 +78,11 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a, rctx, ei, li);
+		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);

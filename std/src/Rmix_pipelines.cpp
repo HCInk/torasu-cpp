@@ -166,7 +166,7 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 	}
 
 	auto* ei = ri->getExecutionInterface();
-	auto rid = ei->enqueueRender(rnd, ri->getRenderContext(), ri->getResultSettings(), 0);
+	auto rid = ei->enqueueRender(rnd, ri->getRenderContext(), ri->getResultSettings(), ri->getLogInstruction(), 0);
 
 	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(rid));
 

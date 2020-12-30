@@ -17,12 +17,13 @@ Rmod_rctx::~Rmod_rctx() {}
 torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 	auto* ei = ri->getExecutionInterface();
+	auto li = ri->getLogInstruction();
 	auto* cRctx = ri->getRenderContext();
 
 	torasu::tools::RenderInstructionBuilder valRib;
 	valRib.addSegment(data.getB(), "v", nullptr); // TODO Add format-support
 
-	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd.get(), cRctx, ei));
+	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd.get(), cRctx, ei, li));
 
 	torasu::DataResource* valueDr = (*valrr.get()->getResults())["v"]->getResult(); // Lifetime: Until valrr is destructed
 
@@ -30,7 +31,7 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 	newRctx[data.getA()] = valueDr;
 
-	auto rid = ei->enqueueRender(mainRnd.get(), &newRctx, ri->getResultSettings(), 0);
+	auto rid = ei->enqueueRender(mainRnd.get(), &newRctx, ri->getResultSettings(), ri->getLogInstruction(), 0);
 
 	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
 

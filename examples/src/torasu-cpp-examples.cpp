@@ -21,6 +21,7 @@
 #include <torasu/std/Rnet_file.hpp>
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/EIcore_runner.hpp>
+#include <torasu/std/LIcore_logger.hpp>
 #include <torasu/std/Rsin.hpp>
 #include <torasu/std/Radd.hpp>
 #include <torasu/std/Rfallback.hpp>
@@ -90,6 +91,8 @@ void simpleRenderExample1() {
 	// Creating the runner
 
 	EIcore_runner runner;
+	LIcore_logger logger;
+	LogInstruction li(&logger);
 
 	ExecutionInterface* ei = runner.createInterface();
 
@@ -103,7 +106,7 @@ void simpleRenderExample1() {
 
 	RenderContext rctx;
 
-	RenderResult* rr = rib.runRender(&tree, &rctx, ei);
+	RenderResult* rr = rib.runRender(&tree, &rctx, ei, li);
 
 	// Finding results
 
@@ -132,35 +135,11 @@ void simpleRenderExample2() {
 	Rnum numA(0.1);
 	Rnum numB(0.2);
 
-	torasu::tstd::Rsubtract tree(&numA, &numB);
+	Rsubtract tree(&numA, &numB);
 
-	// Creating the runner
+	Dnum result = torasu::tstd::renderNum(&tree);
 
-	EIcore_runner runner;
-
-	ExecutionInterface* ei = runner.createInterface();
-
-	// Creating instruction
-
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
-
-	// Running render based on instruction
-
-	RenderContext rctx;
-
-	RenderResult* rr = rib.runRender(&tree, &rctx, ei);
-
-	// Finding results
-
-	auto result = handle.getFrom(rr);
-	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
-
-	// Cleaning
-
-	delete rr;
-	delete ei;
+	std::cout << "Result: " << std::to_string(result.getNum()) << std::endl;
 
 }
 
@@ -178,27 +157,9 @@ void jsonPropExample() {
 	torasu::tstd::Rnet_file jsonFile(&url);
 	torasu::tstd::Rjson_prop tree("data.employee_name", &jsonFile);
 
-	// Creation of Runner / ExecutionInterface
-	torasu::tstd::EIcore_runner runner;
-	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+	Dstring result = torasu::tstd::renderString(&tree);
 
-	// Creation of the instruction-builder (Defintion of segments)
-	torasu::tools::RenderInstructionBuilder rib;
-	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
-
-	// Rendering / Fetching the Render-Result
-	RenderContext rctx;
-	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
-	auto rs = resHandle.getFrom(rr.get());
-
-	// Evalulating the Result
-
-	torasu::tstd::Dstring* strData = rs.getResult();
-	if (rs.getResult() != nullptr) {
-		std::cout << "EXEC-RESULT: \"" << strData->getString() << "\" - STATUS: " << rs.getStatus() << std::endl;
-	} else {
-		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << rs.getStatus() << std::endl;
-	}
+	std::cout << "Result: \"" << result.getString() << "\"" << std::endl;
 }
 
 
@@ -218,7 +179,7 @@ void jsonFallbackExample() {
 
 	torasu::tstd::Rfallback tree({&json1, &json2});
 
-	auto resStr = torasu::tstd::renderString(&tree);
+	Dstring resStr = torasu::tstd::renderString(&tree);
 
 	std::cout << "EXEC-RES: \"" << resStr.getString() << "\"" << std::endl;
 
@@ -235,20 +196,10 @@ void mathExample() {
 
 	auto& tree = sin;
 
-	torasu::tstd::EIcore_runner runner;
-	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
 
+	Dnum result = torasu::tstd::renderNum(&tree);
 
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
-
-	RenderContext rctx;
-
-	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
-
-	auto result = handle.getFrom(rr.get());
-	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+	std::cout << "Result: " << std::to_string(result.getNum()) << std::endl;
 }
 
 
@@ -264,20 +215,9 @@ void inlineMathExample() {
 
 	auto& tree = sin;
 
-	torasu::tstd::EIcore_runner runner;
-	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+	Dnum result = torasu::tstd::renderNum(&tree);
 
-
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, nullptr);
-
-	RenderContext rctx;
-
-	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
-
-	auto result = handle.getFrom(rr.get());
-	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
+	std::cout << "Result: " << std::to_string(result.getNum()) << std::endl;
 }
 
 void slotFunction(

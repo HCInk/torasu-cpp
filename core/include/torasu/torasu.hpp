@@ -99,12 +99,21 @@ public:
 	const LogLevel level;
 	const std::string message;
 
-	inline LogEntry(LogLevel level, std::string message) 
+	LogEntry(LogLevel level, std::string message) 
 		: level(level), message(message) {}
 
 };
 
 class LogInterface {
+public:
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  level The log level of the entry
+	 * @param  msg The message of the entry
+	 */
+	inline void log(LogLevel level, std::string msg, bool tag=false) {
+		log(new LogEntry(level, msg), tag);
+	}
 
 	/**
 	 * @brief  Logs an entry to the logging system
@@ -112,8 +121,8 @@ class LogInterface {
 	 * @param  tag: Weather the log should be tagged
 	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
-	inline LogId log(LogEntry entry, bool tag) {
-		return log(LogEntry(entry), tag);
+	inline LogId log(LogEntry entry, bool tag=false) {
+		return log(new LogEntry(entry), tag);
 	}
 
 	/**
@@ -163,10 +172,11 @@ public:
 	 * @param  rend: The renderable to be enqueued
 	 * @param  rctx: The context the renderable should be executed with
 	 * @param  rs: The result-resttings of the render-operation
+	 * @param  li: Log instruction the operation should be logged with
 	 * @param  prio: the local priority of execution
 	 * @retval The renderId to be used to retrieve the result via fetchRenderResult(uint64_t)
 	 */
-	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
+	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) = 0;
 
 	/**
 	 * @brief  Retrieve render-results of previously enqueued renders, sleeps/finishes the tasks if not completed yet
@@ -376,6 +386,10 @@ public:
 
 	inline ExecutionInterface* const getExecutionInterface() {
 		return ei;
+	}
+
+	inline LogInstruction getLogInstruction() {
+		return li;
 	}
 };
 

@@ -8,6 +8,7 @@
 
 #include <torasu/render_tools.hpp>
 #include <torasu/std/EIcore_runner.hpp>
+#include <torasu/std/LIcore_logger.hpp>
 #include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dstring.hpp>
 
@@ -52,7 +53,10 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 
 	RenderContext rctx;
 
-	RenderResult* rr = rib.runRender(tree, &rctx, ei.get());
+	torasu::tstd::LIcore_logger logger;
+	LogInstruction li(&logger);
+
+	RenderResult* rr = rib.runRender(tree, &rctx, ei.get(), li);
 
 	// Finding results
 

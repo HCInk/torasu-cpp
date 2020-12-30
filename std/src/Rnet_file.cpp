@@ -53,13 +53,14 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		// Getting url
 
 		auto* ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto* rctx = ri->getRenderContext();
 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderId = rib.enqueueRender(urlRnd, rctx, ei);
-		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
+		auto renderId = rib.enqueueRender(urlRnd, rctx, ei, li);
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei, li) : 0;
 
 		std::string url;
 		{

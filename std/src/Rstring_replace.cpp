@@ -35,6 +35,7 @@ torasu::ResultSegment* Rstring_replace::renderSegment(torasu::ResultSegmentSetti
 	if (pipeline == TORASU_STD_PL_STRING) {
 
 		auto* ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto* rctx = ri->getRenderContext();
 
 		// Sub-renderings
@@ -42,9 +43,9 @@ torasu::ResultSegment* Rstring_replace::renderSegment(torasu::ResultSegmentSetti
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderIdSrc = rib.enqueueRender(srcRnd, rctx, ei);
-		auto renderIdBefore = rib.enqueueRender(beforeRnd, rctx, ei);
-		auto renderIdAfter = rib.enqueueRender(afterRnd, rctx, ei);
+		auto renderIdSrc = rib.enqueueRender(srcRnd, rctx, ei, li);
+		auto renderIdBefore = rib.enqueueRender(beforeRnd, rctx, ei, li);
+		auto renderIdAfter = rib.enqueueRender(afterRnd, rctx, ei, li);
 
 		std::unique_ptr<torasu::RenderResult> rrSrc(ei->fetchRenderResult(renderIdSrc));
 		std::unique_ptr<torasu::RenderResult> rrBefore(ei->fetchRenderResult(renderIdBefore));

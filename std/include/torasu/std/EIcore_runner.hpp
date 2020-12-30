@@ -160,6 +160,7 @@ private:
 	Renderable* rnd;
 	RenderContext* rctx = NULL;
 	ResultSettings* rs = NULL;
+	LogInstruction li;
 
 	// Object-data: Task-Settings (persistent)
 	EIcore_runner_object* const parent;
@@ -191,8 +192,8 @@ private:
 	std::vector<EIcore_runner_object*>* getSubTaskMemory(size_t maxIndex);
 
 protected:
-	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>*);
-	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>*);
+	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
+	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
 	virtual ~EIcore_runner_object();
 
 	RenderResult* run(std::function<void()>* outCleanupFunction);
@@ -202,7 +203,7 @@ protected:
 	void setResultSettings(ResultSettings* rs);
 
 public:
-	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) override;
+	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) override;
 	void fetchRenderResults(ResultPair* requests, size_t requestCount) override;
 	void lock(LockId lockId) override;
 	void unlock(LockId lockId) override;

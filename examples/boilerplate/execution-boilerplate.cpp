@@ -8,13 +8,14 @@
 #include <torasu/std/Dnum.hpp>
 #include <torasu/std/Rnum.hpp>
 #include <torasu/std/EIcore_runner.hpp>
+#include <torasu/std/LIcore_logger.hpp>
 
 #include "Dboilerplate.hpp"
 #include "Rboilerplate.hpp"
 
 namespace torasu::texample {
 
-void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx) {
+void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx, LogInstruction li) {
 
 	// Creation of the instruction-builder (Defintion of segments)
 
@@ -22,7 +23,7 @@ void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInte
 	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr /*TODO format here*/);
 
 	// Enqueueing the render with generated instruction
-	auto rndId = rib.enqueueRender(tree, rctx, ei);
+	auto rndId = rib.enqueueRender(tree, rctx, ei, li);
 
 	// Fetching the Render-Result
 	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(rndId));
@@ -40,7 +41,7 @@ void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInte
 
 }
 
-void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx) {
+void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx, LogInstruction li) {
 
 	// Creation of the instruction-builder (Defintion of segments)
 
@@ -48,7 +49,7 @@ void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInter
 	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr /*TODO format here*/);
 
 	// Rendering / Fetching the Render-Result
-	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(tree, rctx, ei));
+	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(tree, rctx, ei, li));
 	auto rs = resHandle.getFrom(rr.get());
 
 	// Evalulating the Result
@@ -79,10 +80,12 @@ void boilerplate_execution_initializer() {
 	// Creation of Runner / ExecutionInterface
 	torasu::tstd::EIcore_runner runner;
 	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+	torasu::tstd::LIcore_logger logger;
+	LogInstruction li(&logger);
 
 	// Run the actual render
 	RenderContext rctx;
-	boilerplate_execution_async(&tree, ei.get(), &rctx);
+	boilerplate_execution_async(&tree, ei.get(), &rctx, li);
 
 }
 
