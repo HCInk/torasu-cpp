@@ -549,7 +549,8 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		addr = ss.str();
 	}
 
-	li.li->log( LogLevel::DEBUG, "Runner: Task " + addr + " (" + rnd->getType() + ") Begin");
+	if (li.level <= LogLevel::TRACE) li.li->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Begin");
+
 	RenderInstruction ri(rctx, rs, this, li);
 
 	RenderResult* res = rnd->render(&ri);
@@ -561,7 +562,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		}
 	};
 
-	li.li->log( LogLevel::DEBUG, "Runner: Task " + addr + " (" + rnd->getType() + ") Finished");
+	if (li.level <= LogLevel::TRACE) li.li->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Finished");
 
 	return res;
 }
