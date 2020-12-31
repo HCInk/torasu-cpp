@@ -139,12 +139,13 @@ public:
  * @brief  Tells the process, which gets this how messages should be logged
  */
 struct LogInstruction {
-	/**
-	 * @brief  Interface to send the log-messages to
-	 */
+	/** @brief  Interface to send the log-messages to */
 	LogInterface* li;
 
-	LogInstruction(LogInterface* li) : li(li) {}
+	/** @brief The minimum level of log messages that should be recorded  */
+	LogLevel level;
+
+	LogInstruction(LogInterface* li, LogLevel level = LogLevel::WARN) : li(li), level(level) {}
 };
 
 //
