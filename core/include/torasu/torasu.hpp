@@ -82,8 +82,9 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 //
 
 enum LogLevel {
-	DEBUG = -10,
-	INFO = -5,
+	TRACE = -50,
+	DEBUG = -20,
+	INFO = -10,
 	WARN = 0,
 	ERROR = 10,
 	SERVERE_ERROR = 20,
