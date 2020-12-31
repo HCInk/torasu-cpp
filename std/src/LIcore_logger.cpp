@@ -7,6 +7,8 @@ namespace {
 
 const char* getLvLName(torasu::LogLevel lvl) {
     switch (lvl) {
+    case torasu::LogLevel::TRACE:
+        return "TRACE";
     case torasu::LogLevel::DEBUG:
         return "DEBUG";
     case torasu::LogLevel::INFO:
