@@ -260,6 +260,24 @@ void slotTests() {
 
 }
 
+void logExample() {
+	cout << "//" << endl
+		 << "// Log Example" << endl
+		 << "//" << endl;
+
+	torasu::tstd::LIcore_logger core_logger;
+
+	torasu::LogInterface& logger = core_logger;
+
+	logger.log(LogLevel::TRACE, "Trace-Message");
+	logger.log(LogLevel::DEBUG, "Debug-Message");
+	logger.log(LogLevel::INFO, "Info-Message");
+	logger.log(LogLevel::WARN, "Warn-Message");
+	logger.log(LogLevel::ERROR, "Error-Message");
+	logger.log(LogLevel::SERVERE_ERROR, "Servere-Error-Message");
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -285,6 +303,8 @@ int main(int argc, char** argv) {
 	inlineMathExample();
 
 	slotTests();
+
+	logExample();
 
 	// taskDistTest();
 
