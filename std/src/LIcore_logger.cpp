@@ -61,6 +61,8 @@ const char* getLvlAnsi(torasu::LogLevel lvl) {
 
 namespace torasu::tstd {
 
+LIcore_logger::LIcore_logger() {}
+
 LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
 
 LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
