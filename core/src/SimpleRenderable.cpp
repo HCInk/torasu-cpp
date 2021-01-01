@@ -97,7 +97,7 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 		} catch (const std::exception& ex) {
 			auto li = ri->getLogInstruction();
 			if (li.level <= LogLevel::ERROR) {
-				li.li->log(LogLevel::ERROR, std::string("IndividualizedSegnentRenderable error: ") + ex.what());
+				li.logger->log(LogLevel::ERROR, std::string("IndividualizedSegnentRenderable error: ") + ex.what());
 			}
 			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
 			continue;

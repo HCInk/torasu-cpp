@@ -140,12 +140,12 @@ public:
  */
 struct LogInstruction {
 	/** @brief  Interface to send the log-messages to */
-	LogInterface* li;
+	LogInterface* logger;
 
 	/** @brief The minimum level of log messages that should be recorded  */
 	LogLevel level;
 
-	LogInstruction(LogInterface* li, LogLevel level = LogLevel::WARN) : li(li), level(level) {}
+	LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN) : logger(logger), level(level) {}
 };
 
 //
@@ -174,7 +174,7 @@ public:
 	 * @param  rend: The renderable to be enqueued
 	 * @param  rctx: The context the renderable should be executed with
 	 * @param  rs: The result-resttings of the render-operation
-	 * @param  li: Log instruction the operation should be logged with
+	 * @param  logger: Log instruction the operation should be logged with
 	 * @param  prio: the local priority of execution
 	 * @retval The renderId to be used to retrieve the result via fetchRenderResult(uint64_t)
 	 */
