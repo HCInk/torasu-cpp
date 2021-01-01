@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include <torasu/render_tools.hpp>
+#include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/EIcore_runner.hpp>
 #include <torasu/std/LIcore_logger.hpp>
 #include <torasu/std/Dnum.hpp>
