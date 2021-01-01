@@ -26,6 +26,7 @@
 #include <torasu/std/Radd.hpp>
 #include <torasu/std/Rfallback.hpp>
 #include <torasu/std/simple_render.hpp>
+#include <torasu/std/Rlog_message.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -278,6 +279,28 @@ void logExample() {
 
 }
 
+void renderLogExample() {
+	cout << "//" << endl
+		 << "// Render Log Example" << endl
+		 << "//" << endl;
+
+	Rnum dummyContent(1);
+	Rlog_message msgServError(LogEntry(LogLevel::SERVERE_ERROR, "Servere-Error-Message (Rlog_message-example)"), &dummyContent);
+	Rlog_message msgError(LogEntry(LogLevel::ERROR, "Error-Message (Rlog_message-example)"), &msgServError);
+	Rlog_message msgWarn(LogEntry(LogLevel::WARN, "Warn-Message (Rlog_message-example)"), &msgError);
+	Rlog_message msgInfo(LogEntry(LogLevel::INFO, "Info-Message (Rlog_message-example)"), &msgWarn);
+	Rlog_message msgDebug(LogEntry(LogLevel::DEBUG, "Debug-Message (Rlog_message-example)"), &msgInfo);
+	Rlog_message msgTrace(LogEntry(LogLevel::TRACE, "Trace-Message (Rlog_message-example)"), &msgDebug);
+
+	auto& tree = msgTrace;
+
+	torasu::tstd::LIcore_logger logger;
+	torasu::LogInstruction li(&logger, LogLevel::TRACE);
+
+	torasu::tstd::renderNum(&tree, &li);
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -305,6 +328,8 @@ int main(int argc, char** argv) {
 	slotTests();
 
 	logExample();
+
+	renderLogExample();
 
 	// taskDistTest();
 
