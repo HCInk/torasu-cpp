@@ -6,6 +6,11 @@
 namespace torasu::tstd {
 
 class LIcore_logger : public torasu::LogInterface {
+private:
+    bool useAnsi = true;
+public:
+    LIcore_logger();
+    LIcore_logger(bool useAnsi);
     LogId log(LogEntry* entry, bool tag) override;
 };
 
