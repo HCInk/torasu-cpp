@@ -425,8 +425,9 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 		selectedPrioStack = new std::vector<int64_t>();
 	}
 
-	// TODO create log-instruction for interface
-	return new EIcore_runner_object(this, newInterfaceId, nullptr, selectedPrioStack);
+	// TODO create log-instruction for interface, dummy for now
+	LogInstruction li(nullptr);
+	return new EIcore_runner_object(this, newInterfaceId, li, selectedPrioStack);
 }
 
 //

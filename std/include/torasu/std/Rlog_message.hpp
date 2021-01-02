@@ -1,6 +1,8 @@
 #ifndef STD_INCLUDE_TORASU_STD_RLOG_MESSAGE_HPP_
 #define STD_INCLUDE_TORASU_STD_RLOG_MESSAGE_HPP_
 
+#include <string>
+
 #include <torasu/torasu.hpp>
 #include <torasu/slot_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>

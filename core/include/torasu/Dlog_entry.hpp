@@ -12,9 +12,9 @@ private:
     LogEntry* entry = nullptr;
 
 public:
-    Dlog_entry(const LogEntry& entry);
-    Dlog_entry(torasu::json json);
-    Dlog_entry(std::string jsonStr);
+    explicit Dlog_entry(const LogEntry& entry);
+    explicit Dlog_entry(torasu::json json);
+    explicit Dlog_entry(std::string jsonStr);
     ~Dlog_entry();
     LogEntry getEntry();
 

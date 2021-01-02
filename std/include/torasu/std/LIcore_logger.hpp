@@ -10,7 +10,7 @@ private:
     bool useAnsi = true;
 public:
     LIcore_logger();
-    LIcore_logger(bool useAnsi);
+    explicit LIcore_logger(bool useAnsi);
     LogId log(LogEntry* entry, bool tag) override;
 };
 

@@ -152,7 +152,7 @@ struct LogInstruction {
 	/** @brief The minimum level of log messages that should be recorded  */
 	LogLevel level;
 
-	LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN) : logger(logger), level(level) {}
+	explicit LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN) : logger(logger), level(level) {}
 };
 
 //
