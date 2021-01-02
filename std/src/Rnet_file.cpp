@@ -2,8 +2,6 @@
 
 #include <curl/curl.h>
 
-#include <iostream>
-
 #include <torasu/render_tools.hpp>
 #include <torasu/log_tools.hpp>
 

@@ -1,7 +1,5 @@
 #include "../include/torasu/SimpleRenderable.hpp"
 
-#include <iostream>
-
 namespace torasu::tools {
 
 NamedIdentElement::NamedIdentElement(std::string typeIdent)

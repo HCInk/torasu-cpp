@@ -3,7 +3,6 @@
 #include <string>
 #include <optional>
 #include <chrono>
-#include <iostream>
 
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>

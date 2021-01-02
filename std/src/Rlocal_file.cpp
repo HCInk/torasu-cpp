@@ -2,7 +2,6 @@
 
 #include <string>
 #include <fstream>
-#include <iostream>
 
 #include <torasu/torasu.hpp>
 #include <torasu/log_tools.hpp>

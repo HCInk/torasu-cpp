@@ -3,7 +3,6 @@
 #include <string>
 #include <optional>
 #include <chrono>
-#include <iostream>
 #include <cmath>
 
 #include <torasu/torasu.hpp>
