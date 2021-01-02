@@ -106,7 +106,7 @@ public:
 	const LogLevel level;
 	const std::string message;
 
-	LogEntry(LogLevel level, std::string message) 
+	LogEntry(LogLevel level, std::string message)
 		: level(level), message(message) {}
 
 	Dlog_entry* makePack();

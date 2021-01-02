@@ -9,20 +9,20 @@ namespace torasu {
 
 class Dlog_entry : public torasu::DataPackable {
 private:
-    LogEntry* entry = nullptr;
+	LogEntry* entry = nullptr;
 
 public:
-    explicit Dlog_entry(const LogEntry& entry);
-    explicit Dlog_entry(torasu::json json);
-    explicit Dlog_entry(std::string jsonStr);
-    ~Dlog_entry();
-    LogEntry getEntry();
+	explicit Dlog_entry(const LogEntry& entry);
+	explicit Dlog_entry(torasu::json json);
+	explicit Dlog_entry(std::string jsonStr);
+	~Dlog_entry();
+	LogEntry getEntry();
 
-    std::string getIdent() override;
-    void load() override;
-    torasu::json makeJson() override;
+	std::string getIdent() override;
+	void load() override;
+	torasu::json makeJson() override;
 
-    Dlog_entry* clone() override;
+	Dlog_entry* clone() override;
 
 };
 

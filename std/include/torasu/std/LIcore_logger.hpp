@@ -7,11 +7,11 @@ namespace torasu::tstd {
 
 class LIcore_logger : public torasu::LogInterface {
 private:
-    bool useAnsi = true;
+	bool useAnsi = true;
 public:
-    LIcore_logger();
-    explicit LIcore_logger(bool useAnsi);
-    LogId log(LogEntry* entry, bool tag) override;
+	LIcore_logger();
+	explicit LIcore_logger(bool useAnsi);
+	LogId log(LogEntry* entry, bool tag) override;
 };
 
 } // namespace torasu::tstd

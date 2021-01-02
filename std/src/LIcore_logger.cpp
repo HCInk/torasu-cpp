@@ -6,24 +6,24 @@
 namespace {
 
 const char* getLvLName(torasu::LogLevel lvl) {
-    switch (lvl) {
-    case torasu::LogLevel::TRACE:
-        return "TRACE";
-    case torasu::LogLevel::DEBUG:
-        return "DEBUG";
-    case torasu::LogLevel::INFO:
-        return "INFO ";
-    case torasu::LogLevel::WARN:
-        return "WARN ";
-    case torasu::LogLevel::ERROR:
-        return "ERROR";
-    case torasu::LogLevel::SERVERE_ERROR:
-        return "S-ERR";
-    case torasu::LogLevel::DATA:
-        return "DATA ";
-    default:
-        return "UNKWN";
-    }
+	switch (lvl) {
+	case torasu::LogLevel::TRACE:
+		return "TRACE";
+	case torasu::LogLevel::DEBUG:
+		return "DEBUG";
+	case torasu::LogLevel::INFO:
+		return "INFO ";
+	case torasu::LogLevel::WARN:
+		return "WARN ";
+	case torasu::LogLevel::ERROR:
+		return "ERROR";
+	case torasu::LogLevel::SERVERE_ERROR:
+		return "S-ERR";
+	case torasu::LogLevel::DATA:
+		return "DATA ";
+	default:
+		return "UNKWN";
+	}
 }
 
 static const char* ANSI_RESET = "\33[0m";
@@ -36,24 +36,24 @@ static const char* ANSI_GRAY = "\33[90m";
 static const char* ANSI_BRIGHT_GREEN = "\33[32m";
 
 const char* getLvlAnsi(torasu::LogLevel lvl) {
-    switch (lvl) {
-    case torasu::LogLevel::TRACE:
-        return ANSI_GRAY;
-    case torasu::LogLevel::DEBUG:
-        return ANSI_DARK_GREEN;
-    case torasu::LogLevel::INFO:
-        return ANSI_BLUE;
-    case torasu::LogLevel::WARN:
-        return ANSI_YELLOW;
-    case torasu::LogLevel::ERROR:
-        return ANSI_RED;
-    case torasu::LogLevel::SERVERE_ERROR:
-        return ANSI_HIGHLIGTED_RED;
-    case torasu::LogLevel::DATA:
-        return ANSI_BRIGHT_GREEN;
-    default:
-        return "";
-    }
+	switch (lvl) {
+	case torasu::LogLevel::TRACE:
+		return ANSI_GRAY;
+	case torasu::LogLevel::DEBUG:
+		return ANSI_DARK_GREEN;
+	case torasu::LogLevel::INFO:
+		return ANSI_BLUE;
+	case torasu::LogLevel::WARN:
+		return ANSI_YELLOW;
+	case torasu::LogLevel::ERROR:
+		return ANSI_RED;
+	case torasu::LogLevel::SERVERE_ERROR:
+		return ANSI_HIGHLIGTED_RED;
+	case torasu::LogLevel::DATA:
+		return ANSI_BRIGHT_GREEN;
+	default:
+		return "";
+	}
 }
 
 } // namespace
@@ -66,25 +66,25 @@ LIcore_logger::LIcore_logger() {}
 LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
 
 LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
-    std::unique_ptr<LogEntry> entry(entryIn);
+	std::unique_ptr<LogEntry> entry(entryIn);
 
-    if (useAnsi) {
-        std::cout 
-            << getLvlAnsi(entry->level) 
-            << getLvLName(entry->level) 
-            << "  " 
-            << entry->message 
-            << ANSI_RESET
-            << std::endl;
-    } else {
-        std::cout 
-            << getLvLName(entry->level) 
-            << "  " 
-            << entry->message 
-            << std::endl;
-    }
+	if (useAnsi) {
+		std::cout
+				<< getLvlAnsi(entry->level)
+				<< getLvLName(entry->level)
+				<< "  "
+				<< entry->message
+				<< ANSI_RESET
+				<< std::endl;
+	} else {
+		std::cout
+				<< getLvLName(entry->level)
+				<< "  "
+				<< entry->message
+				<< std::endl;
+	}
 
-    return 0;
+	return 0;
 }
 
 } // namespace torasu::tstd
