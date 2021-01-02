@@ -7,7 +7,9 @@
 #include <sstream>
 
 #include <torasu/render_tools.hpp>
+#include <torasu/std/pipeline_names.hpp>
 #include <torasu/std/EIcore_runner.hpp>
+#include <torasu/std/LIcore_logger.hpp>
 #include <torasu/std/Dnum.hpp>
 #include <torasu/std/Dstring.hpp>
 
@@ -35,7 +37,7 @@ template<class T> struct SimpleResult {
 	}
 };
 
-template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format) {
+template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr) {
 
 	// Creating instruction
 
@@ -52,7 +54,16 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 
 	RenderContext rctx;
 
-	RenderResult* rr = rib.runRender(tree, &rctx, ei.get());
+	std::unique_ptr<torasu::tstd::LIcore_logger> logger;
+	LogInstruction logInstr(nullptr);
+	if (li == nullptr) {
+		logger = std::unique_ptr<torasu::tstd::LIcore_logger>(new torasu::tstd::LIcore_logger());
+		logInstr.logger = logger.get();
+	} else {
+		logInstr = LogInstruction(*li);
+	}
+
+	RenderResult* rr = rib.runRender(tree, &rctx, ei.get(), logInstr);
 
 	// Finding results
 
@@ -60,9 +71,9 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 	return {std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getStatus(), found.getResult()};
 }
 
-template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format) {
+template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr) {
 
-	auto srr = simpleRender<T>(tree, pl, format);
+	auto srr = simpleRender<T>(tree, pl, format, li);
 
 	if (srr.result == nullptr)
 		throw std::runtime_error(std::string() + "No result was generated! (" + srr.getInfo() + ")");
@@ -74,13 +85,13 @@ template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::str
 	return srr;
 }
 
-inline torasu::tstd::Dnum renderNum(Renderable* tree) {
-	return *simpleRenderChecked<torasu::tstd::Dnum>(tree, TORASU_STD_PL_NUM, nullptr).result;
+inline torasu::tstd::Dnum renderNum(Renderable* tree, LogInstruction* li = nullptr) {
+	return *simpleRenderChecked<torasu::tstd::Dnum>(tree, TORASU_STD_PL_NUM, nullptr, li).result;
 }
 
 
-inline torasu::tstd::Dstring renderString(Renderable* tree) {
-	return *simpleRenderChecked<torasu::tstd::Dstring>(tree, TORASU_STD_PL_STRING, nullptr).result;
+inline torasu::tstd::Dstring renderString(Renderable* tree, LogInstruction* li = nullptr) {
+	return *simpleRenderChecked<torasu::tstd::Dstring>(tree, TORASU_STD_PL_STRING, nullptr, li).result;
 }
 
 } // namespace torasu::tstd

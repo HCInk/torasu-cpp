@@ -2,9 +2,9 @@
 
 #include <string>
 #include <fstream>
-#include <iostream>
 
 #include <torasu/torasu.hpp>
+#include <torasu/log_tools.hpp>
 #include <torasu/std/Dfile.hpp>
 
 using namespace std;
@@ -35,11 +35,12 @@ ResultSegment* Rlocal_file::renderSegment(ResultSegmentSettings* resSettings, Re
 		uint64_t size = pos;
 		Dfile* dfile = new Dfile(size);
 
-		std::cout << dfile->getFileSize() << std::endl;
-
 		char* pChars = reinterpret_cast<char*>(dfile->getFileData());
 		ifs.seekg(0, ios::beg);
 		ifs.read(pChars, size);
+
+		torasu::tools::log_checked(ri->getLogInstruction(), LogLevel::DEBUG,
+								   "Loaded local-file \"" + path + "\" (" + std::to_string(dfile->getFileSize()) + "byte)");
 
 		return new ResultSegment(ResultSegmentStatus_OK, dfile, true);
 

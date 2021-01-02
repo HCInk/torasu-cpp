@@ -6,7 +6,6 @@
 
 #include "../include/torasu/DataPackable.hpp"
 
-#include <iostream>
 #include <utility>
 #include <string>
 

@@ -134,19 +134,19 @@ public:
 		return RenderResultSegmentHandle<T>(segKey);
 	}
 
-	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
-		return enqueueRender(rnd.get(), rctx, ei, prio);
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rctx, ei, li, prio);
 	}
 
-	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
+	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
 #ifdef TORASU_CHECK_RENDER_NULL_RCTX
 		if (rctx == nullptr) throw std::logic_error("Can't enqueue render without a render-context");
 #endif
-		return ei->enqueueRender(rnd, rctx, getResultSetttings(), prio);
+		return ei->enqueueRender(rnd, rctx, getResultSetttings(), li, prio);
 	}
 
-	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, int64_t prio=0) {
-		uint64_t renderId = enqueueRender(rnd, rctx, ei, prio);
+	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
+		uint64_t renderId = enqueueRender(rnd, rctx, ei, li, prio);
 		return ei->fetchRenderResult(renderId);
 	}
 };
@@ -169,7 +169,7 @@ template<class T> inline T* getPropertyValue(RenderableProperties* props, std::s
 
 }
 
-inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, RenderContext* rctx = nullptr) {
+inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, LogInstruction li, RenderContext* rctx = nullptr) {
 	auto* rp = new RenderableProperties();
 
 	bool dummyRctx = rctx == nullptr;
@@ -185,7 +185,7 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 		segmentKey++;
 	}
 
-	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, 0);
+	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, li, 0);
 	RenderResult* result = ei->fetchRenderResult(rendId);
 
 	for (ResultSegmentSettings* segSettings : rs) {

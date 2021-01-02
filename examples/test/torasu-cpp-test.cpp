@@ -42,6 +42,8 @@ struct SimpleNumeric {
 
 		//	Create interface
 		
+		LIcore_logger logger;
+		LogInstruction li(&logger);
 		EIcore_runner runner;
 		ExecutionInterface* ei = runner.createInterface();
 
@@ -49,7 +51,7 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		RenderResult* rr = rib.runRender(&rnum, &rctx, ei);
+		RenderResult* rr = rib.runRender(&rnum, &rctx, ei, li);
 
 		// Finding results
 
@@ -91,6 +93,8 @@ struct SimpleNumeric {
 
 		//	Create interface
 		
+		LIcore_logger logger;
+		LogInstruction li(&logger);
 		EIcore_runner runner;
 		std::unique_ptr<ExecutionInterface> ei(runner.createInterface());
 
@@ -98,7 +102,7 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		std::unique_ptr<RenderResult> rr(rib.runRender(&tree, &rctx, ei.get()));
+		std::unique_ptr<RenderResult> rr(rib.runRender(&tree, &rctx, ei.get(), li));
 
 		// Finding results
 
@@ -124,6 +128,9 @@ METHOD_AS_TEST_CASE( SimpleNumeric::advancedNumeric , "Advanced numeric render t
 
 void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 
+	LIcore_logger logger;
+	LogInstruction li(&logger);
+
 	// Creating "tree" to be rendered
 
 	Rnum rnum(1.1);
@@ -146,7 +153,7 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 	for (size_t i = 0; i < bursts; i++) {
 
 		for (size_t rn = 0; rn < perBurst; rn++) {
-			rids[rn] = rib.enqueueRender(&tree, &rctx, ei);
+			rids[rn] = rib.enqueueRender(&tree, &rctx, ei, li);
 		}
 		
 
@@ -175,6 +182,9 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 
 void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurst, size_t poolSize) {
 
+	LIcore_logger logger;
+	LogInstruction li(&logger);
+
 	// Creating "tree" to be rendered
 
 	Rnum rnum(1.1);
@@ -191,7 +201,7 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 
 	// Running render based on instruction
 
-	auto func = [&tree, ei, &rib, &handle, bursts, perBurst](){
+	auto func = [&tree, ei, li, &rib, &handle, bursts, perBurst](){
 
 		std::vector<size_t> rids(perBurst);
 
@@ -199,7 +209,7 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 		for (size_t i = 0; i < bursts; i++) {
 
 			for (size_t rn = 0; rn < perBurst; rn++) {
-				rids[rn] = rib.enqueueRender(&tree, &rctx, ei);
+				rids[rn] = rib.enqueueRender(&tree, &rctx, ei, li);
 			}
 			
 

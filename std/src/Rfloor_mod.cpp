@@ -21,6 +21,7 @@ torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* 
 	if (pipeline == TORASU_STD_PL_NUM) {
 
 		auto* ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto* rctx = ri->getRenderContext();
 
 		// Sub-renderings
@@ -28,8 +29,8 @@ torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr);
 
-		auto valRid = rib.enqueueRender(valRnd, rctx, ei);
-		auto facRid = rib.enqueueRender(facRnd, rctx, ei);
+		auto valRid = rib.enqueueRender(valRnd, rctx, ei, li);
+		auto facRid = rib.enqueueRender(facRnd, rctx, ei, li);
 
 		std::unique_ptr<torasu::RenderResult> valRes(ei->fetchRenderResult(valRid));
 		std::unique_ptr<torasu::RenderResult> facRes(ei->fetchRenderResult(facRid));

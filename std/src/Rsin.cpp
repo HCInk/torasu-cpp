@@ -3,7 +3,6 @@
 #include <string>
 #include <optional>
 #include <chrono>
-#include <iostream>
 #include <cmath>
 
 #include <torasu/torasu.hpp>
@@ -30,9 +29,10 @@ ResultSegment* Rsin::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rid = rib.enqueueRender(valRnd, rctx, ei);
+		auto rid = rib.enqueueRender(valRnd, rctx, ei, li);
 
 		std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rid));
 

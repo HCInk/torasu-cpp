@@ -1,6 +1,5 @@
 #include "../include/torasu/std/Dfile.hpp"
 
-#include <iostream>
 #include <torasu/json.hpp>
 
 using namespace std;

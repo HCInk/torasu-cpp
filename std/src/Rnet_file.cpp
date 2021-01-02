@@ -2,9 +2,8 @@
 
 #include <curl/curl.h>
 
-#include <iostream>
-
 #include <torasu/render_tools.hpp>
+#include <torasu/log_tools.hpp>
 
 #include <torasu/std/Dfile.hpp>
 #include <torasu/std/Dstring.hpp>
@@ -53,13 +52,14 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		// Getting url
 
 		auto* ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto* rctx = ri->getRenderContext();
 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderId = rib.enqueueRender(urlRnd, rctx, ei);
-		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei) : 0;
+		auto renderId = rib.enqueueRender(urlRnd, rctx, ei, li);
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei, li) : 0;
 
 		std::string url;
 		{
@@ -68,7 +68,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 			auto fetchedRes = segHandle.getFrom(rndRes.get());
 
 			if (fetchedRes.getResult() == nullptr) {
-				return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
+				throw std::runtime_error("Error fetching url!");
 			}
 
 			url = fetchedRes.getResult()->getString();
@@ -83,7 +83,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 			if (fetchedRes.getResult() != nullptr) {
 				headers = fetchedRes.getResult()->getString();
 			} else {
-				// TODO Note that the renderable failed to provide the headers
+				torasu::tools::log_checked(li, LogLevel::WARN, "Failed to provide headers, will skip headers.");
 			}
 
 		}
@@ -93,9 +93,8 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		CURL* curl;
 		CURLcode res;
 		curl = curl_easy_init();
-		if (!curl) {
-			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
-		}
+		if (!curl)
+			throw std::runtime_error("Failed to init curl!");
 
 		auto headerList = split(headers, "\n");
 
@@ -118,16 +117,17 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		curl_slist_free_all(curlHeaders);
 		curl_easy_cleanup(curl);
 
-		if (res != CURLcode::CURLE_OK) {
-			cerr << "Aborted due to CURL error - code: " << res << endl;
-			return new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
-		}
+		if (res != CURLcode::CURLE_OK)
+			throw std::runtime_error("Aborted due to CURL error - code: " + std::to_string(res));
 
 		size_t size = dataout.size();
 		const char* data = dataout.data();
 
 		Dfile* file = new Dfile(size);
 		copy(data, data+size, file->getFileData());
+
+		torasu::tools::log_checked(li, LogLevel::DEBUG,
+								   "Loaded net-file \"" + url + "\" (" + std::to_string(size) + "byte)");
 
 		return new ResultSegment(ResultSegmentStatus_OK, file, true);
 	} else {

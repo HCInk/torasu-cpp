@@ -3,7 +3,6 @@
 #include <string>
 #include <optional>
 #include <chrono>
-#include <iostream>
 
 #include <torasu/torasu.hpp>
 #include <torasu/render_tools.hpp>
@@ -30,10 +29,11 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a, rctx, ei, li);
+		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -76,10 +76,11 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		// Sub-Renderings
 		auto ei = ri->getExecutionInterface();
+		auto li = ri->getLogInstruction();
 		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei);
-		auto rendB = rib.enqueueRender(b, rctx, ei);
+		auto rendA = rib.enqueueRender(a, rctx, ei, li);
+		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
 		RenderResult* resA = ei->fetchRenderResult(rendA);
 		RenderResult* resB = ei->fetchRenderResult(rendB);
@@ -105,7 +106,9 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 			uint8_t* srcB = b.getResult()->getImageData();
 			uint8_t* dest = result->getImageData();
 
-			auto benchBegin = std::chrono::steady_clock::now();
+			bool doBench = li.level <= LogLevel::DEBUG;
+			std::chrono::_V2::steady_clock::time_point bench;
+			if (doBench) bench = std::chrono::steady_clock::now();
 
 			int16_t buf;
 			uint8_t currentPremulFactor;
@@ -128,8 +131,8 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 				i--;
 			}
 
-			auto benchEnd = std::chrono::steady_clock::now();
-			std::cout << "  Sub Time = " << std::chrono::duration_cast<std::chrono::milliseconds>(benchEnd - benchBegin).count() << "[ms] " << std::chrono::duration_cast<std::chrono::microseconds>(benchEnd - benchBegin).count() << "[us]" << std::endl;
+			if (doBench) li.logger->log(LogLevel::DEBUG,
+											"Sub Time = " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bench).count()) + "[ms]");
 
 		}
 

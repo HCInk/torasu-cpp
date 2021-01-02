@@ -4,6 +4,7 @@
 #include <memory>
 #include <chrono>
 #include <iostream>
+#include <sstream> //for std::stringstream 
 
 using namespace std;
 
@@ -424,7 +425,9 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 		selectedPrioStack = new std::vector<int64_t>();
 	}
 
-	return new EIcore_runner_object(this, newInterfaceId, selectedPrioStack);
+	// TODO create log-instruction for interface, dummy for now
+	LogInstruction li(nullptr);
+	return new EIcore_runner_object(this, newInterfaceId, li, selectedPrioStack);
 }
 
 //
@@ -432,13 +435,13 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 //
 
 // Subtask Constructor
-EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>* prioStack)
+EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
 	: elemHandler(rnd != nullptr ? EIcore_runner_elemhandler::getHandler(rnd, runner) : nullptr),
-	  rnd(rnd), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
+	  rnd(rnd), li(li), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
 
 // Interface Constructor
-EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, const std::vector<int64_t>* prioStack)
-	: elemHandler(nullptr), rnd(nullptr), parent(nullptr), runner(runner),
+EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
+	: elemHandler(nullptr), rnd(nullptr), li(li), parent(nullptr), runner(runner),
 	  renderId(renderId), prioStack(prioStack), status(RUNNING) {}
 
 EIcore_runner_object::~EIcore_runner_object() {
@@ -540,7 +543,16 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		elemHandler->readyElement(*rdyObjs, this);
 	}
 
-	RenderInstruction ri(rctx, rs, this);
+	std::string addr;
+	{
+		std::stringstream ss;
+		ss << this;
+		addr = ss.str();
+	}
+
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Begin");
+
+	RenderInstruction ri(rctx, rs, this, li);
 
 	RenderResult* res = rnd->render(&ri);
 
@@ -550,6 +562,8 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 			delete rdyObjs;
 		}
 	};
+
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Finished");
 
 	return res;
 }
@@ -611,7 +625,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 // torasu::ExecutionInterface implementation in EIcore_runner_object
 //
 
-uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, int64_t prio) {
+uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) {
 
 	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
 	if (lockSubTasks) subTasksLock.lock();
@@ -624,7 +638,7 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 	newPrioStack->push_back(prio);
 	newPrioStack->push_back(newRenderId);
 
-	EIcore_runner_object* obj = new EIcore_runner_object(rnd, this, runner, newRenderId, newPrioStack);
+	EIcore_runner_object* obj = new EIcore_runner_object(rnd, this, runner, newRenderId, li, newPrioStack);
 
 	obj->setRenderContext(rctx);
 	obj->setResultSettings(rs);

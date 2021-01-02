@@ -29,6 +29,12 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// LOGGING
+typedef size_t LogId;
+class LogEntry;
+class LogInterface;
+struct LogInstruction;
+
 // HELPER (INTERFACES)
 typedef uint64_t LockId;
 
@@ -72,6 +78,84 @@ class ObjectReadyResult;
 typedef std::vector<ObjectReadyResult> ElementReadyResult;
 
 //
+// LOGGING
+//
+
+enum LogLevel {
+	TRACE = -50,
+	DEBUG = -20,
+	INFO = -10,
+	WARN = 0,
+	ERROR = 10,
+	SERVERE_ERROR = 20,
+	DATA = 90,
+	UNKNOWN = 99
+};
+
+/**
+ * @brief  Packed version of the LogEntry
+ * @note   Spoiled in torasu/torasu.hpp, implemented in torasu/Dlog_entry.hpp
+ */
+class Dlog_entry;
+
+/**
+ * @brief  Entry/Message to be logged
+ */
+class LogEntry {
+public:
+	const LogLevel level;
+	const std::string message;
+
+	LogEntry(LogLevel level, std::string message)
+		: level(level), message(message) {}
+
+	Dlog_entry* makePack();
+};
+
+class LogInterface {
+public:
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  level The log level of the entry
+	 * @param  msg The message of the entry
+	 */
+	inline void log(LogLevel level, std::string msg, bool tag=false) {
+		log(new LogEntry(level, msg), tag);
+	}
+
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  entry: The entry to be logged
+	 * @param  tag: Weather the log should be tagged
+	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
+	 */
+	inline LogId log(LogEntry entry, bool tag=false) {
+		return log(new LogEntry(entry), tag);
+	}
+
+	/**
+	 * @brief  Logs an entry to the logging system
+	 * @param  entry: The entry to be logged (will be managed by the interface)
+	 * @param  tag: Weather the log should be tagged
+	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
+	 */
+	virtual LogId log(LogEntry* entry, bool tag) = 0;
+};
+
+/**
+ * @brief  Tells the process, which gets this how messages should be logged
+ */
+struct LogInstruction {
+	/** @brief  Interface to send the log-messages to */
+	LogInterface* logger;
+
+	/** @brief The minimum level of log messages that should be recorded  */
+	LogLevel level;
+
+	explicit LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN) : logger(logger), level(level) {}
+};
+
+//
 // INTERFACES
 //
 
@@ -97,10 +181,11 @@ public:
 	 * @param  rend: The renderable to be enqueued
 	 * @param  rctx: The context the renderable should be executed with
 	 * @param  rs: The result-resttings of the render-operation
+	 * @param  logger: Log instruction the operation should be logged with
 	 * @param  prio: the local priority of execution
 	 * @retval The renderId to be used to retrieve the result via fetchRenderResult(uint64_t)
 	 */
-	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, int64_t prio) = 0;
+	virtual uint64_t enqueueRender(Renderable* rend, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) = 0;
 
 	/**
 	 * @brief  Retrieve render-results of previously enqueued renders, sleeps/finishes the tasks if not completed yet
@@ -292,10 +377,11 @@ private:
 	RenderContext* rctx;
 	ResultSettings* rs;
 	ExecutionInterface* ei;
+	LogInstruction li;
 
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei)
-		: rctx(rctx), rs(rs), ei(ei) {}
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li)
+		: rctx(rctx), rs(rs), ei(ei), li(li) {}
 
 	~RenderInstruction() {}
 
@@ -309,6 +395,10 @@ public:
 
 	inline ExecutionInterface* const getExecutionInterface() {
 		return ei;
+	}
+
+	inline LogInstruction getLogInstruction() {
+		return li;
 	}
 };
 
