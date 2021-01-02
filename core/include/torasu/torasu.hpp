@@ -88,9 +88,15 @@ enum LogLevel {
 	WARN = 0,
 	ERROR = 10,
 	SERVERE_ERROR = 20,
-	DATA = 90
+	DATA = 90,
+	UNKNOWN = 99
 };
 
+/**
+ * @brief  Packed version of the LogEntry
+ * @note   Spoiled in torasu/torasu.hpp, implemented in torasu/Dlog_entry.hpp
+ */
+class Dlog_entry;
 
 /**
  * @brief  Entry/Message to be logged
@@ -103,6 +109,7 @@ public:
 	LogEntry(LogLevel level, std::string message) 
 		: level(level), message(message) {}
 
+	Dlog_entry* makePack();
 };
 
 class LogInterface {
