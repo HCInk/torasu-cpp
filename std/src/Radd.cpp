@@ -106,7 +106,11 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 			uint8_t* srcB = b.getResult()->getImageData();
 			uint8_t* dest = result->getImageData();
 
-			auto benchBegin = std::chrono::steady_clock::now();
+			auto li = ri->getLogInstruction();
+
+			bool doBench = li.level <= LogLevel::DEBUG;
+			std::chrono::_V2::steady_clock::time_point bench;
+			if (doBench) bench = std::chrono::steady_clock::now();
 
 			int16_t buf;
 			uint8_t currentPremulFactor;
@@ -129,8 +133,8 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 				i--;
 			}
 
-			auto benchEnd = std::chrono::steady_clock::now();
-			std::cout << "  Add Time = " << std::chrono::duration_cast<std::chrono::milliseconds>(benchEnd - benchBegin).count() << "[ms] " << std::chrono::duration_cast<std::chrono::microseconds>(benchEnd - benchBegin).count() << "[us]" << std::endl;
+			if (doBench) li.logger->log(LogLevel::DEBUG,
+											"Add Time = " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bench).count()) + "[ms]");
 
 		}
 
