@@ -434,21 +434,33 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 // EIcore_runner_object
 //
 
+inline void EIcore_runner_object::init() {
+	if (li.logger != nullptr) {
+		// Add interception-logger
+		li.logger = new EIcore_runner_object_logger(this, li.logger);
+	}
+}
+
 // Subtask Constructor
 EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
 	: elemHandler(rnd != nullptr ? EIcore_runner_elemhandler::getHandler(rnd, runner) : nullptr),
-	  rnd(rnd), li(li), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
+	  rnd(rnd), li(li), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {
+	init();
+}
 
 // Interface Constructor
 EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
 	: elemHandler(nullptr), rnd(nullptr), li(li), parent(nullptr), runner(runner),
-	  renderId(renderId), prioStack(prioStack), status(RUNNING) {}
+	  renderId(renderId), prioStack(prioStack), status(RUNNING) {
+	init();
+}
 
 EIcore_runner_object::~EIcore_runner_object() {
 	if (subTasks != nullptr) delete subTasks;
 	if (resultCv != nullptr) delete resultCv;
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
+	if (li.logger != nullptr) delete li.logger; // Delete interception-logger
 }
 
 // EIcore_runner_object: Suspension Functions
@@ -764,6 +776,21 @@ void EIcore_runner_object::unlock(LockId lockId) {
 	if (runner->concurrentTree) {
 		elemHandler->unlock(lockId);
 	}
+}
+
+//
+// EIcore_runner_object_logger
+//
+
+EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger)
+	: obj(obj), logger(logger) {}
+
+torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
+	entry->groupStack.push_back(obj->renderId);
+
+	logger->log(entry, false);
+
+	return 0;
 }
 
 //

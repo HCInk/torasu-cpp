@@ -105,6 +105,10 @@ class LogEntry {
 public:
 	const LogLevel level;
 	const std::string message;
+	/** @brief  Grouping-stack, from source to root
+	 * @note Used for log-grouping, don't touch if you dont know what you are doing
+	 * - usually only touched by logging-interfaces */
+	std::vector<LogId> groupStack;
 
 	LogEntry(LogLevel level, std::string message)
 		: level(level), message(message) {}
@@ -140,6 +144,8 @@ public:
 	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
 	virtual LogId log(LogEntry* entry, bool tag) = 0;
+
+	virtual ~LogInterface() {}
 };
 
 /**

@@ -56,6 +56,17 @@ const char* getLvlAnsi(torasu::LogLevel lvl) {
 	}
 }
 
+static std::string groupStackToStr(std::vector<torasu::LogId> groupStack) {
+	auto gsit = groupStack.rbegin();
+	std::string str;
+	while (gsit != groupStack.rend()) {
+		str += "/" + std::to_string(*gsit);
+		gsit++;
+	}
+
+	return str;
+}
+
 } // namespace
 
 
@@ -68,19 +79,27 @@ LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
 LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
 	std::unique_ptr<LogEntry> entry(entryIn);
 
+	std::string message;
+
+	if (!entry->groupStack.empty()) {
+		message += groupStackToStr(entry->groupStack) + "\t";
+	}
+
+	message += entry->message;
+
 	if (useAnsi) {
 		std::cout
 				<< getLvlAnsi(entry->level)
 				<< getLvLName(entry->level)
 				<< "  "
-				<< entry->message
+				<< message
 				<< ANSI_RESET
 				<< std::endl;
 	} else {
 		std::cout
 				<< getLvLName(entry->level)
 				<< "  "
-				<< entry->message
+				<< message
 				<< std::endl;
 	}
 
