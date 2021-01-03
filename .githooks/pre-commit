@@ -1,0 +1,2 @@
+#!/bin/sh
+PWD=$(git rev-parse --show-toplevel) . "$(git rev-parse --show-toplevel)/format.sh"
