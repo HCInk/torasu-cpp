@@ -218,9 +218,11 @@ class EIcore_runner_object_logger : public torasu::LogInterface {
 private:
 	EIcore_runner_object* obj;
 	LogInterface* logger;
+	bool registered = false;
 
 protected:
 	EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger);
+	~EIcore_runner_object_logger();
 
 public:
 	torasu::LogId log(LogEntry* entry, bool tag) override;

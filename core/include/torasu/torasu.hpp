@@ -81,6 +81,13 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 // LOGGING
 //
 
+enum LogType {
+	LT_MESSAGE = 0,
+	LT_GROUP_START = 10,
+	LT_GROUP_END = 11,
+	LT_UNKNOWN = -1
+};
+
 enum LogLevel {
 	TRACE = -50,
 	DEBUG = -20,
@@ -88,8 +95,7 @@ enum LogLevel {
 	WARN = 0,
 	ERROR = 10,
 	SERVERE_ERROR = 20,
-	DATA = 90,
-	UNKNOWN = 99
+	LEVEL_UNKNOWN = 99
 };
 
 /**
@@ -103,15 +109,19 @@ class Dlog_entry;
  */
 class LogEntry {
 public:
+	const LogType type;
 	const LogLevel level;
-	const std::string message;
+	const std::string text;
 	/** @brief  Grouping-stack, from source to root
 	 * @note Used for log-grouping, don't touch if you dont know what you are doing
 	 * - usually only touched by logging-interfaces */
 	std::vector<LogId> groupStack;
 
+	LogEntry(LogType type, LogLevel level, std::string text)
+		: type(type), level(level), text(text) {}
+
 	LogEntry(LogLevel level, std::string message)
-		: level(level), message(message) {}
+		: type(LogType::LT_MESSAGE), level(level), text(message) {}
 
 	Dlog_entry* makePack();
 };

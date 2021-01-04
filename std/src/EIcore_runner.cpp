@@ -785,7 +785,26 @@ void EIcore_runner_object::unlock(LockId lockId) {
 EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger)
 	: obj(obj), logger(logger) {}
 
+EIcore_runner_object_logger::~EIcore_runner_object_logger() {
+	if (registered) {
+		auto* uregEntry = 
+			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
+		uregEntry->groupStack.push_back(obj->renderId);
+		logger->log(uregEntry, false);
+		registered = true;
+	}
+}
+
 torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
+
+	if (!registered) {
+		auto* regEntry = 
+			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
+		regEntry->groupStack.push_back(obj->renderId);
+		logger->log(regEntry, false);
+		registered = true;
+	}
+
 	entry->groupStack.push_back(obj->renderId);
 
 	logger->log(entry, false);

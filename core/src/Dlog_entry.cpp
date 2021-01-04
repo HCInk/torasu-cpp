@@ -15,10 +15,8 @@ torasu::LogLevel lvlFromStr(std::string lvlStr) {
 		return torasu::LogLevel::ERROR;
 	} else if (lvlStr == "SERVERR") {
 		return torasu::LogLevel::SERVERE_ERROR;
-	} else if (lvlStr == "DATA") {
-		return torasu::LogLevel::DATA;
 	} else {
-		return torasu::LogLevel::UNKNOWN;
+		return torasu::LogLevel::LEVEL_UNKNOWN;
 	}
 }
 
@@ -36,8 +34,31 @@ const char* lvlToStr(torasu::LogLevel lvl) {
 		return "ERROR";
 	case torasu::LogLevel::SERVERE_ERROR:
 		return "SERVERR";
-	case torasu::LogLevel::DATA:
-		return "DATA";
+	default:
+		return "UNK";
+	}
+}
+
+torasu::LogType typeFromStr(std::string typeStr) {
+	if (typeStr == "MSG") {
+		return torasu::LogType::LT_MESSAGE;
+	} else if (typeStr == "GSTART") {
+		return torasu::LogType::LT_GROUP_START;
+	} else if (typeStr == "GEND") {
+		return torasu::LogType::LT_GROUP_END;
+	} else {
+		return torasu::LogType::LT_UNKNOWN;
+	}
+}
+
+const char* typeToStr(torasu::LogType type) {
+	switch (type) {
+	case torasu::LogType::LT_MESSAGE:
+		return "MSG";
+	case torasu::LogType::LT_GROUP_START:
+		return "GSTART";
+	case torasu::LogType::LT_GROUP_END:
+		return "GEND";
 	default:
 		return "UNK";
 	}
@@ -76,31 +97,46 @@ std::string Dlog_entry::getIdent() {
 void Dlog_entry::load() {
 	json json = getJson();
 
-	std::string msg;
-	auto msgj = json["msg"];
-	if (msgj.is_string()) {
-		msg = msgj;
+	LogType type;
+	auto typej = json["l"];
+	if (typej.is_string()) {
+		type = typeFromStr(typej);
 	} else {
-		msg = "";
+		type = LT_UNKNOWN;
+	}
+
+	std::string txt;
+	auto txtj = json["txt"];
+	if (txtj.is_string()) {
+		txt = txtj;
+	} else {
+		txt = "";
 	}
 
 	LogLevel lvl;
 	auto lvlj = json["lvl"];
-	if (msgj.is_string()) {
+	if (lvlj.is_string()) {
 		lvl = lvlFromStr(lvlj);
 	} else {
-		lvl = torasu::LogLevel::UNKNOWN;
+		lvl = torasu::LogLevel::LEVEL_UNKNOWN;
 	}
 
-	entry = new LogEntry(lvl, msg);
+	entry = new LogEntry(type, lvl, txt);
 
 }
 
 torasu::json Dlog_entry::makeJson() {
-	return {
-		{"msg", entry->message},
-		{"lvl", lvlToStr(entry->level)},
-	};
+	torasu::json json;
+	
+	json["t"] = typeToStr(entry->type);
+	
+	if (!entry->text.empty()) 
+		json["txt"] = entry->text;
+
+	if (entry->type == torasu::LogType::LT_MESSAGE)
+		json["lvl"] = lvlToStr(entry->level);
+
+	return json;
 }
 
 Dlog_entry* Dlog_entry::clone() {

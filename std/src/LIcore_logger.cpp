@@ -19,8 +19,6 @@ const char* getLvLName(torasu::LogLevel lvl) {
 		return "ERROR";
 	case torasu::LogLevel::SERVERE_ERROR:
 		return "S-ERR";
-	case torasu::LogLevel::DATA:
-		return "DATA ";
 	default:
 		return "UNKWN";
 	}
@@ -33,7 +31,7 @@ static const char* ANSI_YELLOW = "\33[93m";
 static const char* ANSI_BLUE = "\33[94m";
 static const char* ANSI_DARK_GREEN = "\33[32m";
 static const char* ANSI_GRAY = "\33[90m";
-static const char* ANSI_BRIGHT_GREEN = "\33[32m";
+static const char* ANSI_CYAN = "\33[36m";
 
 const char* getLvlAnsi(torasu::LogLevel lvl) {
 	switch (lvl) {
@@ -49,8 +47,6 @@ const char* getLvlAnsi(torasu::LogLevel lvl) {
 		return ANSI_RED;
 	case torasu::LogLevel::SERVERE_ERROR:
 		return ANSI_HIGHLIGTED_RED;
-	case torasu::LogLevel::DATA:
-		return ANSI_BRIGHT_GREEN;
 	default:
 		return "";
 	}
@@ -81,26 +77,56 @@ LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
 
 	std::string message;
 
-	if (!entry->groupStack.empty()) {
-		message += groupStackToStr(entry->groupStack) + "\t";
+	switch (entry->type) {
+	case LT_GROUP_START: {
+		if (useAnsi) message += ANSI_GRAY;
+		message += "====  " + groupStackToStr(entry->groupStack) + " * " + entry->text;
+	} break;
+
+	case LT_GROUP_END: {
+	} break;
+	
+	default: {
+		// Prefix
+
+		if (entry->type == LT_MESSAGE) {
+			if (useAnsi) message += getLvlAnsi(entry->level);
+			message += getLvLName(entry->level);
+		} else {
+			if (useAnsi) message += ANSI_CYAN;
+			message += "DATA ";
+		}
+
+		message += " ";
+
+		// Group Display
+
+		if (!entry->groupStack.empty()) {
+			message += groupStackToStr(entry->groupStack) + " \t";
+		}
+
+		// Message
+
+		if (entry->type == LT_MESSAGE) {
+			message += entry->text;
+		} else {
+			message += "[DataPacket-" + std::to_string(entry->type) + "] TXT: \"" + entry->text + "\""; 
+		}
+
+		
+	} break;
 	}
 
-	message += entry->message;
+	if (!message.empty()) {
+		// Suffix
 
-	if (useAnsi) {
-		std::cout
-				<< getLvlAnsi(entry->level)
-				<< getLvLName(entry->level)
-				<< "  "
-				<< message
-				<< ANSI_RESET
-				<< std::endl;
-	} else {
-		std::cout
-				<< getLvLName(entry->level)
-				<< "  "
-				<< message
-				<< std::endl;
+		if (useAnsi) {
+			message += ANSI_RESET;
+		}
+
+		// Print
+
+		std::cout << message << std::endl;
 	}
 
 	return 0;
