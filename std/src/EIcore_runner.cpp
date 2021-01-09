@@ -789,27 +789,36 @@ EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 	if (registered) {
 		auto* uregEntry = 
 			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
-		uregEntry->groupStack.push_back(obj->renderId);
+		uregEntry->groupStack.push_back(ownLogId);
 		logger->log(uregEntry, false);
-		registered = true;
 	}
 }
 
 torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
 
 	if (!registered) {
+		ownLogId = logger->fetchSubId();
 		auto* regEntry = 
 			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
-		regEntry->groupStack.push_back(obj->renderId);
+		regEntry->groupStack.push_back(ownLogId);
 		logger->log(regEntry, false);
 		registered = true;
 	}
 
-	entry->groupStack.push_back(obj->renderId);
+	entry->groupStack.push_back(ownLogId);
 
 	logger->log(entry, false);
 
 	return 0;
+}
+
+torasu::LogId EIcore_runner_object_logger::fetchSubId() {
+
+	std::unique_lock lock(subIdCounterLock);
+	auto subId = subIdCounter;
+	subIdCounter++;
+	return subId;
+
 }
 
 //

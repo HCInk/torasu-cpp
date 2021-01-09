@@ -219,6 +219,9 @@ private:
 	EIcore_runner_object* obj;
 	LogInterface* logger;
 	bool registered = false;
+	std::mutex subIdCounterLock;
+	torasu::LogId subIdCounter = 0;
+	LogId ownLogId;
 
 protected:
 	EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger);
@@ -226,6 +229,7 @@ protected:
 
 public:
 	torasu::LogId log(LogEntry* entry, bool tag) override;
+	torasu::LogId fetchSubId() override;
 
 	friend class EIcore_runner_object;
 };

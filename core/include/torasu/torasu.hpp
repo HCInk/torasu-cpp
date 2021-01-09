@@ -155,6 +155,12 @@ public:
 	 */
 	virtual LogId log(LogEntry* entry, bool tag) = 0;
 
+	/**
+	 * @brief  Generates a new Subgroup-ID
+	 * @retval Id of Subgroup
+	 */
+	virtual LogId fetchSubId() = 0;
+
 	virtual ~LogInterface() {}
 };
 

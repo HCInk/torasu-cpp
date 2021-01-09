@@ -132,4 +132,13 @@ LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
 	return 0;
 }
 
+torasu::LogId LIcore_logger::fetchSubId() {
+
+	std::unique_lock lock(subIdCounterLock);
+	auto subId = subIdCounter;
+	subIdCounter++;
+	return subId;
+
+}
+
 } // namespace torasu::tstd
