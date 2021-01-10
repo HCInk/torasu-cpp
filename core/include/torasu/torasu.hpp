@@ -82,19 +82,30 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 //
 
 enum LogType {
+	/** @brief This log-entry is a normal message */
 	LT_MESSAGE = 0,
+	/** @brief This log-entry indicates a new log-group */
 	LT_GROUP_START = 10,
+	/** @brief This log-entry indicates the end of a log-group-report */
 	LT_GROUP_END = 11,
+	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
 
 enum LogLevel {
+	/** @brief Used for small details, lowest log-level */
 	TRACE = -50,
+	/** @brief Used for frequent debug-information */
 	DEBUG = -20,
+	/** @brief Used for information about configuration and other unfrequent information */
 	INFO = -10,
+	/** @brief Used to warn about misuse or possible errors, default log-level */
 	WARN = 0,
+	/** @brief Used to log definite errors */
 	ERROR = 10,
+	/** @brief Used to indicate an error, which interrupts the rendering-process */
 	SERVERE_ERROR = 20,
+	/** @brief Failed to determine the log-level of the message */
 	LEVEL_UNKNOWN = 99
 };
 
