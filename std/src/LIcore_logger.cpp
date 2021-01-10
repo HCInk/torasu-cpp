@@ -72,49 +72,72 @@ LIcore_logger::LIcore_logger() {}
 
 LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
 
-LogId LIcore_logger::log(LogEntry* entryIn, bool tag) {
-	std::unique_ptr<LogEntry> entry(entryIn);
+LogId LIcore_logger::log(LogEntry* entry, bool tag) {
+	std::unique_lock lck(logMutex);
+	std::unique_ptr<LogEntry> entryHolder(entry);
 
 	std::string message;
 
 	switch (entry->type) {
 	case LT_GROUP_START: {
-		if (useAnsi) message += ANSI_GRAY;
-		message += "====  " + groupStackToStr(entry->groupStack) + " * " + entry->text;
-	} break;
+			if (useAnsi) message += ANSI_GRAY;
+			message += "====  " + groupStackToStr(entry->groupStack) + " * " + entry->text;
+			logstore.create(entry->groupStack, entry->text);
+		}
+		break;
 
 	case LT_GROUP_END: {
-	} break;
-	
+			// message += "(FREE)" + groupStackToStr(entry->groupStack) + " * " + entry->text;
+			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
+			auto found = resolveStack->top();
+			if (found == nullptr) throw std::runtime_error("Failed to unregister log-group: Group not found!");
+			logstore.remove(found);
+		}
+		break;
+
 	default: {
-		// Prefix
+			// Prefix
 
-		if (entry->type == LT_MESSAGE) {
-			if (useAnsi) message += getLvlAnsi(entry->level);
-			message += getLvLName(entry->level);
-		} else {
-			if (useAnsi) message += ANSI_CYAN;
-			message += "DATA ";
+			if (entry->type == LT_MESSAGE) {
+				if (useAnsi) message += getLvlAnsi(entry->level);
+				message += getLvLName(entry->level);
+			} else {
+				if (useAnsi) message += ANSI_CYAN;
+				message += "DATA ";
+			}
+
+			message += " ";
+
+			// Group Display
+
+			if (!entry->groupStack.empty()) {
+				message += groupStackToStr(entry->groupStack) + " \t";
+
+				std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
+				LIcore_logger_logstore::StoreGroup* foundGroup = resolveStack->top();
+				if (foundGroup != nullptr) {
+					foundGroup->logs.push_back(entryHolder.release());
+					message += foundGroup->name;
+				} else {
+					message += "(UNKNOWN)";
+				}
+				message += ": ";
+			} else {
+				logstore.getRoot()->logs.push_back(entryHolder.release());
+			}
+
+
+			// Message
+
+			if (entry->type == LT_MESSAGE) {
+				message += entry->text;
+			} else {
+				message += "[DataPacket-" + std::to_string(entry->type) + "] TXT: \"" + entry->text + "\"";
+			}
+
+
 		}
-
-		message += " ";
-
-		// Group Display
-
-		if (!entry->groupStack.empty()) {
-			message += groupStackToStr(entry->groupStack) + " \t";
-		}
-
-		// Message
-
-		if (entry->type == LT_MESSAGE) {
-			message += entry->text;
-		} else {
-			message += "[DataPacket-" + std::to_string(entry->type) + "] TXT: \"" + entry->text + "\""; 
-		}
-
-		
-	} break;
+		break;
 	}
 
 	if (!message.empty()) {
@@ -138,6 +161,85 @@ torasu::LogId LIcore_logger::fetchSubId() {
 	auto subId = subIdCounter;
 	subIdCounter++;
 	return subId;
+
+}
+
+torasu::tstd::LIcore_logger_logstore::LIcore_logger_logstore() {}
+torasu::tstd::LIcore_logger_logstore::~LIcore_logger_logstore() {}
+
+torasu::tstd::LIcore_logger_logstore::StoreGroup::StoreGroup() {}
+
+torasu::tstd::LIcore_logger_logstore::StoreGroup::StoreGroup(std::string name, torasu::LogId logId, StoreGroup* parent)
+	: owner(parent), name(name) {
+
+	parent->sub[logId] = this;
+	owner->cleanupList.insert(this);
+
+}
+
+torasu::tstd::LIcore_logger_logstore::StoreGroup::~StoreGroup() {
+	// std::cout << " RM " << this << std::endl;
+	for (StoreGroup* toClean : cleanupList) delete toClean;
+	for (LogEntry* entry : logs) delete entry;
+}
+
+std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIcore_logger_logstore::resolve(const std::vector<LogId>& path, size_t pathDepth) {
+	auto* resolveStack = new std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>();
+	if (pathDepth == 0) pathDepth = path.size();
+
+	StoreGroup* cGroup = &tree;
+	auto it = path.rbegin();
+	for (size_t i = pathDepth; i > 0; i--) {
+		LogId logId = *it;
+		it++;
+		auto& sub = cGroup->sub;
+		auto found = sub.find(logId);
+
+		if (found == sub.end()) {
+			for (auto group : sub) {
+				std::cout << " NOT " << logId << " BUT " << group.first << " @ " << std::to_string(pathDepth-i) << std::endl;
+			}
+			resolveStack->push(nullptr);
+			break;
+		}
+
+		cGroup = found->second;
+		resolveStack->push(cGroup);
+	}
+
+	return resolveStack;
+}
+
+LIcore_logger_logstore::StoreGroup* torasu::tstd::LIcore_logger_logstore::create(const std::vector<LogId>& path, std::string name) {
+	StoreGroup* foundGroup;
+	if (path.size() > 1) {
+		std::unique_ptr<std::stack<StoreGroup*>> resolveStack(resolve(path, path.size()-1));
+
+		foundGroup = resolveStack->top();
+
+		if (foundGroup == nullptr) {
+			throw std::runtime_error("Failed to create new log-group, since parent can't be resolved! "
+									 "(Creation of " + groupStackToStr(path) + " as " + name + " - parent #" + std::to_string(resolveStack->size()) + ")");
+		}
+	} else {
+		foundGroup = &tree;
+	}
+
+	// delete automatically called
+	return new StoreGroup(name, path[0], foundGroup);
+}
+
+
+void torasu::tstd::LIcore_logger_logstore::remove(StoreGroup* group) {
+	group->owner->cleanupList.erase(group);
+	delete group;
+}
+
+void torasu::tstd::LIcore_logger_logstore::StoreGroup::reown(StoreGroup* newOwner) {
+
+	owner->cleanupList.erase(this);
+	owner = newOwner;
+	owner->cleanupList.insert(this);
 
 }
 
