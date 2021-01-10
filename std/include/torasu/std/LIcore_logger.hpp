@@ -1,9 +1,13 @@
 #ifndef STD_INCLUDE_TORASU_STD_LICORE_LOGGER_HPP_
 #define STD_INCLUDE_TORASU_STD_LICORE_LOGGER_HPP_
 
-#include <torasu/torasu.hpp>
-
+#include <map>
+#include <set>
+#include <vector>
 #include <stack>
+#include <string>
+
+#include <torasu/torasu.hpp>
 
 namespace torasu::tstd {
 
