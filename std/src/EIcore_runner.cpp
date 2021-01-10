@@ -434,21 +434,33 @@ ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioSta
 // EIcore_runner_object
 //
 
+inline void EIcore_runner_object::init() {
+	if (li.logger != nullptr) {
+		// Add interception-logger
+		li.logger = new EIcore_runner_object_logger(this, li.logger);
+	}
+}
+
 // Subtask Constructor
 EIcore_runner_object::EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
 	: elemHandler(rnd != nullptr ? EIcore_runner_elemhandler::getHandler(rnd, runner) : nullptr),
-	  rnd(rnd), li(li), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {}
+	  rnd(rnd), li(li), parent(parent), runner(runner), renderId(renderId), prioStack(prioStack) {
+	init();
+}
 
 // Interface Constructor
 EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>* prioStack)
 	: elemHandler(nullptr), rnd(nullptr), li(li), parent(nullptr), runner(runner),
-	  renderId(renderId), prioStack(prioStack), status(RUNNING) {}
+	  renderId(renderId), prioStack(prioStack), status(RUNNING) {
+	init();
+}
 
 EIcore_runner_object::~EIcore_runner_object() {
 	if (subTasks != nullptr) delete subTasks;
 	if (resultCv != nullptr) delete resultCv;
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
+	if (li.logger != nullptr) delete li.logger; // Delete interception-logger
 }
 
 // EIcore_runner_object: Suspension Functions
@@ -550,7 +562,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		addr = ss.str();
 	}
 
-	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Begin");
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Begin");
 
 	RenderInstruction ri(rctx, rs, this, li);
 
@@ -563,7 +575,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		}
 	};
 
-	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Finished");
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
 
 	return res;
 }
@@ -764,6 +776,49 @@ void EIcore_runner_object::unlock(LockId lockId) {
 	if (runner->concurrentTree) {
 		elemHandler->unlock(lockId);
 	}
+}
+
+//
+// EIcore_runner_object_logger
+//
+
+EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger)
+	: obj(obj), logger(logger) {}
+
+EIcore_runner_object_logger::~EIcore_runner_object_logger() {
+	if (registered) {
+		auto* uregEntry =
+			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
+		uregEntry->groupStack.push_back(ownLogId);
+		logger->log(uregEntry, false);
+	}
+}
+
+torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
+
+	if (!registered) {
+		ownLogId = logger->fetchSubId();
+		auto* regEntry =
+			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
+		regEntry->groupStack.push_back(ownLogId);
+		logger->log(regEntry, false);
+		registered = true;
+	}
+
+	entry->groupStack.push_back(ownLogId);
+
+	logger->log(entry, false);
+
+	return 0;
+}
+
+torasu::LogId EIcore_runner_object_logger::fetchSubId() {
+
+	std::unique_lock lock(subIdCounterLock);
+	auto subId = subIdCounter;
+	subIdCounter++;
+	return subId;
+
 }
 
 //

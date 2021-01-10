@@ -81,15 +81,32 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 // LOGGING
 //
 
+enum LogType {
+	/** @brief This log-entry is a normal message */
+	LT_MESSAGE = 0,
+	/** @brief This log-entry indicates a new log-group */
+	LT_GROUP_START = 10,
+	/** @brief This log-entry indicates the end of a log-group-report */
+	LT_GROUP_END = 11,
+	/** @brief Failed to determine the type of the log-entry */
+	LT_UNKNOWN = -1
+};
+
 enum LogLevel {
+	/** @brief Used for small details, lowest log-level */
 	TRACE = -50,
+	/** @brief Used for frequent debug-information */
 	DEBUG = -20,
+	/** @brief Used for information about configuration and other unfrequent information */
 	INFO = -10,
+	/** @brief Used to warn about misuse or possible errors, default log-level */
 	WARN = 0,
+	/** @brief Used to log definite errors */
 	ERROR = 10,
+	/** @brief Used to indicate an error, which interrupts the rendering-process */
 	SERVERE_ERROR = 20,
-	DATA = 90,
-	UNKNOWN = 99
+	/** @brief Failed to determine the log-level of the message */
+	LEVEL_UNKNOWN = 99
 };
 
 /**
@@ -103,11 +120,19 @@ class Dlog_entry;
  */
 class LogEntry {
 public:
+	const LogType type;
 	const LogLevel level;
-	const std::string message;
+	const std::string text;
+	/** @brief  Grouping-stack, from source to root
+	 * @note Used for log-grouping, don't touch if you dont know what you are doing
+	 * - usually only touched by logging-interfaces */
+	std::vector<LogId> groupStack;
+
+	LogEntry(LogType type, LogLevel level, std::string text)
+		: type(type), level(level), text(text) {}
 
 	LogEntry(LogLevel level, std::string message)
-		: level(level), message(message) {}
+		: type(LogType::LT_MESSAGE), level(level), text(message) {}
 
 	Dlog_entry* makePack();
 };
@@ -140,6 +165,14 @@ public:
 	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
 	virtual LogId log(LogEntry* entry, bool tag) = 0;
+
+	/**
+	 * @brief  Generates a new Subgroup-ID
+	 * @retval Id of Subgroup
+	 */
+	virtual LogId fetchSubId() = 0;
+
+	virtual ~LogInterface() {}
 };
 
 /**

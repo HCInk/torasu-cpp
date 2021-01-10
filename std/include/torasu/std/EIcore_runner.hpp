@@ -20,6 +20,7 @@
 namespace torasu::tstd {
 
 class EIcore_runner_object;
+class EIcore_runner_object_logger;
 class EIcore_runner_elemhandler;
 
 struct EIcore_runner_object_cmp {
@@ -193,6 +194,7 @@ private:
 protected:
 	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
 	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
+	void init();
 	virtual ~EIcore_runner_object();
 
 	RenderResult* run(std::function<void()>* outCleanupFunction);
@@ -208,7 +210,28 @@ public:
 	void unlock(LockId lockId) override;
 
 	friend class EIcore_runner;
+	friend class EIcore_runner_object_logger;
 	friend struct EIcore_runner_object_cmp;
+};
+
+class EIcore_runner_object_logger : public torasu::LogInterface {
+private:
+	EIcore_runner_object* obj;
+	LogInterface* logger;
+	bool registered = false;
+	std::mutex subIdCounterLock;
+	torasu::LogId subIdCounter = 0;
+	LogId ownLogId;
+
+protected:
+	EIcore_runner_object_logger(EIcore_runner_object* obj, LogInterface* logger);
+	~EIcore_runner_object_logger();
+
+public:
+	torasu::LogId log(LogEntry* entry, bool tag) override;
+	torasu::LogId fetchSubId() override;
+
+	friend class EIcore_runner_object;
 };
 
 enum EIcore_runner_rdystate_LOADSTATE {
