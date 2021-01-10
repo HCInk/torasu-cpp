@@ -562,7 +562,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		addr = ss.str();
 	}
 
-	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Begin");
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Begin");
 
 	RenderInstruction ri(rctx, rs, this, li);
 
@@ -575,7 +575,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		}
 	};
 
-	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "Runner: Task " + addr + " (" + rnd->getType() + ") Finished");
+	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
 
 	return res;
 }
@@ -787,7 +787,7 @@ EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* o
 
 EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 	if (registered) {
-		auto* uregEntry = 
+		auto* uregEntry =
 			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
 		uregEntry->groupStack.push_back(ownLogId);
 		logger->log(uregEntry, false);
@@ -798,7 +798,7 @@ torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
 
 	if (!registered) {
 		ownLogId = logger->fetchSubId();
-		auto* regEntry = 
+		auto* regEntry =
 			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
 		regEntry->groupStack.push_back(ownLogId);
 		logger->log(regEntry, false);

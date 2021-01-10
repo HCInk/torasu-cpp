@@ -127,10 +127,10 @@ void Dlog_entry::load() {
 
 torasu::json Dlog_entry::makeJson() {
 	torasu::json json;
-	
+
 	json["t"] = typeToStr(entry->type);
-	
-	if (!entry->text.empty()) 
+
+	if (!entry->text.empty())
 		json["txt"] = entry->text;
 
 	if (entry->type == torasu::LogType::LT_MESSAGE)
