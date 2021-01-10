@@ -98,7 +98,7 @@ void Dlog_entry::load() {
 	json json = getJson();
 
 	LogType type;
-	auto typej = json["l"];
+	auto typej = json["t"];
 	if (typej.is_string()) {
 		type = typeFromStr(typej);
 	} else {
