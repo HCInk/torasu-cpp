@@ -10,7 +10,7 @@ cpplint --extensions=cpp,cxx,cc,c,c++ --headers=h,hpp,hxx --filter=$filters $fil
 	if [[ $line == *"[runtime/explicit]"* ]]; then
 		srcLine=`sed -n "$(cut -f 2 -d : <<< $(echo $line))p" $(cut -f 1 -d ":" <<< $(echo $line))`
 
-		if [[ $srcLine == *"/* implciit */"* ]]; then
+		if [[ $srcLine == *"/* implicit */"* ]]; then
 			echo "$srcLine     // $line" >> .ci/cpplint-ignored-errors.txt
 		else
     		>&2 echo "$line"

@@ -14,7 +14,7 @@ public:
 	inline Slot()
 		: elem(nullptr) {}
 
-	/* implciit */ inline Slot(T* elem)
+	/* implicit */ inline Slot(T* elem)
 		: elem(elem) {}
 
 	inline Slot(T* elem, bool owned)
@@ -39,7 +39,7 @@ public:
 template<class T> class ManagedSlot : public T {
 public:
 	ManagedSlot() {}
-	/* implciit */ ManagedSlot(const T& slot) : T(slot) {}
+	/* implicit */ ManagedSlot(const T& slot) : T(slot) {}
 
 	inline ManagedSlot<T>& operator=(const T& b) {
 		if (T::owned) delete T::elem;

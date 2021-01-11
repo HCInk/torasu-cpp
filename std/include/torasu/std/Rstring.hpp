@@ -30,16 +30,16 @@ class StringSlot : public torasu::tools::RenderableSlot {
 public:
 	inline StringSlot() {}
 
-	/* implciit */ inline StringSlot(Renderable* rnd)
+	/* implicit */ inline StringSlot(Renderable* rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 
-	/* implciit */ inline StringSlot(torasu::tools::RenderableSlot rnd)
+	/* implicit */ inline StringSlot(torasu::tools::RenderableSlot rnd)
 		: torasu::tools::RenderableSlot(rnd) {}
 
-	/* implciit */ inline StringSlot(const char* str)
+	/* implicit */ inline StringSlot(const char* str)
 		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
 
-	/* implciit */ inline StringSlot(std::string str)
+	/* implicit */ inline StringSlot(std::string str)
 		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
 
 };
