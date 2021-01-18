@@ -26,6 +26,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Dnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dstring.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dstring_pair.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dstring_map.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg_sequence.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Daudio_buffer.cpp
@@ -48,7 +49,8 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rfloor_mod.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rsin.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rfallback.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/Rlog_message.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/Rlog_message.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_map.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
