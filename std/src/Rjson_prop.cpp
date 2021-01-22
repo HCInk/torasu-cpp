@@ -59,7 +59,9 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 		auto li = ri->getLogInstruction();
 		auto* rctx = ri->getRenderContext();
 
-		// Sub-renderings
+		//
+		// Load input/parameters
+		//
 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dfile>(TORASU_STD_PL_FILE, nullptr);
@@ -90,22 +92,40 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 
 		bool optional = this->config->getB() == "opt";
 
+		//
+		// Navigate to path
+		//
+
 		for (size_t i = 0; i < path.size(); i++) {
-			if (!json.is_object()) {
+			if (json.is_object()) {
+				json = json[path[i]];
+			} else if (json.is_array()) {
+				long index;
+				try {
+					index = std::stol(path[i]);
+				} catch (const std::invalid_argument& ex) {
+					if (optional) { // Return invalid-segment if set to optional
+						return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+					} else {
+						std::string pathDesc = i == 0 ? "Root" : "\"" + combine(path, 0, i-1, ".") + "\"";
+						throw std::runtime_error(pathDesc + " is an array, but the index \"" + path[i] + "\" provided in the path, can't be parsed as a number: " + ex.what());
+					}
+				}
+				json = json[index];
+			} else {
 				if (optional) { // Return invalid-segment if set to optional
 					return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 				} else {
-					if (i == 0) {
-						throw std::runtime_error("Root is not an object! - Dump at path: \n" + json.dump());
-					} else {
-						throw std::runtime_error("\"" + combine(path, 0, i-1, ".") + "\" is not an object! - Dump at path: \n" + json.dump());
-					}
+					std::string pathDesc = i == 0 ? "Root" : "\"" + combine(path, 0, i-1, ".") + "\"";
+					throw std::runtime_error(pathDesc + " is not an object/array! - Dump at path: \n" + json.dump());
 				}
 
 			}
-
-			json = json[path[i]];
 		}
+
+		//
+		// Evalulate data
+		//
 
 		if (json.is_null()) {
 			if (optional) { // Return invalid-segment if set to optional
@@ -116,14 +136,17 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 		}
 
 		if (pipeline == TORASU_STD_PL_STRING) {
-			if (!json.is_string()) {
+			if (json.is_string()) {
+				return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json), true);
+			} else if (json.is_number()) {
+				return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json.dump()), true);
+			} else {
 				if (optional) { // Return invalid-segment if set to optional
 					return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 				} else {
-					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a string! - Dump at path: \n" + json.dump());
+					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a string/number! - Dump at path: \n" + json.dump());
 				}
 			}
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(json), true);
 		} else if (pipeline == TORASU_STD_PL_NUM) {
 			if (!json.is_number()) {
 				if (optional) { // Return invalid-segment if set to optional
