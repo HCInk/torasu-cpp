@@ -62,7 +62,8 @@ torasu::ResultSegment* Rstring_concat::renderSegment(torasu::ResultSegmentSettin
 
 		for (size_t i = 0; i < rpList.size(); i++) {
 			auto render = rpList[i];
-			auto res = strHandle.getFrom(render.result);
+			std::unique_ptr<torasu::RenderResult> rr(render.result);
+			auto res = strHandle.getFrom(rr.get());
 
 			torasu::tstd::Dstring* str = res.getResult();
 
