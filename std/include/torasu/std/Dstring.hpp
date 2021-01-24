@@ -25,7 +25,7 @@ public:
 	Dstring(torasu::json jsonParsed, bool json);
 	explicit Dstring(std::string str);
 
-	std::string getString();
+	const std::string& getString();
 
 	std::string getIdent() override;
 	Dstring* clone() override;

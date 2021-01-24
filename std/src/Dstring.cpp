@@ -16,7 +16,7 @@ Dstring::Dstring(std::string str) {
 	this->string = str;
 }
 
-std::string Dstring::getString() {
+const std::string& Dstring::getString() {
 	ensureLoaded();
 	return string;
 }

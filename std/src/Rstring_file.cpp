@@ -38,13 +38,8 @@ torasu::ResultSegment* Rstring_file::renderSegment(torasu::ResultSegmentSettings
 		}
 
 
-		// size_t strSize = res->getString().length();
-		// const char* cstr = res->getString().c_str();
-		// ^^^ Why doesn't this work? ^^^
-
-		std::string cpy(res->getString());
-		size_t strSize = cpy.length();
-		const char* cstr = cpy.c_str();
+		size_t strSize = res->getString().length();
+		const char* cstr = res->getString().c_str();
 
 		auto* file = new torasu::tstd::Dfile(strSize);
 

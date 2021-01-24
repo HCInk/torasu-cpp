@@ -17,6 +17,7 @@
 #include <torasu/std/Rmultiply.hpp>
 #include <torasu/std/Rsubtract.hpp>
 #include <torasu/std/Rstring.hpp>
+#include <torasu/std/Rstring_file.hpp>
 #include <torasu/std/Rjson_prop.hpp>
 #include <torasu/std/Rnet_file.hpp>
 #include <torasu/std/Dstring.hpp>
@@ -301,6 +302,25 @@ void renderLogExample() {
 
 }
 
+void jsonParseFromStrExample() {
+	cout << "//" << endl
+		 << "// Json Parse From String Example" << endl
+		 << "//" << endl;
+
+	Rstring str("{\"test\":\"value\"}");
+
+	Rstring_file sf(&str);
+
+	Rjson_prop prop("test", &sf);
+
+	torasu::tstd::LIcore_logger logger;
+	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
+	auto string = torasu::tstd::renderString(&prop, &li);
+
+	std::cout << "Res: " << string.getString() << std::endl;
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -330,6 +350,8 @@ int main(int argc, char** argv) {
 	logExample();
 
 	renderLogExample();
+
+	jsonParseFromStrExample();
 
 	// taskDistTest();
 
