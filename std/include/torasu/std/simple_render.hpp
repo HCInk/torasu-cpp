@@ -37,7 +37,7 @@ template<class T> struct SimpleResult {
 	}
 };
 
-template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr) {
+template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
 
 	// Creating instruction
 
@@ -47,8 +47,14 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 
 	// Create interface
 
-	EIcore_runner runner;
-	std::unique_ptr<torasu::ExecutionInterface> ei(runner.createInterface());
+
+	std::unique_ptr<EIcore_runner> defaultRunner;
+	std::unique_ptr<torasu::ExecutionInterface> defaultInterface;
+	if (ei == nullptr) {
+		defaultRunner = std::unique_ptr<EIcore_runner>(new EIcore_runner());
+		defaultInterface = std::unique_ptr<torasu::ExecutionInterface>(defaultRunner->createInterface());
+		ei = defaultInterface.get();
+	}
 
 	// Running render based on instruction
 
@@ -63,7 +69,7 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 		logInstr = LogInstruction(*li);
 	}
 
-	RenderResult* rr = rib.runRender(tree, &rctx, ei.get(), logInstr);
+	RenderResult* rr = rib.runRender(tree, &rctx, ei, logInstr);
 
 	// Finding results
 
@@ -71,9 +77,9 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 	return {std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getStatus(), found.getResult()};
 }
 
-template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr) {
+template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
 
-	auto srr = simpleRender<T>(tree, pl, format, li);
+	auto srr = simpleRender<T>(tree, pl, format, li, ei);
 
 	if (srr.result == nullptr)
 		throw std::runtime_error(std::string() + "No result was generated! (" + srr.getInfo() + ")");
@@ -85,13 +91,13 @@ template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::str
 	return srr;
 }
 
-inline torasu::tstd::Dnum renderNum(Renderable* tree, LogInstruction* li = nullptr) {
-	return *simpleRenderChecked<torasu::tstd::Dnum>(tree, TORASU_STD_PL_NUM, nullptr, li).result;
+inline torasu::tstd::Dnum renderNum(Renderable* tree, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
+	return *simpleRenderChecked<torasu::tstd::Dnum>(tree, TORASU_STD_PL_NUM, nullptr, li, ei).result;
 }
 
 
-inline torasu::tstd::Dstring renderString(Renderable* tree, LogInstruction* li = nullptr) {
-	return *simpleRenderChecked<torasu::tstd::Dstring>(tree, TORASU_STD_PL_STRING, nullptr, li).result;
+inline torasu::tstd::Dstring renderString(Renderable* tree, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
+	return *simpleRenderChecked<torasu::tstd::Dstring>(tree, TORASU_STD_PL_STRING, nullptr, li, ei).result;
 }
 
 } // namespace torasu::tstd
