@@ -6,6 +6,7 @@
 #include <torasu/std/Dstring.hpp>
 #include <torasu/std/Dfile.hpp>
 #include <torasu/std/Dnum.hpp>
+#include <torasu/std/Dstring_map.hpp>
 
 namespace {
 
@@ -39,6 +40,14 @@ inline std::string combine(std::vector<std::string> list, size_t begin, size_t e
 	return str;
 }
 
+inline std::string jsonToStr(const torasu::json& json) {
+	if (json.is_string()) {
+		return json;
+	} else {
+		return json.dump();
+	}
+}
+
 } // namespace
 
 namespace torasu::tstd {
@@ -53,7 +62,7 @@ Rjson_prop::~Rjson_prop() {}
 
 torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	std::string pipeline = resSettings->getPipeline();
-	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM) {
+	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM || pipeline == TORASU_STD_PL_MAP) {
 
 		auto* ei = ri->getExecutionInterface();
 		auto li = ri->getLogInstruction();
@@ -79,6 +88,9 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 		}
 
 		char* dataPtr = reinterpret_cast<char*>(srcJson->getFileData());
+
+		if (li.level <= torasu::LogLevel::DEBUG)
+			li.logger->log(torasu::LogLevel::DEBUG, "Parsing: " + std::string(dataPtr, srcJson->getFileSize()));
 
 		auto json = torasu::json::parse(std::string(dataPtr, srcJson->getFileSize()));
 
@@ -156,6 +168,24 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 				}
 			}
 			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dnum(json), true);
+		} else if (pipeline == TORASU_STD_PL_MAP) {
+			auto* res = new torasu::tstd::Dstring_map();
+
+			if (json.is_array()) {
+				size_t i = 0;
+				for (auto& item : json) {
+					res->set(std::to_string(i), jsonToStr(item));
+					i++;
+				}
+			} else if (json.is_object()) {
+				for (auto it = json.begin(); it!=json.end(); it++) {
+					res->set(it.key(), jsonToStr(*it));
+				}
+			} else {
+				res->set("0", jsonToStr(json));
+			}
+
+			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, res, true);
 		} else {
 			throw std::logic_error("Unexpected branching, this is a bug.");
 		}
