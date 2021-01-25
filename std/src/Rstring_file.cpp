@@ -47,6 +47,31 @@ torasu::ResultSegment* Rstring_file::renderSegment(torasu::ResultSegmentSettings
 		std::copy(cstr, cstr+strSize, data);
 
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, file, true);
+
+	} else if (pipeline == TORASU_STD_PL_STRING) {
+		auto* ei = ri->getExecutionInterface();
+		auto* rctx = ri->getRenderContext();
+		auto li = ri->getLogInstruction();
+
+		torasu::tools::RenderInstructionBuilder strRib;
+		auto strHandle = strRib.addSegmentWithHandle<torasu::tstd::Dfile>(TORASU_STD_PL_FILE, nullptr);
+
+		std::unique_ptr<RenderResult> rr(strRib.runRender(srcRnd.get(), rctx, ei, li));
+
+		auto* res = strHandle.getFrom(rr.get()).getResult();
+
+		if (res == nullptr) {
+			if (li.level <= torasu::LogLevel::ERROR)
+				li.logger->log(torasu::LogLevel::ERROR, "Failed to provide source for string-file.");
+
+			return new torasu::ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+		}
+
+		std::string str(reinterpret_cast<char*>(res->getFileData()), res->getFileSize());
+
+		auto* strd = new torasu::tstd::Dstring(str);
+
+		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, strd, true);
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}
