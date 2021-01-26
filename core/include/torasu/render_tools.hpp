@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <memory>
 #include <vector>
 #include <sstream>
 #include <stdexcept>
@@ -172,9 +173,10 @@ template<class T> inline T* getPropertyValue(RenderableProperties* props, std::s
 inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, LogInstruction li, RenderContext* rctx = nullptr) {
 	auto* rp = new RenderableProperties();
 
-	bool dummyRctx = rctx == nullptr;
-	if (dummyRctx) {
-		rctx = new RenderContext();
+	std::unique_ptr<RenderContext> dummyRctx;
+	if (rctx == nullptr) {
+		dummyRctx = std::unique_ptr<RenderContext>(new RenderContext());
+		rctx = dummyRctx.get();
 	}
 
 	ResultSettings rs;
@@ -186,10 +188,14 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 	}
 
 	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, li, 0);
-	RenderResult* result = ei->fetchRenderResult(rendId);
+	std::unique_ptr<RenderResult> result(ei->fetchRenderResult(rendId));
 
 	for (ResultSegmentSettings* segSettings : rs) {
 		delete segSettings;
+	}
+
+	if (result->getResults() == nullptr) {
+		throw std::runtime_error("Error when rendering properties: Renderable failed to return result-map!");
 	}
 
 	segmentKey = 0;
@@ -206,11 +212,6 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 		segmentKey++;
 	}
 
-	delete result;
-
-	if (dummyRctx) {
-		delete rctx;
-	}
 	return rp;
 }
 
