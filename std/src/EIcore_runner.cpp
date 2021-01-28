@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <sstream> //for std::stringstream 
+#include <stack> //for std::stack 
 
 using namespace std;
 
@@ -414,7 +415,7 @@ int32_t EIcore_runner::enqueue(EIcore_runner_object* obj) {
 	return 0; // TODO Placeholder
 }
 
-ExecutionInterface* EIcore_runner::createInterface(std::vector<int64_t>* prioStack) {
+EIcore_runner_object* EIcore_runner::createInterface(std::vector<int64_t>* prioStack) {
 	int64_t newInterfaceId = interfaceIdCounter;
 	interfaceIdCounter++;
 
@@ -823,6 +824,109 @@ void EIcore_runner_object::unlock(LockId lockId) {
 	if (runner->concurrentTree) {
 		elemHandler->unlock(lockId);
 	}
+}
+
+//
+// EIcore_runner_object public diagnositc-functions
+//
+
+namespace {
+
+std::string concatStrNTimes(std::string toRepeat, size_t n) {
+	std::string repeatedStr;
+	for (size_t i = 0; i < n; i++) {
+		repeatedStr += toRepeat;
+	}
+	return repeatedStr;
+}
+
+} // namespace
+
+void EIcore_runner_object::treestat(LogInstruction li, bool lock) {
+	// TODO Operations executed in-fetch are not displayed yet
+	bool doTreestatInfo = li.level <= torasu::INFO;
+	// bool doTreestatWarn = li.level <= torasu::WARN;
+
+	std::stack<std::stack<EIcore_runner_object*>> workingStack;
+	std::stack<std::unique_lock<std::mutex>> lockStack;
+
+	std::unique_lock<std::mutex> queueLck;
+	if (lock) {
+		queueLck = std::unique_lock<std::mutex>(runner->taskQueueLock);
+	}
+
+	std::stringstream ss;
+	ss << "Overview over task-tree:\n";
+
+	workingStack.emplace().push(this);
+
+	while (!workingStack.empty()) {
+		auto& currWs = workingStack.top();
+		if (currWs.empty()) {
+			workingStack.pop();
+			if (lockStack.size() > workingStack.size())
+				lockStack.pop();
+			continue;
+		}
+
+		EIcore_runner_object* currObj = currWs.top();
+		currWs.pop();
+
+		if (lock) std::unique_lock objLck(currObj->statusLock);
+
+		lockStack.emplace(currObj->subTasksLock);
+
+		std::string name = currObj->rnd != nullptr ? currObj->rnd->getType() : "(NULL)";
+		std::string stateStr;
+		switch(currObj->status) {
+		case torasu::tstd::EIcore_runner_object_status::RUNNING: {
+				stateStr = "RUNNING";
+				break;
+			}
+		case torasu::tstd::EIcore_runner_object_status::SUSPENDED: {
+				stateStr = "SUSPENDED";
+				break;
+			}
+		case torasu::tstd::EIcore_runner_object_status::PENDING: {
+				stateStr = "PENDING";
+				break;
+			}
+		case torasu::tstd::EIcore_runner_object_status::BLOCKED: {
+				stateStr = "BLOCKED";
+				break;
+			}
+		default: {
+				stateStr = "UNK:" + std::to_string(currObj->status);
+			}
+		}
+
+		std::string infoLine = concatStrNTimes(" ", workingStack.size()) + " - " + name + " [" + stateStr + "]";
+		ss << infoLine;
+
+		if (currObj->subTasks != nullptr) {
+			auto& subStack = workingStack.emplace();
+			for (auto* subTask : *currObj->subTasks) {
+				if (subTask != nullptr) subStack.push(subTask);
+			}
+			size_t total = currObj->subTaskSize;
+			size_t active = subStack.size();
+			if (total > 0) {
+				ss << " {SUB: " << active << " ACTIVE / " << total <<  " TOTAL}";
+			} else {
+				ss << " {SUB: Created, but empoty}";
+			}
+		}
+
+		ss << std::endl;
+
+	}
+
+	ss << "=== END OF TREESTAT ===";
+
+	if (doTreestatInfo) {
+		li.logger->log(INFO, ss.str());
+	}
+
 }
 
 //

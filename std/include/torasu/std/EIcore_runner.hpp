@@ -136,7 +136,7 @@ public:
 	explicit EIcore_runner(size_t maxRunning);
 	~EIcore_runner();
 
-	ExecutionInterface* createInterface(std::vector<int64_t>* prioStack=NULL);
+	EIcore_runner_object* createInterface(std::vector<int64_t>* prioStack=NULL);
 
 	friend class EIcore_runner_object;
 };
@@ -195,7 +195,6 @@ protected:
 	EIcore_runner_object(Renderable* rnd, EIcore_runner_object* parent, EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
 	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
 	void init();
-	virtual ~EIcore_runner_object();
 
 	RenderResult* run(std::function<void()>* outCleanupFunction);
 	RenderResult* fetchOwnRenderResult();
@@ -204,10 +203,14 @@ protected:
 	void setResultSettings(ResultSettings* rs);
 
 public:
+	virtual ~EIcore_runner_object();
+
 	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) override;
 	void fetchRenderResults(ResultPair* requests, size_t requestCount) override;
 	void lock(LockId lockId) override;
 	void unlock(LockId lockId) override;
+
+	void treestat(LogInstruction li, bool lock=true);
 
 	friend class EIcore_runner;
 	friend class EIcore_runner_object_logger;
