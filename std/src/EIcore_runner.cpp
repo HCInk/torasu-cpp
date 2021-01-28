@@ -456,7 +456,52 @@ EIcore_runner_object::EIcore_runner_object(EIcore_runner* runner, int64_t render
 }
 
 EIcore_runner_object::~EIcore_runner_object() {
-	if (subTasks != nullptr) delete subTasks;
+
+	if (subTasks != nullptr) {
+		bool log = li.level <= torasu::LogLevel::WARN;
+
+		size_t foundSubTasks = 0;
+		for (auto* subTask : *subTasks) {
+			if (subTask != nullptr) foundSubTasks++;
+		}
+
+		if (foundSubTasks > 0) {
+
+			if (log) li.logger->log(torasu::LogLevel::WARN, "Operation-exit, before all child-operation have been fetched! "
+										"(" + std::to_string(foundSubTasks) + " still in queue) - will clean them up...");
+
+			std::vector<EIcore_runner_object*> pendingSubTasks;
+			for (auto* subTask : *subTasks) {
+				if (subTask == nullptr) continue;
+				int64_t rid = subTask->renderId;
+				if (log) li.logger->log(torasu::LogLevel::WARN, " Cleaning up render of \"" + subTask->rnd->getType() + "\" (#" + std::to_string(rid) + ")...");
+				std::unique_lock taskQueueLock(runner->taskQueueLock);
+				std::unique_lock taskStatLock(subTask->statusLock);
+				if (subTask->status == PENDING) {
+					if (log) li.logger->log(torasu::LogLevel::WARN, " Freeing unstarted render of \"" + subTask->rnd->getType() + "\" (#" + std::to_string(rid) + ")...");
+					runner->taskQueue.erase(subTask);
+					taskQueueLock.unlock();
+					delete subTask;
+				} else {
+					pendingSubTasks.push_back(subTask);
+				}
+			}
+
+			for (auto* subTask : pendingSubTasks) {
+				int64_t rid = subTask->renderId;
+				if (log) li.logger->log(torasu::LogLevel::WARN, " Wating for uncompleted render of \"" + subTask->rnd->getType() + "\" (#" + std::to_string(rid) + ") to finish...");
+				RenderResult* rr = fetchRenderResult(rid);
+				delete rr;
+			}
+
+			if (log) li.logger->log(torasu::LogLevel::WARN, " Finished ending sub-operations - continue operation-exit.");
+
+		}
+
+		delete subTasks;
+
+	}
+
 	if (resultCv != nullptr) delete resultCv;
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
@@ -494,19 +539,21 @@ inline void EIcore_runner_object::unsuspend() {
 		throw std::logic_error("unsuspend() can only be called in state "
 							   + std::to_string(BLOCKED) + " (BLOCKED), but it was called in " + std::to_string(status));
 #endif
-	std::unique_lock threadLock(runner->threadMgmtLock);
-	if (runner->threadCountRunning < runner->threadCountMax) {
-		status = RUNNING;
-		runner->registerRunning();
-		return;
-	}
-	threadLock.unlock();
+
 	status = SUSPENDED;
 
 #if RUNNER_FULL_WAITS
 	lockedStatus.unlock();
 #endif
 	while (status == SUSPENDED) {
+		if (runner->threadCountRunning < runner->threadCountMax) {
+			std::unique_lock threadLock(runner->threadMgmtLock);
+			if (status == SUSPENDED && runner->threadCountRunning < runner->threadCountMax) {
+				status = RUNNING;
+				runner->registerRunning();
+				return;
+			}
+		}
 #if !RUNNER_FULL_WAITS
 		unsuspendCv.wait_for(lockedStatus, std::chrono::milliseconds(1));
 		// std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -704,7 +751,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 				fs.result = &requests[reqi].result;
 
 				if (task->status == PENDING) {
-					std::unique_lock statLock(task->statusLock);
+					std::unique_lock statLock(task->statusLock); // XXX This should be locked after queue
 					if (task->status == PENDING) {
 
 						// Run task if pending
@@ -1075,7 +1122,7 @@ void EIcore_runner::dbg_registerRunning(std::thread::id tid, EIcore_runner_dbg::
 			throw std::logic_error("Sanity-Check: Trying to register a thread, even if the maximum ammount of threads are already running!");
 		}
 
-		threadCountRunning++;
+		threadCountRunning = threadCountRunning + 1;
 	}
 }
 
@@ -1151,7 +1198,7 @@ void EIcore_runner::dbg_unregisterRunning(EIcore_runner_dbg::RegisterReason reas
 		}
 
 		if (doRun) threadSuspensionCv.notify_one();
-		threadCountRunning--;
+		threadCountRunning = threadCountRunning - 1;
 	}
 
 }

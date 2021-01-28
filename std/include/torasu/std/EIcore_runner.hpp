@@ -59,7 +59,7 @@ protected:
 	// Thread-management (locked via threadMgmtLock)
 	std::mutex threadMgmtLock;
 	volatile bool doRun = true;
-	int64_t threadCountRunning = 0; // The count of the threads, which are currently effectively running - without guest-threads
+	volatile int64_t threadCountRunning = 0; // The count of the threads, which are currently effectively running - without guest-threads
 	std::condition_variable threadSuspensionCv; // notify-one once another thread will be freed
 	size_t threadCountSuspended = 0; // The count of threads that are currently waiting to be reactivated
 	int64_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
