@@ -939,7 +939,7 @@ EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* o
 EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 	if (registered) {
 		auto* uregEntry =
-			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
+			new LogEntry(torasu::LogType::LT_GROUP_END);
 		uregEntry->groupStack.push_back(ownLogId);
 		logger->log(uregEntry, false);
 	}
@@ -950,7 +950,7 @@ torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
 	if (!registered) {
 		ownLogId = logger->fetchSubId();
 		auto* regEntry =
-			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
+			new LogGroupStart(obj->rnd->getType());
 		regEntry->groupStack.push_back(ownLogId);
 		logger->log(regEntry, false);
 		registered = true;

@@ -2,10 +2,16 @@
 
 namespace torasu::tstd {
 
-Rlog_message::Rlog_message(LogEntry message, torasu::tools::RenderableSlot src)
+Rlog_message::Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src)
 	: NamedIdentElement("STD::RLOG_MESSAGE"),
 	  SimpleDataElement(true, true),
 	  message(message),
+	  srcRnd(src) {}
+
+Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src)
+	: NamedIdentElement("STD::RLOG_MESSAGE"),
+	  SimpleDataElement(true, true),
+	  message(level, message),
 	  srcRnd(src) {}
 
 Rlog_message::~Rlog_message() {}
@@ -15,7 +21,7 @@ RenderResult* Rlog_message::render(RenderInstruction* ri) {
 	auto li = ri->getLogInstruction();
 
 	if (li.level <= message.level) {
-		li.logger->log(message);
+		li.logger->log(new LogMessage(message));
 	}
 
 	auto ei = ri->getExecutionInterface();

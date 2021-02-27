@@ -46,6 +46,10 @@ torasu::LogType typeFromStr(std::string typeStr) {
 		return torasu::LogType::LT_GROUP_START;
 	} else if (typeStr == "GEND") {
 		return torasu::LogType::LT_GROUP_END;
+	} else if (typeStr == "GUNREF") {
+		return torasu::LogType::LT_GROUP_UNREF;
+	} else if (typeStr == "GPERS") {
+		return torasu::LogType::LT_GROUP_PERSIST;
 	} else {
 		return torasu::LogType::LT_UNKNOWN;
 	}
@@ -59,6 +63,10 @@ const char* typeToStr(torasu::LogType type) {
 		return "GSTART";
 	case torasu::LogType::LT_GROUP_END:
 		return "GEND";
+	case torasu::LogType::LT_GROUP_UNREF:
+		return "GUNREF";
+	case torasu::LogType::LT_GROUP_PERSIST:
+		return "GPERS";
 	default:
 		return "UNK";
 	}
@@ -105,23 +113,43 @@ void Dlog_entry::load() {
 		type = LT_UNKNOWN;
 	}
 
-	std::string txt;
-	auto txtj = json["txt"];
-	if (txtj.is_string()) {
-		txt = txtj;
-	} else {
-		txt = "";
-	}
+	switch (type) {
+	case LT_MESSAGE: {
+			std::string txt;
+			auto txtj = json["txt"];
+			if (txtj.is_string()) {
+				txt = txtj;
+			} else {
+				txt = "";
+			}
 
-	LogLevel lvl;
-	auto lvlj = json["lvl"];
-	if (lvlj.is_string()) {
-		lvl = lvlFromStr(lvlj);
-	} else {
-		lvl = torasu::LogLevel::LEVEL_UNKNOWN;
-	}
+			LogLevel lvl;
+			auto lvlj = json["lvl"];
+			if (lvlj.is_string()) {
+				lvl = lvlFromStr(lvlj);
+			} else {
+				lvl = torasu::LogLevel::LEVEL_UNKNOWN;
+			}
 
-	entry = new LogEntry(type, lvl, txt);
+			entry = new LogMessage(lvl, txt);
+			break;
+		}
+	case LT_GROUP_START: {
+			std::string name;
+			auto namej = json["name"];
+			if (namej.is_string()) {
+				name = namej;
+			} else {
+				name = "";
+			}
+
+			entry = new LogGroupStart(name);
+			break;
+		}
+	default:
+		entry = new LogEntry(type);
+		break;
+	}
 
 }
 
@@ -130,11 +158,21 @@ torasu::json Dlog_entry::makeJson() {
 
 	json["t"] = typeToStr(entry->type);
 
-	if (!entry->text.empty())
-		json["txt"] = entry->text;
-
-	if (entry->type == torasu::LogType::LT_MESSAGE)
-		json["lvl"] = lvlToStr(entry->level);
+	switch (entry->type) {
+	case LT_MESSAGE: {
+			LogMessage* msg = static_cast<LogMessage*>(entry);
+			json["txt"] = msg->text;
+			json["lvl"] = lvlToStr(msg->level);
+			break;
+		}
+	case LT_GROUP_START: {
+			LogGroupStart* start = static_cast<LogGroupStart*>(entry);
+			json["name"] = start->name;
+			break;
+		}
+	default:
+		break;
+	}
 
 	return json;
 }

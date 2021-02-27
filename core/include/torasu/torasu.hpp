@@ -82,12 +82,21 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 //
 
 enum LogType {
-	/** @brief This log-entry is a normal message */
+	/** @brief This log-entry is a normal message
+	 *  @note Indicates that object is of type torasu::LogMessage - usage without being of that type will lead to undefined behavior */
 	LT_MESSAGE = 0,
-	/** @brief This log-entry indicates a new log-group */
+	/** @brief This log-entry indicates a new log-group (beginning now log entries can be expected from the group)
+	 * @note Indicates that object is of type torasu::LogGroupStart - usage without being of that type will lead to undefined behavior */
 	LT_GROUP_START = 10,
-	/** @brief This log-entry indicates the end of a log-group-report */
+	/** @brief This log-entry indicates the end of a log-group-report (no more new entries from that group will be spawned from now on) */
 	LT_GROUP_END = 11,
+	/** @brief Will notify that all log messages below will nologer be referenced
+	* - except log messages inside groups, which have been called LT_GROUP_PERSIST
+	* - those have to explicity called with this (LT_GROUP_UNREF) to be dereferenced */
+	LT_GROUP_UNREF = 12,
+	/** @brief Will mark that group-contents shall be persisted, even if an above group gets LT_GROUP_UNREF.
+	 * To dereference LT_GROUP_UNREF has to be called explicity on the group */
+	LT_GROUP_PERSIST = 13,
 	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
@@ -116,25 +125,45 @@ enum LogLevel {
 class Dlog_entry;
 
 /**
- * @brief  Entry/Message to be logged
+ * @brief  Entry to be logged
  */
 class LogEntry {
 public:
 	const LogType type;
-	const LogLevel level;
-	const std::string text;
 	/** @brief  Grouping-stack, from source to root
 	 * @note Used for log-grouping, don't touch if you dont know what you are doing
 	 * - usually only touched by logging-interfaces */
 	std::vector<LogId> groupStack;
 
-	LogEntry(LogType type, LogLevel level, std::string text)
-		: type(type), level(level), text(text) {}
+	explicit LogEntry(LogType type)
+		: type(type) {}
 
-	LogEntry(LogLevel level, std::string message)
-		: type(LogType::LT_MESSAGE), level(level), text(message) {}
+	virtual Dlog_entry* makePack();
 
-	Dlog_entry* makePack();
+	virtual ~LogEntry() {}
+};
+
+/**
+ * @brief  Message to be logged
+ */
+class LogGroupStart : public LogEntry {
+public:
+	const std::string name;
+
+	explicit LogGroupStart(std::string name)
+		: LogEntry(LogType::LT_GROUP_START), name(name) {}
+};
+
+/**
+ * @brief  Message to be logged
+ */
+class LogMessage : public LogEntry {
+public:
+	const LogLevel level;
+	const std::string text;
+
+	LogMessage(LogLevel level, std::string message)
+		: LogEntry(LogType::LT_MESSAGE), level(level), text(message) {}
 };
 
 class LogInterface {
@@ -145,17 +174,7 @@ public:
 	 * @param  msg The message of the entry
 	 */
 	inline void log(LogLevel level, std::string msg, bool tag=false) {
-		log(new LogEntry(level, msg), tag);
-	}
-
-	/**
-	 * @brief  Logs an entry to the logging system
-	 * @param  entry: The entry to be logged
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
-	 */
-	inline LogId log(LogEntry entry, bool tag=false) {
-		return log(new LogEntry(entry), tag);
+		log(new LogMessage(level, msg), tag);
 	}
 
 	/**
@@ -164,7 +183,7 @@ public:
 	 * @param  tag: Weather the log should be tagged
 	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
-	virtual LogId log(LogEntry* entry, bool tag) = 0;
+	virtual LogId log(LogEntry* entry, bool tag = false) = 0;
 
 	/**
 	 * @brief  Generates a new Subgroup-ID

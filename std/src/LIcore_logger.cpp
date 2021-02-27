@@ -80,9 +80,10 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 
 	switch (entry->type) {
 	case LT_GROUP_START: {
+			auto* startEntry = static_cast<LogGroupStart*>(entry);
 			if (useAnsi) message += ANSI_GRAY;
-			message += "====  " + groupStackToStr(entry->groupStack) + " * " + entry->text;
-			logstore.create(entry->groupStack, entry->text);
+			message += "====  " + groupStackToStr(entry->groupStack) + " * " + startEntry->name;
+			logstore.create(entry->groupStack, startEntry->name);
 		}
 		break;
 
@@ -99,8 +100,9 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 			// Prefix
 
 			if (entry->type == LT_MESSAGE) {
-				if (useAnsi) message += getLvlAnsi(entry->level);
-				message += getLvLName(entry->level);
+				auto* msgEntry = static_cast<LogMessage*>(entry);
+				if (useAnsi) message += getLvlAnsi(msgEntry->level);
+				message += getLvLName(msgEntry->level);
 			} else {
 				if (useAnsi) message += ANSI_CYAN;
 				message += "DATA ";
@@ -130,9 +132,9 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 			// Message
 
 			if (entry->type == LT_MESSAGE) {
-				message += entry->text;
+				message += static_cast<LogMessage*>(entry)->text;
 			} else {
-				message += "[DataPacket-" + std::to_string(entry->type) + "] TXT: \"" + entry->text + "\"";
+				message += "[DataPacket-" + std::to_string(entry->type) + "]";
 			}
 
 
