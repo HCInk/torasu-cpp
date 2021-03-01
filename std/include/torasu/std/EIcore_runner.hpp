@@ -233,6 +233,7 @@ protected:
 public:
 	torasu::LogId log(LogEntry* entry, bool tag) override;
 	torasu::LogId fetchSubId() override;
+	std::vector<LogId>* pathFromParent(LogInterface* parent) const override;
 
 	friend class EIcore_runner_object;
 };

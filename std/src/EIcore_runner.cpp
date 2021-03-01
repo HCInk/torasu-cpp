@@ -972,6 +972,20 @@ torasu::LogId EIcore_runner_object_logger::fetchSubId() {
 
 }
 
+std::vector<LogId>* EIcore_runner_object_logger::pathFromParent(LogInterface* parent) const {
+	if (parent == this) return new std::vector<LogId>(); // Found: parent is this
+
+	if (!registered) return nullptr; // No-path: Path can't be generated to parent since this has no ID
+
+	std::vector<LogId>* path = logger->pathFromParent(parent);
+
+	if (path == nullptr) return nullptr; // Not found / No path
+
+	path->push_back(ownLogId);
+
+	return path; // Found path
+}
+
 //
 // EIcore_runner_object_cmp
 //

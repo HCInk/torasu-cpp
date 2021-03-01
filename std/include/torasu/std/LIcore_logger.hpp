@@ -93,6 +93,7 @@ public:
 	explicit LIcore_logger(bool useAnsi);
 	LogId log(LogEntry* entry, bool tag) override;
 	LogId fetchSubId() override;
+	std::vector<LogId>* pathFromParent(LogInterface* parent) const override;
 };
 
 } // namespace torasu::tstd

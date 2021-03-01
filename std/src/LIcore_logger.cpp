@@ -166,6 +166,11 @@ torasu::LogId LIcore_logger::fetchSubId() {
 
 }
 
+std::vector<LogId>* LIcore_logger::pathFromParent	(LogInterface* parent) const {
+	if (parent == this) return new std::vector<LogId>(); // Found: parent is this
+	else return nullptr; // Not found
+}
+
 torasu::tstd::LIcore_logger_logstore::LIcore_logger_logstore() {}
 torasu::tstd::LIcore_logger_logstore::~LIcore_logger_logstore() {}
 

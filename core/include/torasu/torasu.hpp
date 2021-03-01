@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <memory>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -28,6 +29,10 @@
 int TORASU_check_core();
 
 namespace torasu {
+
+// HELPER (MSIC)
+
+typedef std::function<void(void)> Callback;
 
 // LOGGING
 typedef size_t LogId;
@@ -63,6 +68,7 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM (RENDER)
 class RenderResult;
 class ResultSegment;
+class ResultInfoRef;
 
 // HELPER (READY)
 typedef uint64_t ReadyObject;
@@ -190,6 +196,15 @@ public:
 	 * @retval Id of Subgroup
 	 */
 	virtual LogId fetchSubId() = 0;
+
+	/**
+	 * @brief  Generates path from parent-log-interface to current
+	 * @return relative path of log-ids from given parent to this interface
+	 * 	(NOTE: Please be aware this in reverse compared to the usual notation)
+	 * 	- Will return nullptr, when parent could not be found 
+	 * 		  or the interface has no id, so no path even exists (often when there were no messages sent) 
+	 */
+	virtual std::vector<LogId>* pathFromParent(LogInterface* parent) const = 0;
 
 	virtual ~LogInterface() {}
 };
@@ -508,6 +523,28 @@ public:
 // Upstream (RENDER)
 //
 
+class ResultInfoRef {
+public:
+	/** @brief  Group containing information about generation of the result */
+	std::vector<LogId>*const groupRef;
+	/** @brief  References to causes (relative to group) */
+	const std::vector<std::vector<LogId>>*const causeRefs;
+
+	explicit ResultInfoRef(std::vector<LogId>* groupRef) 
+		: groupRef(groupRef), causeRefs(new std::vector<std::vector<LogId>>()) {}
+
+	explicit ResultInfoRef(const std::vector<std::vector<LogId>>* causeRefs) 
+		: groupRef(new std::vector<LogId>()), causeRefs(causeRefs) {}
+
+	ResultInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs) 
+		: groupRef(groupRef), causeRefs(causeRefs) {}
+
+	~ResultInfoRef() {
+		delete groupRef;
+		delete causeRefs;
+	}
+};
+
 enum ResultStatus {
 	/** @brief Request wasnt processed at all because it was received as malformed */
 	ResultStatus_MALFORMED = -3,
@@ -557,27 +594,31 @@ class ResultSegment {
 private:
 	ResultSegmentStatus status;
 	DataResourceHolder result;
+	ResultInfoRef* rir;
 
 public:
-
 	/**
 	 * @brief  Creates a ResultSegment (only status, without content)
 	 * @note  This constructor should only be used if a result wasn't generated
 	 * @param  status: Calculation-status of the segment
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	explicit inline ResultSegment(ResultSegmentStatus status)
-		: status(status), result() {}
+	explicit inline ResultSegment(ResultSegmentStatus status, ResultInfoRef* rir = nullptr)
+		: status(status), result(), rir(rir) {}
 
 	/**
 	 * @brief  Creates a ResultSegment
 	 * @param  status: Calculation-status of the segment
 	 * @param  result: The result of the calculation of the segment
 	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult)
-		: status(status), result(result, freeResult) {}
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, ResultInfoRef* rir = nullptr)
+		: status(status), result(result, freeResult), rir(rir) {}
 
-	~ResultSegment() {}
+	~ResultSegment() {
+		if (rir != nullptr) delete rir;
+	}
 
 	inline ResultSegmentStatus const getStatus() {
 		return status;
@@ -585,6 +626,10 @@ public:
 
 	inline DataResource* const getResult() {
 		return result.get();
+	}
+
+	inline ResultInfoRef* getResultInfoRef() {
+		return rir;
 	}
 
 	inline bool const canFreeResult() {
@@ -599,17 +644,43 @@ public:
 	inline DataResource* const ejectResult() {
 		return result.eject();
 	}
-
+	friend RenderResult;
 };
+
+// enum RIRefCall {
+// 	/** @brief  Signalizes that the logging messages (referenced in the contained segments) 
+// 	 * 			will nolonger be referenced in other entries (sent after the call) */
+// 	RIR_UNREF = 0,
+// 	/** @brief  Signalises that the logging messages (referenced in the contained segments)
+// 	 *			will continue to stay relevant */
+// 	RIR_PERSIST = 1
+// };
+
+// typedef std::function<void(RIRefCall)> RIRefCallback;
 
 class RenderResult {
 private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
+	Callback* refCloseFunc = nullptr;
+	/** @brief  The LogInterface the groups referenced are relative to 
+	 * @note 	This points to the LogInterface the render-task has been run with.
+	 * 			It may nolonger be be valid depending on how the LogInterface is handled */
+	LogInterface* li = nullptr;
+
 public:
+	/**
+	 * @brief  Creates a RenderResult, while contains the results of a render-operation
+	 * @param  status: Status of the whole render-operation (also see status of segments)
+	 */
 	explicit inline RenderResult(ResultStatus status)
 		: status(status), results(nullptr) {}
 
+	/**
+	 * @brief  Creates a RenderResult, while contains the results of a render-operation
+	 * @param  status: Status of the whole render-operation (also see status of segments)
+	 * @param  results: Different results for render-segments
+	 */
 	inline RenderResult(ResultStatus status, std::map<std::string, ResultSegment*>* results)
 		: status(status), results(results) {}
 
@@ -620,6 +691,7 @@ public:
 			}
 			delete results;
 		}
+		closeRefs();
 	}
 
 	inline ResultStatus const getStatus() {
@@ -628,6 +700,72 @@ public:
 
 	inline std::map<std::string, ResultSegment*>* const getResults() {
 		return results;
+	}
+
+	inline LogInterface* const getLogInterface() {
+		return li;
+	}
+
+	/** @brief  Closes all log-refs in contained segments, the LogInterface can then be freed after calling this
+	 * @note This will also be called on ~RenderResult, so only call this when the LogInterace the render-operation is executed with 
+	 * 		shall be cleaned up earlier then the RenderResult */
+	inline void closeRefs() {
+		if (refCloseFunc == nullptr) return;
+		(*refCloseFunc)();
+		refCloseFunc = nullptr;
+	}
+
+	/**
+	 * @brief  Updates relative references in log-interface
+	 * @param  liNew: The new LogInterface to be set
+	 * @param  refCloseFuncNew: The new close-callback
+	 */
+	inline void reRefResult(LogInterface* liNew, Callback* refCloseFuncNew = nullptr) {
+		if (li != nullptr) {
+			std::unique_ptr<std::vector<LogId>> path(li->pathFromParent(liNew));
+			reRefResult(liNew, path.get(), refCloseFuncNew);
+
+			// Sanity-checking
+			if (path == nullptr) {
+				
+				for (auto result : *results) {
+					if (result.second->getResultInfoRef() != nullptr) 
+						throw std::logic_error("Result-segment contains info-refs even though the path is not established!"
+							" (Hint: ResultInfoRefs may only be set if there have been messages sent"
+							" - Hint: May also be caused by an invalid new LogInterface, which is not parent of the current)");
+				}
+
+			}
+
+		} else {
+			reRefResult(liNew, nullptr, refCloseFuncNew);
+		}
+
+	}
+
+	/**
+	 * @brief  Updates relative references in log-interface
+	 * @param  liNew: The new LogInterface to be set
+	 * @param  path: Path from new to old interface
+	 * @param  refCloseFuncNew: The new close-callback
+	 */
+	inline void reRefResult(LogInterface* liNew, std::vector<LogId>* path, Callback* refCloseFuncNew = nullptr) {
+		if (path != nullptr) {	
+			for (auto result : *results) {
+				auto*& rir = result.second->rir;
+				if (rir == nullptr) rir = new ResultInfoRef(new std::vector<LogId>());
+				LogId* pathIt = path->data() + path->size() - 1;
+				for (size_t i = path->size() - 1; i >= 0; i--) {
+					rir->groupRef->push_back(*pathIt);
+					pathIt--;
+				}
+			}
+		}
+
+		li = liNew;
+		if (refCloseFunc != nullptr) (*refCloseFunc)();
+		refCloseFunc = refCloseFuncNew;
+
 	}
 };
 
