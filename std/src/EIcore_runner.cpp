@@ -9,6 +9,9 @@
 
 using namespace std;
 
+// Intercepts own log-group for every sub-task
+#define INTERCEPT_LOGGER true
+
 #define CHECK_STATE_ERRORS true
 #define CHECK_REGISTRATION_ERRORS true
 #define LOG_REGISTRATIONS_RUNNER false
@@ -436,10 +439,12 @@ EIcore_runner_object* EIcore_runner::createInterface(std::vector<int64_t>* prioS
 //
 
 inline void EIcore_runner_object::init() {
+#if INTERCEPT_LOGGER
 	if (li.logger != nullptr) {
 		// Add interception-logger
 		li.logger = new EIcore_runner_object_logger(this, li.logger);
 	}
+#endif
 }
 
 // Subtask Constructor
@@ -506,7 +511,9 @@ EIcore_runner_object::~EIcore_runner_object() {
 	if (resultCv != nullptr) delete resultCv;
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
+#if INTERCEPT_LOGGER
 	if (li.logger != nullptr) delete li.logger; // Delete interception-logger
+#endif
 }
 
 // EIcore_runner_object: Suspension Functions
@@ -624,6 +631,25 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 	};
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
+
+	{
+		auto* logger = static_cast<EIcore_runner_object_logger*>(li.logger);
+		if (logger->registered) {
+			auto* parentLogger = logger->logger;
+			LogId logId = logger->ownLogId;
+			// std::cout << "REREF..." << std::endl;
+			std::vector<LogId> path({logId});
+			res->reRefResult(parentLogger, &path,
+			new Callback([parentLogger, logId] {
+				// std::cout << "UNREF..." << std::endl;
+				auto* unref = new torasu::LogEntry(LogType::LT_GROUP_UNREF);
+				unref->groupStack.push_back(logId);
+				parentLogger->log(unref);
+			})
+							);
+		}
+
+	}
 
 	return res;
 }

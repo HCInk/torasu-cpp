@@ -201,8 +201,8 @@ public:
 	 * @brief  Generates path from parent-log-interface to current
 	 * @return relative path of log-ids from given parent to this interface
 	 * 	(NOTE: Please be aware this in reverse compared to the usual notation)
-	 * 	- Will return nullptr, when parent could not be found 
-	 * 		  or the interface has no id, so no path even exists (often when there were no messages sent) 
+	 * 	- Will return nullptr, when parent could not be found
+	 * 		  or the interface has no id, so no path even exists (often when there were no messages sent)
 	 */
 	virtual std::vector<LogId>* pathFromParent(LogInterface* parent) const = 0;
 
@@ -526,17 +526,17 @@ public:
 class ResultInfoRef {
 public:
 	/** @brief  Group containing information about generation of the result */
-	std::vector<LogId>*const groupRef;
+	std::vector<LogId>* const groupRef;
 	/** @brief  References to causes (relative to group) */
-	const std::vector<std::vector<LogId>>*const causeRefs;
+	const std::vector<std::vector<LogId>>* const causeRefs;
 
-	explicit ResultInfoRef(std::vector<LogId>* groupRef) 
+	explicit ResultInfoRef(std::vector<LogId>* groupRef)
 		: groupRef(groupRef), causeRefs(new std::vector<std::vector<LogId>>()) {}
 
-	explicit ResultInfoRef(const std::vector<std::vector<LogId>>* causeRefs) 
+	explicit ResultInfoRef(const std::vector<std::vector<LogId>>* causeRefs)
 		: groupRef(new std::vector<LogId>()), causeRefs(causeRefs) {}
 
-	ResultInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs) 
+	ResultInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs)
 		: groupRef(groupRef), causeRefs(causeRefs) {}
 
 	~ResultInfoRef() {
@@ -648,7 +648,7 @@ public:
 };
 
 // enum RIRefCall {
-// 	/** @brief  Signalizes that the logging messages (referenced in the contained segments) 
+// 	/** @brief  Signalizes that the logging messages (referenced in the contained segments)
 // 	 * 			will nolonger be referenced in other entries (sent after the call) */
 // 	RIR_UNREF = 0,
 // 	/** @brief  Signalises that the logging messages (referenced in the contained segments)
@@ -662,8 +662,11 @@ class RenderResult {
 private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
+	/** @brief  Will be called, when destructed,
+	 * 	@note	May be overriden by a cleanup-callback which includes the cleanup
+	 * 			of a group containing the previous group */
 	Callback* refCloseFunc = nullptr;
-	/** @brief  The LogInterface the groups referenced are relative to 
+	/** @brief  The LogInterface the groups referenced are relative to
 	 * @note 	This points to the LogInterface the render-task has been run with.
 	 * 			It may nolonger be be valid depending on how the LogInterface is handled */
 	LogInterface* li = nullptr;
@@ -707,11 +710,12 @@ public:
 	}
 
 	/** @brief  Closes all log-refs in contained segments, the LogInterface can then be freed after calling this
-	 * @note This will also be called on ~RenderResult, so only call this when the LogInterace the render-operation is executed with 
+	 * @note This will also be called on ~RenderResult, so only call this when the LogInterace the render-operation is executed with
 	 * 		shall be cleaned up earlier then the RenderResult */
 	inline void closeRefs() {
 		if (refCloseFunc == nullptr) return;
 		(*refCloseFunc)();
+		delete refCloseFunc;
 		refCloseFunc = nullptr;
 	}
 
@@ -723,16 +727,16 @@ public:
 	inline void reRefResult(LogInterface* liNew, Callback* refCloseFuncNew = nullptr) {
 		if (li != nullptr) {
 			std::unique_ptr<std::vector<LogId>> path(li->pathFromParent(liNew));
-			reRefResult(liNew, path.get(), refCloseFuncNew);
+			reRefResult(liNew, const_cast<const std::vector<LogId>*>(path.get()), refCloseFuncNew);
 
 			// Sanity-checking
 			if (path == nullptr) {
-				
+
 				for (auto result : *results) {
-					if (result.second->getResultInfoRef() != nullptr) 
+					if (result.second->getResultInfoRef() != nullptr)
 						throw std::logic_error("Result-segment contains info-refs even though the path is not established!"
-							" (Hint: ResultInfoRefs may only be set if there have been messages sent"
-							" - Hint: May also be caused by an invalid new LogInterface, which is not parent of the current)");
+											   " (Hint: ResultInfoRefs may only be set if there have been messages sent"
+											   " - Hint: May also be caused by an invalid new LogInterface, which is not parent of the current)");
 				}
 
 			}
@@ -749,13 +753,13 @@ public:
 	 * @param  path: Path from new to old interface
 	 * @param  refCloseFuncNew: The new close-callback
 	 */
-	inline void reRefResult(LogInterface* liNew, std::vector<LogId>* path, Callback* refCloseFuncNew = nullptr) {
-		if (path != nullptr) {	
+	inline void reRefResult(LogInterface* liNew, const std::vector<LogId>* path, Callback* refCloseFuncNew = nullptr) {
+		if (path != nullptr) {
 			for (auto result : *results) {
 				auto*& rir = result.second->rir;
 				if (rir == nullptr) rir = new ResultInfoRef(new std::vector<LogId>());
-				LogId* pathIt = path->data() + path->size() - 1;
-				for (size_t i = path->size() - 1; i >= 0; i--) {
+				const LogId* pathIt = path->data() + path->size() - 1;
+				for (size_t i = path->size(); i > 0; i--) {
 					rir->groupRef->push_back(*pathIt);
 					pathIt--;
 				}
@@ -763,7 +767,7 @@ public:
 		}
 
 		li = liNew;
-		if (refCloseFunc != nullptr) (*refCloseFunc)();
+		if (refCloseFunc != nullptr) delete refCloseFunc;
 		refCloseFunc = refCloseFuncNew;
 
 	}

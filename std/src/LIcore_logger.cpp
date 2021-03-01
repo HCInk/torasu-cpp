@@ -86,8 +86,9 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 			logstore.create(entry->groupStack, startEntry->name);
 		}
 		break;
-
-	case LT_GROUP_END: {
+	case LT_GROUP_END:
+		break;
+	case LT_GROUP_UNREF: {
 			// message += "(FREE)" + groupStackToStr(entry->groupStack) + " * " + entry->text;
 			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
 			auto found = resolveStack->top();
