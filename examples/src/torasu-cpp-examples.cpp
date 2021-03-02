@@ -28,6 +28,7 @@
 #include <torasu/std/Rfallback.hpp>
 #include <torasu/std/simple_render.hpp>
 #include <torasu/std/Rlog_message.hpp>
+#include <torasu/std/Rerror.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -321,6 +322,24 @@ void jsonParseFromStrExample() {
 
 }
 
+void renderErrorExample() {
+
+	cout << "//" << endl
+		 << "// Render Error Example" << endl
+		 << "//" << endl;
+
+	Rerror err("Example error");
+
+	Rmultiply mul(20, &err);
+
+	torasu::tstd::LIcore_logger logger;
+	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
+	auto num = torasu::tstd::renderNum(&mul, &li);
+
+	std::cout << "Res: " << num.getNum() << std::endl;
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -352,6 +371,8 @@ int main(int argc, char** argv) {
 	renderLogExample();
 
 	jsonParseFromStrExample();
+
+	renderErrorExample();
 
 	// taskDistTest();
 
