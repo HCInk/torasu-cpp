@@ -967,26 +967,24 @@ EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 		auto* uregEntry =
 			new LogEntry(torasu::LogType::LT_GROUP_END);
 		uregEntry->groupStack.push_back(ownLogId);
-		logger->log(uregEntry, false);
+		logger->log(uregEntry);
 	}
 }
 
-torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
+void EIcore_runner_object_logger::log(LogEntry* entry) {
 
 	if (!registered) {
 		ownLogId = logger->fetchSubId();
 		auto* regEntry =
 			new LogGroupStart(obj->rnd->getType());
 		regEntry->groupStack.push_back(ownLogId);
-		logger->log(regEntry, false);
+		logger->log(regEntry);
 		registered = true;
 	}
 
 	entry->groupStack.push_back(ownLogId);
 
-	logger->log(entry, false);
-
-	return 0;
+	logger->log(entry);
 }
 
 torasu::LogId EIcore_runner_object_logger::fetchSubId() {

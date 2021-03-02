@@ -16,6 +16,8 @@ public:
 	struct StoreGroup {
 		/** @brief All sub-groups referemced under thier IDs */
 		std::map<torasu::LogId, StoreGroup*> sub;
+		/** @brief All tagged logs referemced under thier IDs */
+		std::map<torasu::LogId, LogEntry*> tagged;
 		/** @brief Which entries to be cleaned up on removal of that entry */
 		std::set<StoreGroup*> cleanupList;
 		/** @brief Reference to group, which owns it (has this element in thier cleanupList) */
@@ -53,10 +55,11 @@ public:
 
 	/** @brief  Get pointers to Groups from LogId-path
 	 * @param  path: The LogId path
+	 * @param  tag: Will be set to true if object is found to be a tag, if this is set to nullptr only groups will be accepted
 	 * @param  pathDepth: Depth of path to read, 0 means whole path
 	 * @retval The stack of the resolved groups (Stack has to be freed by caller, contents are managed)
 	 */
-	std::stack<StoreGroup*>* resolve(const std::vector<LogId>& path, size_t pathDepth = 0);
+	std::stack<StoreGroup*>* resolve(const std::vector<LogId>& path, bool* tag = nullptr, size_t pathDepth = 0);
 
 	/**
 	 * @brief  Create LogGroup at given path
@@ -91,7 +94,7 @@ private:
 public:
 	LIcore_logger();
 	explicit LIcore_logger(bool useAnsi);
-	LogId log(LogEntry* entry, bool tag) override;
+	void log(LogEntry* entry) override;
 	LogId fetchSubId() override;
 	std::vector<LogId>* pathFromParent(LogInterface* parent) const override;
 };

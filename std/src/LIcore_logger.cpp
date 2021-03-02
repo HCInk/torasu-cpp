@@ -52,13 +52,17 @@ const char* getLvlAnsi(torasu::LogLevel lvl) {
 	}
 }
 
-static std::string groupStackToStr(std::vector<torasu::LogId> groupStack) {
-	auto gsit = groupStack.rbegin();
+static std::string groupStackToStr(std::vector<torasu::LogId> groupStack, bool tag=false) {
 	std::string str;
-	while (gsit != groupStack.rend()) {
+	size_t pathSize = groupStack.size();
+	const torasu::LogId* gsit = groupStack.data() + pathSize - 1;
+	if (tag) pathSize--;
+	for (size_t i = pathSize; i > 0; i--) {
 		str += "/" + std::to_string(*gsit);
-		gsit++;
+		gsit--;
 	}
+
+	if (tag) str += " [" + std::to_string(*gsit) + "]";
 
 	return str;
 }
@@ -72,7 +76,7 @@ LIcore_logger::LIcore_logger() {}
 
 LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
 
-LogId LIcore_logger::log(LogEntry* entry, bool tag) {
+void LIcore_logger::log(LogEntry* entry) {
 	std::unique_lock lck(logMutex);
 	std::unique_ptr<LogEntry> entryHolder(entry);
 
@@ -114,11 +118,15 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 			// Group Display
 
 			if (!entry->groupStack.empty()) {
-				message += groupStackToStr(entry->groupStack) + " \t";
 
-				std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
+				bool isTag;
+				std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack, &isTag));
+
+				message += groupStackToStr(entry->groupStack, isTag) + " \t";
+
 				LIcore_logger_logstore::StoreGroup* foundGroup = resolveStack->top();
 				if (foundGroup != nullptr) {
+					if (isTag) foundGroup->tagged[entry->groupStack[0]] = entryHolder.get();
 					foundGroup->logs.push_back(entryHolder.release());
 					message += foundGroup->name;
 				} else {
@@ -154,8 +162,6 @@ LogId LIcore_logger::log(LogEntry* entry, bool tag) {
 
 		std::cout << message << std::endl;
 	}
-
-	return 0;
 }
 
 torasu::LogId LIcore_logger::fetchSubId() {
@@ -191,7 +197,8 @@ torasu::tstd::LIcore_logger_logstore::StoreGroup::~StoreGroup() {
 	for (LogEntry* entry : logs) delete entry;
 }
 
-std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIcore_logger_logstore::resolve(const std::vector<LogId>& path, size_t pathDepth) {
+std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIcore_logger_logstore::resolve(const std::vector<LogId>& path, bool* tag, size_t pathDepth) {
+	if (tag != nullptr) *tag = false;
 	auto* resolveStack = new std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>();
 	if (pathDepth == 0) pathDepth = path.size();
 
@@ -204,6 +211,10 @@ std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIc
 		auto found = sub.find(logId);
 
 		if (found == sub.end()) {
+			if (tag != nullptr && i == 1) { // Lowest level to be evalulated and is not found may be a tag
+				*tag = true;
+				break;
+			}
 			for (auto group : sub) {
 				std::cout << " NOT " << logId << " BUT " << group.first << " @ " << std::to_string(pathDepth-i) << std::endl;
 			}
@@ -221,7 +232,7 @@ std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIc
 LIcore_logger_logstore::StoreGroup* torasu::tstd::LIcore_logger_logstore::create(const std::vector<LogId>& path, std::string name) {
 	StoreGroup* foundGroup;
 	if (path.size() > 1) {
-		std::unique_ptr<std::stack<StoreGroup*>> resolveStack(resolve(path, path.size()-1));
+		std::unique_ptr<std::stack<StoreGroup*>> resolveStack(resolve(path, nullptr, path.size()-1));
 
 		foundGroup = resolveStack->top();
 

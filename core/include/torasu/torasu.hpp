@@ -35,7 +35,10 @@ namespace torasu {
 typedef std::function<void(void)> Callback;
 
 // LOGGING
-typedef size_t LogId;
+typedef uint64_t LogId;
+/** @brief  Maximum value of logging,
+ * if the a LogId is set as this it can be counted as "NOT SET" */
+inline LogId LogId_MAX = UINT64_MAX;
 class LogEntry;
 class LogInterface;
 struct LogInstruction;
@@ -146,6 +149,8 @@ public:
 
 	virtual Dlog_entry* makePack();
 
+	inline LogId addTag(torasu::LogInterface* li);
+
 	virtual ~LogEntry() {}
 };
 
@@ -179,17 +184,15 @@ public:
 	 * @param  level The log level of the entry
 	 * @param  msg The message of the entry
 	 */
-	inline void log(LogLevel level, std::string msg, bool tag=false) {
-		log(new LogMessage(level, msg), tag);
+	inline void log(LogLevel level, std::string msg) {
+		log(new LogMessage(level, msg));
 	}
 
 	/**
 	 * @brief  Logs an entry to the logging system
 	 * @param  entry: The entry to be logged (will be managed by the interface)
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
-	virtual LogId log(LogEntry* entry, bool tag = false) = 0;
+	virtual void log(LogEntry* entry) = 0;
 
 	/**
 	 * @brief  Generates a new Subgroup-ID
@@ -208,6 +211,14 @@ public:
 
 	virtual ~LogInterface() {}
 };
+
+inline LogId LogEntry::addTag(torasu::LogInterface* li) {
+	if (!groupStack.empty())
+		throw std::logic_error("Can't add tag to LogEntry, which has already a group assigned.");
+	LogId tag = li->fetchSubId();
+	groupStack.push_back(tag);
+	return tag;
+}
 
 /**
  * @brief  Tells the process, which gets this how messages should be logged
