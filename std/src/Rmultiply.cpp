@@ -1,5 +1,6 @@
 #include "../include/torasu/std/Rmultiply.hpp"
 
+#include <memory>
 #include <string>
 #include <optional>
 #include <chrono>
@@ -35,33 +36,38 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 		auto rendA = rib.enqueueRender(a, rctx, ei, li);
 		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		std::unique_ptr<RenderResult> resA(ei->fetchRenderResult(rendA));
+		std::unique_ptr<RenderResult> resB(ei->fetchRenderResult(rendB));
 
-		// Calculating Result from Results
-
-		std::optional<double> calcResult;
-
-		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB);
+		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA.get());
+		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB.get());
 
 		if (a.getResult()!=NULL && b.getResult()!=NULL) {
-			calcResult = a.getResult()->getNum() * b.getResult()->getNum();
-		}
-
-		// Free sub-results
-
-		delete resA;
-		delete resB;
-
-		// Saving Result
-
-		if (calcResult.has_value()) {
-			Dnum* mulRes = new Dnum(calcResult.value());
+			Dnum* mulRes = new Dnum(a.getResult()->getNum() * b.getResult()->getNum());
 			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
 		} else {
+			torasu::LogInfoRef* rir;
+			if (li.level <= WARN) {
+				auto* causes = new std::vector<std::vector<LogId>>();
+				if (a.getResult() == nullptr) {
+					auto* opAErr = new torasu::LogMessage(WARN, "Operand A failed to render", new auto(*a.getInfo()));
+					causes->push_back({opAErr->addTag(li.logger)});
+					li.logger->log(opAErr);
+				}
+				if (b.getResult() == nullptr) {
+					auto* opBErr = new torasu::LogMessage(WARN, "Operand B failed to render", new auto(*b.getInfo()));
+					causes->push_back({opBErr->addTag(li.logger)});
+					li.logger->log(opBErr);
+				}
+
+				auto* summary = new torasu::LogMessage(WARN, "Sub render failed to provide operands, returning 0", new torasu::LogInfoRef(causes));
+				rir = new torasu::LogInfoRef(new std::vector<std::vector<torasu::LogId>>({{summary->addTag(li.logger)}}));
+				li.logger->log(summary);
+			} else {
+				rir = nullptr;
+			}
 			Dnum* errRes = new Dnum(0);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true, rir);
 		}
 
 	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {

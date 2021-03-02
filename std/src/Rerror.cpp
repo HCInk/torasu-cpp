@@ -43,7 +43,7 @@ torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
 	for (const auto& setting : *ri->getResultSettings()) {
 		(*results)[setting->getKey()] =
 			new ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR,
-							  hasMsg ? new torasu::ResultInfoRef(new std::vector<LogId>(msgTag)) : nullptr);
+		hasMsg ? new torasu::LogInfoRef(new std::vector<std::vector<LogId>>({{msgTag}})) : nullptr);
 	}
 
 	return new torasu::RenderResult(torasu::ResultStatus_PARTIAL_ERROR, results);

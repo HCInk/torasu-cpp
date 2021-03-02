@@ -330,7 +330,7 @@ void renderErrorExample() {
 
 	Rerror err("Example error");
 
-	Rmultiply mul(20, &err);
+	Rmultiply mul(&err, &err);
 
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::DEBUG);

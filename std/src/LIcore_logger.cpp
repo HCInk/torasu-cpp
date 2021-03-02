@@ -52,7 +52,7 @@ const char* getLvlAnsi(torasu::LogLevel lvl) {
 	}
 }
 
-static std::string groupStackToStr(std::vector<torasu::LogId> groupStack, bool tag=false) {
+static std::string groupStackToStr(const std::vector<torasu::LogId>& groupStack, bool tag=false) {
 	std::string str;
 	size_t pathSize = groupStack.size();
 	const torasu::LogId* gsit = groupStack.data() + pathSize - 1;
@@ -65,6 +65,81 @@ static std::string groupStackToStr(std::vector<torasu::LogId> groupStack, bool t
 	if (tag) str += " [" + std::to_string(*gsit) + "]";
 
 	return str;
+}
+
+inline std::string padStr(char c, size_t count) {
+	std::string str;
+	for (int i = count; i > 0; i--) str += c;
+	return str;
+}
+
+#define REF_VIS_REP_GROUP true
+
+static std::vector<std::string> visualizeRef(const std::vector<torasu::LogId>& currentGroupStack, torasu::tstd::LIcore_logger_logstore::StoreGroup* storeGroup, const torasu::LogInfoRef* ref) {
+	try {
+		std::vector<std::string> lines;
+
+		std::string pref = groupStackToStr(currentGroupStack);
+
+		torasu::tstd::LIcore_logger_logstore::StoreGroup* refGroup;
+		if (!ref->groupRef->empty()) {
+			std::unique_ptr<std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>> resolveStack(storeGroup->resolve(*ref->groupRef));
+			refGroup = resolveStack->top();
+			if (refGroup != nullptr) {
+				pref += groupStackToStr(*ref->groupRef);
+			} else {
+				pref += "<GRES-ERR@" + std::to_string(resolveStack->size()) + ": " + groupStackToStr(*ref->groupRef) + "> ";
+			}
+		} else {
+			refGroup = storeGroup;
+		}
+
+		std::string currLine = pref;
+
+		if (!ref->causeRefs->empty()) {
+			auto causeIt = ref->causeRefs->begin();
+			for (;;) {
+				const auto& cause = *causeIt;
+				bool isTag;
+				std::unique_ptr<std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>> resolveStack(refGroup->resolve(cause, &isTag));
+				torasu::tstd::LIcore_logger_logstore::StoreGroup* causeGroup = resolveStack->empty() ? refGroup : resolveStack->top();
+				if (causeGroup != nullptr) {
+					currLine += groupStackToStr(cause, isTag);
+					if (isTag) {
+						auto foundEntry = causeGroup->tagged.find(cause[0]);
+						torasu::LogMessage* msgEntry = foundEntry != causeGroup->tagged.end() ? dynamic_cast<torasu::LogMessage*>(foundEntry->second) : nullptr;
+						if (msgEntry != nullptr) {
+							currLine += " " + causeGroup->name + ": " + msgEntry->text;
+						} else {
+							currLine += " (!TAG" + std::to_string(cause[0]) + " in " + causeGroup->name + " not found!)";
+						}
+					} else {
+						currLine += " (" + causeGroup->name + ")";
+					}
+
+				} else {
+					currLine += "<CRES-ERR@" + std::to_string(resolveStack->size()) + ": " + groupStackToStr(cause) + ">";
+				}
+
+				lines.push_back(currLine);
+				causeIt++;
+				if (causeIt == ref->causeRefs->end()) break;
+#if REF_VIS_REP_GROUP
+				currLine = pref;
+#else
+				currLine = padStr(' ', pref.size());
+#endif
+			}
+		} else {
+			lines.push_back(currLine);
+		}
+
+
+
+		return lines;
+	} catch (const std::exception& ex) {
+		return {"<ERR! " + std::string(ex.what()) + ">"};
+	}
 }
 
 } // namespace
@@ -104,44 +179,62 @@ void LIcore_logger::log(LogEntry* entry) {
 	default: {
 			// Prefix
 
+			std::string prefix;
 			if (entry->type == LT_MESSAGE) {
 				auto* msgEntry = static_cast<LogMessage*>(entry);
 				if (useAnsi) message += getLvlAnsi(msgEntry->level);
-				message += getLvLName(msgEntry->level);
+				prefix += getLvLName(msgEntry->level);
 			} else {
 				if (useAnsi) message += ANSI_CYAN;
-				message += "DATA ";
+				prefix += "DATA ";
 			}
 
-			message += " ";
+			prefix += " ";
 
 			// Group Display
-
+			LIcore_logger_logstore::StoreGroup* foundGroup = nullptr;
+			bool isTag;
+			size_t prefSize;
 			if (!entry->groupStack.empty()) {
 
-				bool isTag;
 				std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack, &isTag));
 
-				message += groupStackToStr(entry->groupStack, isTag) + " \t";
+				prefix += groupStackToStr(entry->groupStack, isTag);
+				prefSize = prefix.size();
+				prefix += " \t";
 
-				LIcore_logger_logstore::StoreGroup* foundGroup = resolveStack->top();
+				foundGroup = resolveStack->top();
 				if (foundGroup != nullptr) {
 					if (isTag) foundGroup->tagged[entry->groupStack[0]] = entryHolder.get();
 					foundGroup->logs.push_back(entryHolder.release());
-					message += foundGroup->name;
+					prefix += foundGroup->name;
 				} else {
-					message += "(UNKNOWN)";
+					prefix += "(UNKNOWN)";
 				}
-				message += ": ";
+				prefix += ": ";
 			} else {
-				logstore.getRoot()->logs.push_back(entryHolder.release());
+				foundGroup = logstore.getRoot();
+				foundGroup->logs.push_back(entryHolder.release());
+				prefSize = prefix.size();
 			}
 
+			message += prefix;
 
 			// Message
 
 			if (entry->type == LT_MESSAGE) {
-				message += static_cast<LogMessage*>(entry)->text;
+				LogMessage* msgEntry = static_cast<LogMessage*>(entry);
+				message += msgEntry->text;
+
+				if (msgEntry->info != nullptr) {
+					auto refInfo = visualizeRef(isTag ? std::vector<LogId>(entry->groupStack.data() + 1, entry->groupStack.data()+entry->groupStack.size()) : entry->groupStack, foundGroup, msgEntry->info);
+					std::string label = "Cause";
+					bool firstLine = true;
+					for (auto line : refInfo) {
+						message += "\n" + padStr(' ', prefSize) + " \t " + (firstLine ? label : padStr(' ', label.size())) + " -> " + line;
+						firstLine = false;
+					}
+				}
 			} else {
 				message += "[DataPacket-" + std::to_string(entry->type) + "]";
 			}
@@ -197,12 +290,12 @@ torasu::tstd::LIcore_logger_logstore::StoreGroup::~StoreGroup() {
 	for (LogEntry* entry : logs) delete entry;
 }
 
-std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIcore_logger_logstore::resolve(const std::vector<LogId>& path, bool* tag, size_t pathDepth) {
+std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>* torasu::tstd::LIcore_logger_logstore::StoreGroup::resolve(const std::vector<LogId>& path, bool* tag, size_t pathDepth) {
 	if (tag != nullptr) *tag = false;
 	auto* resolveStack = new std::stack<torasu::tstd::LIcore_logger_logstore::StoreGroup*>();
 	if (pathDepth == 0) pathDepth = path.size();
 
-	StoreGroup* cGroup = &tree;
+	StoreGroup* cGroup = this;
 	auto it = path.rbegin();
 	for (size_t i = pathDepth; i > 0; i--) {
 		LogId logId = *it;

@@ -43,6 +43,14 @@ public:
 		 */
 		void reown(StoreGroup* newOwner);
 
+		/** @brief  Get pointers to Groups from LogId-path
+		 * @param  path: The LogId path
+		 * @param  tag: Will be set to true if object is found to be a tag, if this is set to nullptr only groups will be accepted
+		 * @param  pathDepth: Depth of path to read, 0 means whole path
+		 * @retval The stack of the resolved groups (Stack has to be freed by caller, contents are managed)
+		 */
+		std::stack<StoreGroup*>* resolve(const std::vector<LogId>& path, bool* tag = nullptr, size_t pathDepth = 0);
+
 		~StoreGroup();
 
 	};
@@ -53,13 +61,10 @@ public:
 	LIcore_logger_logstore();
 	~LIcore_logger_logstore();
 
-	/** @brief  Get pointers to Groups from LogId-path
-	 * @param  path: The LogId path
-	 * @param  tag: Will be set to true if object is found to be a tag, if this is set to nullptr only groups will be accepted
-	 * @param  pathDepth: Depth of path to read, 0 means whole path
-	 * @retval The stack of the resolved groups (Stack has to be freed by caller, contents are managed)
-	 */
-	std::stack<StoreGroup*>* resolve(const std::vector<LogId>& path, bool* tag = nullptr, size_t pathDepth = 0);
+	/** @brief  Run resolve(...) from root */
+	std::stack<StoreGroup*>* resolve(const std::vector<LogId>& path, bool* tag = nullptr, size_t pathDepth = 0) {
+		return tree.resolve(path, tag, pathDepth);
+	}
 
 	/**
 	 * @brief  Create LogGroup at given path

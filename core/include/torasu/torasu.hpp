@@ -39,6 +39,7 @@ typedef uint64_t LogId;
 /** @brief  Maximum value of logging,
  * if the a LogId is set as this it can be counted as "NOT SET" */
 inline LogId LogId_MAX = UINT64_MAX;
+class LogInfoRef;
 class LogEntry;
 class LogInterface;
 struct LogInstruction;
@@ -71,7 +72,6 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM (RENDER)
 class RenderResult;
 class ResultSegment;
-class ResultInfoRef;
 
 // HELPER (READY)
 typedef uint64_t ReadyObject;
@@ -89,6 +89,32 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 //
 // LOGGING
 //
+
+class LogInfoRef {
+public:
+	/** @brief  Group containing information about generation of the result */
+	std::vector<LogId>* const groupRef;
+	/** @brief  References to causes (relative to group) */
+	const std::vector<std::vector<LogId>>* const causeRefs;
+
+
+	explicit LogInfoRef(const LogInfoRef& src)
+		: groupRef(new auto(*src.groupRef)), causeRefs(new auto(*src.causeRefs)) {}
+
+	explicit LogInfoRef(std::vector<LogId>* groupRef)
+		: groupRef(groupRef), causeRefs(new std::vector<std::vector<LogId>>()) {}
+
+	explicit LogInfoRef(const std::vector<std::vector<LogId>>* causeRefs)
+		: groupRef(new std::vector<LogId>()), causeRefs(causeRefs) {}
+
+	LogInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs)
+		: groupRef(groupRef), causeRefs(causeRefs) {}
+
+	~LogInfoRef() {
+		delete groupRef;
+		delete causeRefs;
+	}
+};
 
 enum LogType {
 	/** @brief This log-entry is a normal message
@@ -172,9 +198,14 @@ class LogMessage : public LogEntry {
 public:
 	const LogLevel level;
 	const std::string text;
+	const LogInfoRef* info;
 
-	LogMessage(LogLevel level, std::string message)
-		: LogEntry(LogType::LT_MESSAGE), level(level), text(message) {}
+	LogMessage(LogLevel level, std::string message, const LogInfoRef* info=nullptr)
+		: LogEntry(LogType::LT_MESSAGE), level(level), text(message), info(info) {}
+
+	~LogMessage() {
+		if (info != nullptr) delete info;
+	}
 };
 
 class LogInterface {
@@ -534,28 +565,6 @@ public:
 // Upstream (RENDER)
 //
 
-class ResultInfoRef {
-public:
-	/** @brief  Group containing information about generation of the result */
-	std::vector<LogId>* const groupRef;
-	/** @brief  References to causes (relative to group) */
-	const std::vector<std::vector<LogId>>* const causeRefs;
-
-	explicit ResultInfoRef(std::vector<LogId>* groupRef)
-		: groupRef(groupRef), causeRefs(new std::vector<std::vector<LogId>>()) {}
-
-	explicit ResultInfoRef(const std::vector<std::vector<LogId>>* causeRefs)
-		: groupRef(new std::vector<LogId>()), causeRefs(causeRefs) {}
-
-	ResultInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs)
-		: groupRef(groupRef), causeRefs(causeRefs) {}
-
-	~ResultInfoRef() {
-		delete groupRef;
-		delete causeRefs;
-	}
-};
-
 enum ResultStatus {
 	/** @brief Request wasnt processed at all because it was received as malformed */
 	ResultStatus_MALFORMED = -3,
@@ -605,7 +614,7 @@ class ResultSegment {
 private:
 	ResultSegmentStatus status;
 	DataResourceHolder result;
-	ResultInfoRef* rir;
+	LogInfoRef* rir;
 
 public:
 	/**
@@ -614,7 +623,7 @@ public:
 	 * @param  status: Calculation-status of the segment
 	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	explicit inline ResultSegment(ResultSegmentStatus status, ResultInfoRef* rir = nullptr)
+	explicit inline ResultSegment(ResultSegmentStatus status, LogInfoRef* rir = nullptr)
 		: status(status), result(), rir(rir) {}
 
 	/**
@@ -624,7 +633,7 @@ public:
 	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
 	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, ResultInfoRef* rir = nullptr)
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, LogInfoRef* rir = nullptr)
 		: status(status), result(result, freeResult), rir(rir) {}
 
 	~ResultSegment() {
@@ -639,7 +648,7 @@ public:
 		return result.get();
 	}
 
-	inline ResultInfoRef* getResultInfoRef() {
+	inline LogInfoRef* getResultInfoRef() {
 		return rir;
 	}
 
@@ -768,7 +777,7 @@ public:
 		if (path != nullptr) {
 			for (auto result : *results) {
 				auto*& rir = result.second->rir;
-				if (rir == nullptr) rir = new ResultInfoRef(new std::vector<LogId>());
+				if (rir == nullptr) rir = new LogInfoRef(new std::vector<LogId>());
 				const LogId* pathIt = path->data() + path->size() - 1;
 				for (size_t i = path->size(); i > 0; i--) {
 					rir->groupRef->push_back(*pathIt);
