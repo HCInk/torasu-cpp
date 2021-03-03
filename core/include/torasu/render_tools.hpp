@@ -96,6 +96,10 @@ public:
 		if (infoBuilder != nullptr) infoBuilder->releaseCause(infoTag);
 		return infoTag;
 	}
+
+	inline explicit operator bool() const noexcept {
+		return result != nullptr;
+	}
 };
 
 template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {

@@ -44,16 +44,16 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA.get(), &lirb);
 		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB.get(), &lirb);
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 			Dnum* mulRes = new Dnum(a.getResult()->getNum() * b.getResult()->getNum());
 			return new ResultSegment(lirb.hasError ? ResultSegmentStatus_OK_WARN : ResultSegmentStatus_OK,
 									 mulRes, true, lirb.build());
 		} else {
 			if (li.level <= WARN) {
 				torasu::tools::LogInfoRefBuilder errorCauses(li);
-				if (a.getResult() == nullptr)
+				if (!a)
 					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
-				if (b.getResult() == nullptr)
+				if (!b)
 					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
 
 				lirb.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
