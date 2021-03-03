@@ -92,7 +92,7 @@ public:
 		return rs ? rs->getResultInfoRef() : nullptr;
 	}
 
-	inline LogId takeInfoTag() const {
+	inline LogId takeInfoTag() {
 		if (infoBuilder != nullptr) infoBuilder->releaseCause(infoTag);
 		return infoTag;
 	}
