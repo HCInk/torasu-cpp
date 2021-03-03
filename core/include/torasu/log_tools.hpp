@@ -30,6 +30,7 @@ private:
 	}
 public:
 	const torasu::LogInstruction& linstr;
+	bool hasError = false;
 
 	explicit LogInfoRefBuilder(const torasu::LogInstruction& linstr)
 		: linstr(linstr) {}
@@ -71,8 +72,8 @@ public:
 		}
 	}
 
-	LogId logCause(LogLevel level, std::string message, LogInfoRefBuilder* subCauses) {
-		return logCause(level, message, subCauses != nullptr ? subCauses->build() : nullptr);
+	LogId logCause(LogLevel level, std::string message, const LogInfoRefBuilder& subCauses) {
+		return logCause(level, message, subCauses.build());
 	}
 
 	LogId logCause(LogLevel level, std::string message, LogId causeTag) {
@@ -93,7 +94,7 @@ public:
 		}
 	}
 
-	torasu::LogInfoRef* build() {
+	torasu::LogInfoRef* build() const {
 		if (causes != nullptr && !causes->empty()) {
 			auto* causes = new std::vector<std::vector<LogId>>();
 			for (LogId tag : *this->causes) {

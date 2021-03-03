@@ -330,11 +330,13 @@ void renderErrorExample() {
 
 	Rerror err("Example error");
 	Rmultiply mulA(10, &err);
-	Rmultiply mul(&mulA, &err);
+	Rmultiply mulB(&mulA, &err);
+	Rmultiply mulC(5, &mulB);
+	auto& tree = mulC;
 
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
-	auto num = torasu::tstd::renderNum(&mul, &li);
+	auto num = torasu::tstd::renderNum(&tree, &li);
 
 	std::cout << "Res: " << num.getNum() << std::endl;
 

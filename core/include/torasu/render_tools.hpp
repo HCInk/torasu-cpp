@@ -46,6 +46,7 @@ public:
 				   << typeid(T).name()
 				   << "\"!";
 			if (infoBuilder != nullptr) {
+				infoBuilder->hasError = true;
 				infoTag = infoBuilder->logCause(WARN, errMsg.str(), new auto(*getRawInfo()));
 				return;
 			} else {
@@ -56,6 +57,7 @@ public:
 		if (status == ResultSegmentStatus_OK) return;
 
 		if (infoBuilder != nullptr) {
+			infoBuilder->hasError = true;
 			switch (status) {
 			case ResultSegmentStatus_OK_WARN:
 				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", new auto(*getRawInfo()));
@@ -100,6 +102,7 @@ template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* r
 	std::map<std::string, ResultSegment*>* results = rr->getResults();
 	if (results == NULL) {
 		if (infoBuilder != nullptr) {
+			infoBuilder->hasError = true;
 			auto causeTag = infoBuilder->logCause(WARN, "Generated results are empty!");
 			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
 		} else {
@@ -112,6 +115,7 @@ template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* r
 		return CastedRenderSegmentResult<T>(found->second, infoBuilder);
 	} else {
 		if (infoBuilder != nullptr) {
+			infoBuilder->hasError = true;
 			auto causeTag = infoBuilder->logCause(WARN, "Generated result not found under key \"" + key + "\"!");
 			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
 		} else {
