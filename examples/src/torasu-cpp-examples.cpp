@@ -329,8 +329,8 @@ void renderErrorExample() {
 		 << "//" << endl;
 
 	Rerror err("Example error");
-
-	Rmultiply mul(&err, &err);
+	Rmultiply mulA(10, &err);
+	Rmultiply mul(&mulA, &err);
 
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::DEBUG);

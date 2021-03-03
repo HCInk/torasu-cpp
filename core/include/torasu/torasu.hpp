@@ -150,7 +150,9 @@ enum LogLevel {
 	/** @brief Used to indicate an error, which interrupts the rendering-process */
 	SERVERE_ERROR = 20,
 	/** @brief Failed to determine the log-level of the message */
-	LEVEL_UNKNOWN = 99
+	LEVEL_UNKNOWN = 99,
+	/** @breif No log messages at all, logging at this level (or higher) can lead to undefined behavior */
+	NO_LOGGING = 100
 };
 
 /**

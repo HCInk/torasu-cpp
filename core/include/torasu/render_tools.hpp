@@ -12,6 +12,7 @@
 #include <torasu/torasu.hpp>
 #include <torasu/RenderableProperties.hpp>
 #include <torasu/slot_tools.hpp>
+#include <torasu/log_tools.hpp>
 
 namespace torasu::tools {
 
@@ -23,28 +24,47 @@ template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
 	ResultSegmentStatus status;
-	LogInfoRef* info;
 	ResultSegment* rs;
+	torasu::LogId infoTag = LogId_MAX;
+	torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr;
 public:
 
-	explicit CastedRenderSegmentResult(ResultSegmentStatus status)
-		: result(nullptr), status(status), info(nullptr), rs(nullptr) {}
+	explicit CastedRenderSegmentResult(ResultSegmentStatus status, LogId infoTag = LogId_MAX, tools::LogInfoRefBuilder* infoBuilder = nullptr)
+		: result(nullptr), status(status), rs(nullptr), infoTag(infoTag), infoBuilder(infoBuilder)  {}
 
-	explicit CastedRenderSegmentResult(ResultSegment* rs)  {
-		this->rs = rs;
-		this->status = rs->getStatus();
-		this->info = rs->getResultInfoRef();
+	explicit CastedRenderSegmentResult(ResultSegment* rs, tools::LogInfoRefBuilder* infoBuilder = nullptr)
+		: status(rs->getStatus()), rs(rs), infoBuilder(infoBuilder)  {
 		DataResource* result = rs->getResult();
 		if (result == nullptr) {
 			this->result = nullptr;
 		} else if (T* casted = dynamic_cast<T*>(result)) {
 			this->result = casted;
 		} else {
+			this->result = nullptr;
 			std::ostringstream errMsg;
 			errMsg << "Returned object is not of the expected type\""
 				   << typeid(T).name()
 				   << "\"!";
-			throw std::logic_error(errMsg.str());
+			if (infoBuilder != nullptr) {
+				infoTag = infoBuilder->logCause(WARN, errMsg.str(), new auto(*getRawInfo()));
+				return;
+			} else {
+				throw std::logic_error(errMsg.str());
+			}
+		}
+
+		if (status == ResultSegmentStatus_OK) return;
+
+		if (infoBuilder != nullptr) {
+			switch (status) {
+			case ResultSegmentStatus_OK_WARN:
+				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", new auto(*getRawInfo()));
+				break;
+			default:
+				infoTag = infoBuilder->logCause(WARN, "Sub-render returned with abnormal status " + std::to_string(status),
+												new auto(*getRawInfo()));
+				break;
+			}
 		}
 	}
 
@@ -66,21 +86,37 @@ public:
 		return status;
 	}
 
-	inline LogInfoRef* getInfo() const {
-		return info;
+	inline LogInfoRef* getRawInfo() const {
+		return rs ? rs->getResultInfoRef() : nullptr;
+	}
+
+	inline LogId takeInfoTag() const {
+		if (infoBuilder != nullptr) infoBuilder->releaseCause(infoTag);
+		return infoTag;
 	}
 };
 
-template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key) {
+template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {
 	std::map<std::string, ResultSegment*>* results = rr->getResults();
 	if (results == NULL) {
-		return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
+		if (infoBuilder != nullptr) {
+			auto causeTag = infoBuilder->logCause(WARN, "Generated results are empty!");
+			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
+		} else {
+			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
+		}
 	}
+
 	std::map<std::string, ResultSegment*>::iterator found = results->find(key);
 	if (found != rr->getResults()->end()) {
-		return CastedRenderSegmentResult<T>(found->second);
+		return CastedRenderSegmentResult<T>(found->second, infoBuilder);
 	} else {
-		return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
+		if (infoBuilder != nullptr) {
+			auto causeTag = infoBuilder->logCause(WARN, "Generated result not found under key \"" + key + "\"!");
+			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
+		} else {
+			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
+		}
 	}
 
 }
@@ -95,8 +131,8 @@ public:
 
 	~RenderResultSegmentHandle() {}
 
-	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr) {
-		return findResult<T>(rr, segKey);
+	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {
+		return findResult<T>(rr, segKey, infoBuilder);
 	}
 
 };

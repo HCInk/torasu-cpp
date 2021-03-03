@@ -79,13 +79,26 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 
 template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
 
-	auto srr = simpleRender<T>(tree, pl, format, li, ei);
+	std::unique_ptr<torasu::tstd::LIcore_logger> logger;
+	LogInstruction logInstr(nullptr);
+	if (li == nullptr) {
+		logger = std::unique_ptr<torasu::tstd::LIcore_logger>(new torasu::tstd::LIcore_logger());
+		logInstr.logger = logger.get();
+	} else {
+		logInstr = LogInstruction(*li);
+	}
+
+	auto srr = simpleRender<T>(tree, pl, format, &logInstr, ei);
 
 	if (srr.result == nullptr)
 		throw std::runtime_error(std::string() + "No result was generated! (" + srr.getInfo() + ")");
 
 	if (!srr.check()) {
-		std::cerr << "SimpleRender: The generated result may contain errors! (" << srr.getInfo() << ")" << std::endl;
+		if (logInstr.level <= WARN) {
+			li->logger->log(new LogMessage(WARN, "SimpleRender: The generated result may contain errors! (" + srr.getInfo() + ")",
+										   new auto(*srr.rs.getRawInfo()) ));
+
+		}
 	}
 
 	return srr;
