@@ -9,6 +9,9 @@
 
 using namespace std;
 
+// Intercepts own log-group for every sub-task
+#define INTERCEPT_LOGGER true
+
 #define CHECK_STATE_ERRORS true
 #define CHECK_REGISTRATION_ERRORS true
 #define LOG_REGISTRATIONS_RUNNER false
@@ -436,10 +439,12 @@ EIcore_runner_object* EIcore_runner::createInterface(std::vector<int64_t>* prioS
 //
 
 inline void EIcore_runner_object::init() {
+#if INTERCEPT_LOGGER
 	if (li.logger != nullptr) {
 		// Add interception-logger
 		li.logger = new EIcore_runner_object_logger(this, li.logger);
 	}
+#endif
 }
 
 // Subtask Constructor
@@ -506,7 +511,9 @@ EIcore_runner_object::~EIcore_runner_object() {
 	if (resultCv != nullptr) delete resultCv;
 	if (resultCreation != nullptr) delete resultCreation;
 	delete prioStack;
+#if INTERCEPT_LOGGER
 	if (li.logger != nullptr) delete li.logger; // Delete interception-logger
+#endif
 }
 
 // EIcore_runner_object: Suspension Functions
@@ -624,6 +631,25 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 	};
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
+
+	{
+		auto* logger = static_cast<EIcore_runner_object_logger*>(li.logger);
+		if (logger->registered) {
+			auto* parentLogger = logger->logger;
+			LogId logId = logger->ownLogId;
+			// std::cout << "REREF..." << std::endl;
+			std::vector<LogId> path({logId});
+			res->reRefResult(parentLogger, &path,
+			new Callback([parentLogger, logId] {
+				// std::cout << "UNREF..." << std::endl;
+				auto* unref = new torasu::LogEntry(LogType::LT_GROUP_UNREF);
+				unref->groupStack.push_back(logId);
+				parentLogger->log(unref);
+			})
+							);
+		}
+
+	}
 
 	return res;
 }
@@ -939,28 +965,26 @@ EIcore_runner_object_logger::EIcore_runner_object_logger(EIcore_runner_object* o
 EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 	if (registered) {
 		auto* uregEntry =
-			new LogEntry(torasu::LogType::LT_GROUP_END, torasu::LogLevel::LEVEL_UNKNOWN, "");
+			new LogEntry(torasu::LogType::LT_GROUP_END);
 		uregEntry->groupStack.push_back(ownLogId);
-		logger->log(uregEntry, false);
+		logger->log(uregEntry);
 	}
 }
 
-torasu::LogId EIcore_runner_object_logger::log(LogEntry* entry, bool tag) {
+void EIcore_runner_object_logger::log(LogEntry* entry) {
 
 	if (!registered) {
 		ownLogId = logger->fetchSubId();
 		auto* regEntry =
-			new LogEntry(torasu::LogType::LT_GROUP_START, torasu::LogLevel::LEVEL_UNKNOWN, obj->rnd->getType());
+			new LogGroupStart(obj->rnd->getType());
 		regEntry->groupStack.push_back(ownLogId);
-		logger->log(regEntry, false);
+		logger->log(regEntry);
 		registered = true;
 	}
 
 	entry->groupStack.push_back(ownLogId);
 
-	logger->log(entry, false);
-
-	return 0;
+	logger->log(entry);
 }
 
 torasu::LogId EIcore_runner_object_logger::fetchSubId() {
@@ -970,6 +994,20 @@ torasu::LogId EIcore_runner_object_logger::fetchSubId() {
 	subIdCounter++;
 	return subId;
 
+}
+
+std::vector<LogId>* EIcore_runner_object_logger::pathFromParent(LogInterface* parent) const {
+	if (parent == this) return new std::vector<LogId>(); // Found: parent is this
+
+	if (!registered) return nullptr; // No-path: Path can't be generated to parent since this has no ID
+
+	std::vector<LogId>* path = logger->pathFromParent(parent);
+
+	if (path == nullptr) return nullptr; // Not found / No path
+
+	path->push_back(ownLogId);
+
+	return path; // Found path
 }
 
 //

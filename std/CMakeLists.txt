@@ -50,6 +50,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rsin.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rfallback.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rlog_message.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rerror.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_map.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_concat.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_file.cpp)

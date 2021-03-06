@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <functional>
 #include <mutex>
+#include <memory>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -29,8 +30,16 @@ int TORASU_check_core();
 
 namespace torasu {
 
+// HELPER (MSIC)
+
+typedef std::function<void(void)> Callback;
+
 // LOGGING
-typedef size_t LogId;
+typedef uint64_t LogId;
+/** @brief  Maximum value of logging,
+ * if the a LogId is set as this it can be counted as "NOT SET" */
+inline LogId LogId_MAX = UINT64_MAX;
+class LogInfoRef;
 class LogEntry;
 class LogInterface;
 struct LogInstruction;
@@ -81,13 +90,48 @@ typedef std::vector<ObjectReadyResult> ElementReadyResult;
 // LOGGING
 //
 
+class LogInfoRef {
+public:
+	/** @brief  Group containing information about generation of the result */
+	std::vector<LogId>* const groupRef;
+	/** @brief  References to causes (relative to group) */
+	const std::vector<std::vector<LogId>>* const causeRefs;
+
+
+	explicit LogInfoRef(const LogInfoRef& src)
+		: groupRef(new auto(*src.groupRef)), causeRefs(new auto(*src.causeRefs)) {}
+
+	explicit LogInfoRef(std::vector<LogId>* groupRef)
+		: groupRef(groupRef), causeRefs(new std::vector<std::vector<LogId>>()) {}
+
+	explicit LogInfoRef(const std::vector<std::vector<LogId>>* causeRefs)
+		: groupRef(new std::vector<LogId>()), causeRefs(causeRefs) {}
+
+	LogInfoRef(std::vector<LogId>* groupRef, const std::vector<std::vector<LogId>>* causeRefs)
+		: groupRef(groupRef), causeRefs(causeRefs) {}
+
+	~LogInfoRef() {
+		delete groupRef;
+		delete causeRefs;
+	}
+};
+
 enum LogType {
-	/** @brief This log-entry is a normal message */
+	/** @brief This log-entry is a normal message
+	 *  @note Indicates that object is of type torasu::LogMessage - usage without being of that type will lead to undefined behavior */
 	LT_MESSAGE = 0,
-	/** @brief This log-entry indicates a new log-group */
+	/** @brief This log-entry indicates a new log-group (beginning now log entries can be expected from the group)
+	 * @note Indicates that object is of type torasu::LogGroupStart - usage without being of that type will lead to undefined behavior */
 	LT_GROUP_START = 10,
-	/** @brief This log-entry indicates the end of a log-group-report */
+	/** @brief This log-entry indicates the end of a log-group-report (no more new entries from that group will be spawned from now on) */
 	LT_GROUP_END = 11,
+	/** @brief Will notify that all log messages below will nologer be referenced
+	* - except log messages inside groups, which have been called LT_GROUP_PERSIST
+	* - those have to explicity called with this (LT_GROUP_UNREF) to be dereferenced */
+	LT_GROUP_UNREF = 12,
+	/** @brief Will mark that group-contents shall be persisted, even if an above group gets LT_GROUP_UNREF.
+	 * To dereference LT_GROUP_UNREF has to be called explicity on the group */
+	LT_GROUP_PERSIST = 13,
 	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
@@ -106,7 +150,9 @@ enum LogLevel {
 	/** @brief Used to indicate an error, which interrupts the rendering-process */
 	SERVERE_ERROR = 20,
 	/** @brief Failed to determine the log-level of the message */
-	LEVEL_UNKNOWN = 99
+	LEVEL_UNKNOWN = 99,
+	/** @breif No log messages at all, logging at this level (or higher) can lead to undefined behavior */
+	NO_LOGGING = 100
 };
 
 /**
@@ -116,25 +162,52 @@ enum LogLevel {
 class Dlog_entry;
 
 /**
- * @brief  Entry/Message to be logged
+ * @brief  Entry to be logged
  */
 class LogEntry {
 public:
 	const LogType type;
-	const LogLevel level;
-	const std::string text;
 	/** @brief  Grouping-stack, from source to root
 	 * @note Used for log-grouping, don't touch if you dont know what you are doing
 	 * - usually only touched by logging-interfaces */
 	std::vector<LogId> groupStack;
 
-	LogEntry(LogType type, LogLevel level, std::string text)
-		: type(type), level(level), text(text) {}
+	explicit LogEntry(LogType type)
+		: type(type) {}
 
-	LogEntry(LogLevel level, std::string message)
-		: type(LogType::LT_MESSAGE), level(level), text(message) {}
+	virtual Dlog_entry* makePack();
 
-	Dlog_entry* makePack();
+	inline LogId addTag(torasu::LogInterface* li);
+
+	virtual ~LogEntry() {}
+};
+
+/**
+ * @brief  Message to be logged
+ */
+class LogGroupStart : public LogEntry {
+public:
+	const std::string name;
+
+	explicit LogGroupStart(std::string name)
+		: LogEntry(LogType::LT_GROUP_START), name(name) {}
+};
+
+/**
+ * @brief  Message to be logged
+ */
+class LogMessage : public LogEntry {
+public:
+	const LogLevel level;
+	const std::string text;
+	const LogInfoRef* info;
+
+	LogMessage(LogLevel level, std::string message, const LogInfoRef* info=nullptr)
+		: LogEntry(LogType::LT_MESSAGE), level(level), text(message), info(info) {}
+
+	~LogMessage() {
+		if (info != nullptr) delete info;
+	}
 };
 
 class LogInterface {
@@ -144,27 +217,15 @@ public:
 	 * @param  level The log level of the entry
 	 * @param  msg The message of the entry
 	 */
-	inline void log(LogLevel level, std::string msg, bool tag=false) {
-		log(new LogEntry(level, msg), tag);
-	}
-
-	/**
-	 * @brief  Logs an entry to the logging system
-	 * @param  entry: The entry to be logged
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
-	 */
-	inline LogId log(LogEntry entry, bool tag=false) {
-		return log(new LogEntry(entry), tag);
+	inline void log(LogLevel level, std::string msg) {
+		log(new LogMessage(level, msg));
 	}
 
 	/**
 	 * @brief  Logs an entry to the logging system
 	 * @param  entry: The entry to be logged (will be managed by the interface)
-	 * @param  tag: Weather the log should be tagged
-	 * @retval The ID of the tag, if tagged, otherwise no exact value guranteed
 	 */
-	virtual LogId log(LogEntry* entry, bool tag) = 0;
+	virtual void log(LogEntry* entry) = 0;
 
 	/**
 	 * @brief  Generates a new Subgroup-ID
@@ -172,8 +233,25 @@ public:
 	 */
 	virtual LogId fetchSubId() = 0;
 
+	/**
+	 * @brief  Generates path from parent-log-interface to current
+	 * @return relative path of log-ids from given parent to this interface
+	 * 	(NOTE: Please be aware this in reverse compared to the usual notation)
+	 * 	- Will return nullptr, when parent could not be found
+	 * 		  or the interface has no id, so no path even exists (often when there were no messages sent)
+	 */
+	virtual std::vector<LogId>* pathFromParent(LogInterface* parent) const = 0;
+
 	virtual ~LogInterface() {}
 };
+
+inline LogId LogEntry::addTag(torasu::LogInterface* li) {
+	if (!groupStack.empty())
+		throw std::logic_error("Can't add tag to LogEntry, which has already a group assigned.");
+	LogId tag = li->fetchSubId();
+	groupStack.push_back(tag);
+	return tag;
+}
 
 /**
  * @brief  Tells the process, which gets this how messages should be logged
@@ -538,27 +616,31 @@ class ResultSegment {
 private:
 	ResultSegmentStatus status;
 	DataResourceHolder result;
+	LogInfoRef* rir;
 
 public:
-
 	/**
 	 * @brief  Creates a ResultSegment (only status, without content)
 	 * @note  This constructor should only be used if a result wasn't generated
 	 * @param  status: Calculation-status of the segment
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	explicit inline ResultSegment(ResultSegmentStatus status)
-		: status(status), result() {}
+	explicit inline ResultSegment(ResultSegmentStatus status, LogInfoRef* rir = nullptr)
+		: status(status), result(), rir(rir) {}
 
 	/**
 	 * @brief  Creates a ResultSegment
 	 * @param  status: Calculation-status of the segment
 	 * @param  result: The result of the calculation of the segment
 	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
 	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult)
-		: status(status), result(result, freeResult) {}
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, LogInfoRef* rir = nullptr)
+		: status(status), result(result, freeResult), rir(rir) {}
 
-	~ResultSegment() {}
+	~ResultSegment() {
+		if (rir != nullptr) delete rir;
+	}
 
 	inline ResultSegmentStatus const getStatus() {
 		return status;
@@ -566,6 +648,10 @@ public:
 
 	inline DataResource* const getResult() {
 		return result.get();
+	}
+
+	inline LogInfoRef* getResultInfoRef() {
+		return rir;
 	}
 
 	inline bool const canFreeResult() {
@@ -580,17 +666,46 @@ public:
 	inline DataResource* const ejectResult() {
 		return result.eject();
 	}
-
+	friend RenderResult;
 };
+
+// enum RIRefCall {
+// 	/** @brief  Signalizes that the logging messages (referenced in the contained segments)
+// 	 * 			will nolonger be referenced in other entries (sent after the call) */
+// 	RIR_UNREF = 0,
+// 	/** @brief  Signalises that the logging messages (referenced in the contained segments)
+// 	 *			will continue to stay relevant */
+// 	RIR_PERSIST = 1
+// };
+
+// typedef std::function<void(RIRefCall)> RIRefCallback;
 
 class RenderResult {
 private:
 	ResultStatus status;
 	std::map<std::string, ResultSegment*>* results;
+	/** @brief  Will be called, when destructed,
+	 * 	@note	May be overriden by a cleanup-callback which includes the cleanup
+	 * 			of a group containing the previous group */
+	Callback* refCloseFunc = nullptr;
+	/** @brief  The LogInterface the groups referenced are relative to
+	 * @note 	This points to the LogInterface the render-task has been run with.
+	 * 			It may nolonger be be valid depending on how the LogInterface is handled */
+	LogInterface* li = nullptr;
+
 public:
+	/**
+	 * @brief  Creates a RenderResult, while contains the results of a render-operation
+	 * @param  status: Status of the whole render-operation (also see status of segments)
+	 */
 	explicit inline RenderResult(ResultStatus status)
 		: status(status), results(nullptr) {}
 
+	/**
+	 * @brief  Creates a RenderResult, while contains the results of a render-operation
+	 * @param  status: Status of the whole render-operation (also see status of segments)
+	 * @param  results: Different results for render-segments
+	 */
 	inline RenderResult(ResultStatus status, std::map<std::string, ResultSegment*>* results)
 		: status(status), results(results) {}
 
@@ -601,6 +716,7 @@ public:
 			}
 			delete results;
 		}
+		closeRefs();
 	}
 
 	inline ResultStatus const getStatus() {
@@ -609,6 +725,73 @@ public:
 
 	inline std::map<std::string, ResultSegment*>* const getResults() {
 		return results;
+	}
+
+	inline LogInterface* const getLogInterface() {
+		return li;
+	}
+
+	/** @brief  Closes all log-refs in contained segments, the LogInterface can then be freed after calling this
+	 * @note This will also be called on ~RenderResult, so only call this when the LogInterace the render-operation is executed with
+	 * 		shall be cleaned up earlier then the RenderResult */
+	inline void closeRefs() {
+		if (refCloseFunc == nullptr) return;
+		(*refCloseFunc)();
+		delete refCloseFunc;
+		refCloseFunc = nullptr;
+	}
+
+	/**
+	 * @brief  Updates relative references in log-interface
+	 * @param  liNew: The new LogInterface to be set
+	 * @param  refCloseFuncNew: The new close-callback
+	 */
+	inline void reRefResult(LogInterface* liNew, Callback* refCloseFuncNew = nullptr) {
+		if (li != nullptr) {
+			std::unique_ptr<std::vector<LogId>> path(li->pathFromParent(liNew));
+			reRefResult(liNew, const_cast<const std::vector<LogId>*>(path.get()), refCloseFuncNew);
+
+			// Sanity-checking
+			if (path == nullptr) {
+
+				for (auto result : *results) {
+					if (result.second->getResultInfoRef() != nullptr)
+						throw std::logic_error("Result-segment contains info-refs even though the path is not established!"
+											   " (Hint: ResultInfoRefs may only be set if there have been messages sent"
+											   " - Hint: May also be caused by an invalid new LogInterface, which is not parent of the current)");
+				}
+
+			}
+
+		} else {
+			reRefResult(liNew, nullptr, refCloseFuncNew);
+		}
+
+	}
+
+	/**
+	 * @brief  Updates relative references in log-interface
+	 * @param  liNew: The new LogInterface to be set
+	 * @param  path: Path from new to old interface
+	 * @param  refCloseFuncNew: The new close-callback
+	 */
+	inline void reRefResult(LogInterface* liNew, const std::vector<LogId>* path, Callback* refCloseFuncNew = nullptr) {
+		if (path != nullptr) {
+			for (auto result : *results) {
+				auto*& rir = result.second->rir;
+				if (rir == nullptr) rir = new LogInfoRef(new std::vector<LogId>());
+				const LogId* pathIt = path->data() + path->size() - 1;
+				for (size_t i = path->size(); i > 0; i--) {
+					rir->groupRef->push_back(*pathIt);
+					pathIt--;
+				}
+			}
+		}
+
+		li = liNew;
+		if (refCloseFunc != nullptr) delete refCloseFunc;
+		refCloseFunc = refCloseFuncNew;
+
 	}
 };
 

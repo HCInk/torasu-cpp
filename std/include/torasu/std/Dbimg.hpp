@@ -23,19 +23,21 @@ public:
 	Dbimg(const Dbimg& copy);
 	~Dbimg();
 
+	void clear();
+
 	std::string getIdent() override;
 	DataDump* dumpResource() override;
 	Dbimg* clone() override;
 
-	inline uint32_t getWidth() {
+	inline uint32_t getWidth() const {
 		return width;
 	}
 
-	inline uint32_t getHeight() {
+	inline uint32_t getHeight() const {
 		return height;
 	}
 
-	inline uint8_t* getImageData() {
+	inline uint8_t* getImageData() const {
 		return data;
 	}
 };
@@ -49,11 +51,11 @@ public:
 	explicit Dbimg_FORMAT(const torasu::json& jsonParsed);
 	explicit Dbimg_FORMAT(const std::string& jsonStripped);
 
-	inline uint32_t getWidth() {
+	inline uint32_t getWidth() const {
 		return width;
 	}
 
-	inline uint32_t getHeight() {
+	inline uint32_t getHeight() const {
 		return height;
 	}
 

@@ -14,9 +14,6 @@ namespace torasu::tstd {
 
 class Rmultiply : public tools::SimpleRenderable {
 private:
-	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
-	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
-
 	tools::ManagedSlot<NumSlot> a;
 	tools::ManagedSlot<NumSlot> b;
 

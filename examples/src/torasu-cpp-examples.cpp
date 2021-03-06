@@ -28,6 +28,7 @@
 #include <torasu/std/Rfallback.hpp>
 #include <torasu/std/simple_render.hpp>
 #include <torasu/std/Rlog_message.hpp>
+#include <torasu/std/Rerror.hpp>
 
 #include "task-distribution-test.hpp"
 #include "../boilerplate/execution-boilerplate.hpp"
@@ -286,12 +287,12 @@ void renderLogExample() {
 		 << "//" << endl;
 
 	Rnum dummyContent(1);
-	Rlog_message msgServError(LogEntry(LogLevel::SERVERE_ERROR, "Servere-Error-Message (Rlog_message-example)"), &dummyContent);
-	Rlog_message msgError(LogEntry(LogLevel::ERROR, "Error-Message (Rlog_message-example)"), &msgServError);
-	Rlog_message msgWarn(LogEntry(LogLevel::WARN, "Warn-Message (Rlog_message-example)"), &msgError);
-	Rlog_message msgInfo(LogEntry(LogLevel::INFO, "Info-Message (Rlog_message-example)"), &msgWarn);
-	Rlog_message msgDebug(LogEntry(LogLevel::DEBUG, "Debug-Message (Rlog_message-example)"), &msgInfo);
-	Rlog_message msgTrace(LogEntry(LogLevel::TRACE, "Trace-Message (Rlog_message-example)"), &msgDebug);
+	Rlog_message msgServError(LogLevel::SERVERE_ERROR, "Servere-Error-Message (Rlog_message-example)", &dummyContent);
+	Rlog_message msgError(LogLevel::ERROR, "Error-Message (Rlog_message-example)", &msgServError);
+	Rlog_message msgWarn(LogLevel::WARN, "Warn-Message (Rlog_message-example)", &msgError);
+	Rlog_message msgInfo(LogLevel::INFO, "Info-Message (Rlog_message-example)", &msgWarn);
+	Rlog_message msgDebug(LogLevel::DEBUG, "Debug-Message (Rlog_message-example)", &msgInfo);
+	Rlog_message msgTrace(LogLevel::TRACE, "Trace-Message (Rlog_message-example)", &msgDebug);
 
 	auto& tree = msgTrace;
 
@@ -318,6 +319,26 @@ void jsonParseFromStrExample() {
 	auto string = torasu::tstd::renderString(&prop, &li);
 
 	std::cout << "Res: " << string.getString() << std::endl;
+
+}
+
+void renderErrorExample() {
+
+	cout << "//" << endl
+		 << "// Render Error Example" << endl
+		 << "//" << endl;
+
+	Rerror err("Example error");
+	Rmultiply mulA(10, &err);
+	Rmultiply mulB(&mulA, &err);
+	Rmultiply mulC(5, &mulB);
+	auto& tree = mulC;
+
+	torasu::tstd::LIcore_logger logger;
+	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
+	auto num = torasu::tstd::renderNum(&tree, &li);
+
+	std::cout << "Res: " << num.getNum() << std::endl;
 
 }
 
@@ -352,6 +373,8 @@ int main(int argc, char** argv) {
 	renderLogExample();
 
 	jsonParseFromStrExample();
+
+	renderErrorExample();
 
 	// taskDistTest();
 
