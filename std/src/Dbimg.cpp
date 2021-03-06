@@ -1,5 +1,7 @@
 #include "../include/torasu/std/Dbimg.hpp"
 
+#include <algorithm>
+
 using namespace std;
 
 #define IDENT "STD::DBIMG"
@@ -27,6 +29,11 @@ Dbimg::Dbimg(const Dbimg& copy) {
 
 Dbimg::~Dbimg() {
 	delete[] data;
+}
+
+void Dbimg::clear() {
+	uint32_t* data32 = reinterpret_cast<uint32_t*>(data);
+	std::fill(data32, data32+(width*height), 0x00);
 }
 
 std::string Dbimg::getIdent() {

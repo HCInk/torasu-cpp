@@ -23,6 +23,8 @@ public:
 	Dbimg(const Dbimg& copy);
 	~Dbimg();
 
+	void clear();
+
 	std::string getIdent() override;
 	DataDump* dumpResource() override;
 	Dbimg* clone() override;
