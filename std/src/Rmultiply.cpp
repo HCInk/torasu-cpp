@@ -24,16 +24,17 @@ Rmultiply::~Rmultiply() {
 
 ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
-	if (numPipeline.compare(resSettings->getPipeline()) == 0) {
+	auto* ei = ri->getExecutionInterface();
+	auto li = ri->getLogInstruction();
+	auto* rctx = ri->getRenderContext();
+	torasu::tools::LogInfoRefBuilder lirb(li);
+
+	const auto selPipleine = resSettings->getPipeline();
+
+	if (selPipleine == TORASU_STD_PL_NUM) {
 
 		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(numPipeline, NULL);
-
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
-		torasu::tools::LogInfoRefBuilder lirb(li);
+		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
 
 		auto rendA = rib.enqueueRender(a, rctx, ei, li);
 		auto rendB = rib.enqueueRender(b, rctx, ei, li);
@@ -64,37 +65,36 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true, lirb.build());
 		}
 
-	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {
+	} else if (selPipleine == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		if ( !( resSettings->getResultFormatSettings() != NULL
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings())) )) {
+		auto fmtSettings = resSettings->getResultFormatSettings();
+		if ( !( fmtSettings != nullptr
+				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) )) {
 			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
 		}
 
 		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, fmt);
+		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
 
 		auto rendA = rib.enqueueRender(a, rctx, ei, li);
 		auto rendB = rib.enqueueRender(b, rctx, ei, li);
 
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		std::unique_ptr<RenderResult> resA(ei->fetchRenderResult(rendA));
+		std::unique_ptr<RenderResult> resB(ei->fetchRenderResult(rendB));
 
 		// Calculating Result from Results
 
-		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB);
+		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA.get(), &lirb);
+		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB.get(), &lirb);
 
-		Dbimg* result = NULL;
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
-
-			result = new Dbimg(*fmt);
+		if (a && b) {
+			Dbimg* result;
+			if (a.canFreeResult()) result = a.ejectResult();
+			else if (b.canFreeResult()) result = b.ejectResult();
+			else result = new Dbimg(*fmt);
 
 			const uint32_t height = result->getHeight();
 			const uint32_t width = result->getWidth();
@@ -121,15 +121,24 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 			if (doBench) li.logger->log(LogLevel::DEBUG,
 											"Mul Time = " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bench).count()) + "[ms]");
 
-		}
 
-		delete resA;
-		delete resB;
-
-		if (result != NULL) {
-			return new ResultSegment(ResultSegmentStatus_OK, result, true);
+			return new ResultSegment(lirb.hasError ? ResultSegmentStatus_OK_WARN : ResultSegmentStatus_OK,
+									 result, true, lirb.build());
 		} else {
+
+			if (li.level <= WARN) {
+				torasu::tools::LogInfoRefBuilder errorCauses(li);
+				if (!a)
+					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
+				if (!b)
+					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
+
+				lirb.logCause(WARN, "Sub render failed to provide operands, returning empty image", errorCauses);
+
+			}
+
 			Dbimg* errRes = new Dbimg(*fmt);
+			errRes->clear();
 			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
 		}
 
