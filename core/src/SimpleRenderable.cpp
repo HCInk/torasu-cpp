@@ -1,5 +1,7 @@
 #include "../include/torasu/SimpleRenderable.hpp"
 
+#include <torasu/log_tools.hpp>
+
 namespace torasu::tools {
 
 NamedIdentElement::NamedIdentElement(std::string typeIdent)
@@ -93,11 +95,9 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 		try {
 			rseg = renderSegment(rss, ri);
 		} catch (const std::exception& ex) {
-			auto li = ri->getLogInstruction();
-			if (li.level <= LogLevel::ERROR) {
-				li.logger->log(LogLevel::ERROR, std::string("IndividualizedSegnentRenderable error: ") + ex.what());
-			}
-			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
+			LogInfoRefBuilder lirb(ri->getLogInstruction());
+			lirb.logCause(LogLevel::ERROR, std::string("IndividualizedSegnentRenderable error: ") + ex.what());
+			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR, lirb.build());
 			continue;
 		}
 
