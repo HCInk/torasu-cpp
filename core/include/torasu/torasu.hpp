@@ -132,6 +132,9 @@ enum LogType {
 	/** @brief Will mark that group-contents shall be persisted, even if an above group gets LT_GROUP_UNREF.
 	 * To dereference LT_GROUP_UNREF has to be called explicity on the group */
 	LT_GROUP_PERSIST = 13,
+	/** @brief Contains data that shall be logged
+	 * @note Indicates that object is of type torasu::LogData - usage without being of that type will lead to undefined behavior */
+	LT_DATA = 20,
 	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
@@ -207,6 +210,22 @@ public:
 
 	~LogMessage() {
 		if (info != nullptr) delete info;
+	}
+};
+
+/**
+ * @brief  Data to be logged
+ */
+class LogData : public LogEntry {
+public:
+	const std::string text;
+	const DataResource* data;
+
+	LogData(std::string text, const DataResource* data)
+		: LogEntry(LogType::LT_DATA), text(text), data(data) {}
+
+	~LogData() {
+		if (data != nullptr) delete data;
 	}
 };
 
