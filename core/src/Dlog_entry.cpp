@@ -146,6 +146,24 @@ void Dlog_entry::load() {
 			entry = new LogGroupStart(name);
 			break;
 		}
+	case LT_DATA: {
+			std::string text;
+			auto textj = json["text"];
+			if (textj.is_string()) {
+				text = textj;
+			} else {
+				text = "";
+			}
+
+			// TODO Data parsing needs "Nested-DataResource-Import" feature
+			if (json.contains("data")) {
+				auto dataj = json["data"];
+				text += " [Data will currently not be parsed - RAW: " + dataj.dump() + "]";
+			}
+
+			entry = new LogData(text, nullptr);
+			break;
+		}
 	default:
 		entry = new LogEntry(type);
 		break;
@@ -168,6 +186,15 @@ torasu::json Dlog_entry::makeJson() {
 	case LT_GROUP_START: {
 			LogGroupStart* start = static_cast<LogGroupStart*>(entry);
 			json["name"] = start->name;
+			break;
+		}
+	case LT_DATA: {
+			LogData* dataLog = static_cast<LogData*>(entry);
+			json["name"] = dataLog->text;
+			// TODO Data serializing needs "Nested-DataResource-Export" feature
+			if (dataLog->data != nullptr) {
+				json["data"] = "[data currently not able to be serialized]";
+			}
 			break;
 		}
 	default:
