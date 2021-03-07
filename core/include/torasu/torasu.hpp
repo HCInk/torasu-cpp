@@ -31,8 +31,12 @@ int TORASU_check_core();
 namespace torasu {
 
 // HELPER (MSIC)
-
 typedef std::function<void(void)> Callback;
+
+// DATA
+class DataDump;
+class DataResource;
+class DataResourceHolder;
 
 // LOGGING
 typedef uint64_t LogId;
@@ -50,10 +54,6 @@ typedef uint64_t LockId;
 // INTERFACES
 class ExecutionInterface;
 
-// DATA
-class DataDump;
-class DataResource;
-class DataResourceHolder;
 
 // TREE
 class Element;
@@ -85,6 +85,107 @@ class UnreadyInstruction;
 // UPSTREAM (READY)
 class ObjectReadyResult;
 typedef std::vector<ObjectReadyResult> ElementReadyResult;
+
+//
+// DATA
+//
+
+union DDDataPointer {
+	unsigned char* b;
+	const char* s;
+};
+
+class DataDump {
+private:
+	DDDataPointer data;
+	int size;
+	std::function<void(DataDump*)>* freeFunc;
+	bool json;
+public:
+	inline DataDump(DDDataPointer data, int size, std::function<void(DataDump*)>* freeFunc, bool isJson = false)
+		: data(data), size(size), freeFunc(freeFunc), json(isJson) {}
+
+	~DataDump() {
+		if (freeFunc != nullptr) {
+			(*freeFunc)(this);
+		}
+	}
+
+	inline DDDataPointer const getData() {
+		return data;
+	}
+
+	inline int const getSize() {
+		return size;
+	}
+
+	inline bool isJson() {
+		return json;
+	}
+
+	inline DataDump* newReference() {
+		return new DataDump(data, size, nullptr, json);
+	}
+};
+
+class DataResource {
+public:
+	DataResource() {}
+	virtual ~DataResource() {}
+
+	virtual std::string getIdent() = 0;
+	virtual DataDump* dumpResource() = 0;
+	virtual DataResource* clone() = 0;
+};
+
+class DataResourceHolder {
+private:
+	DataResource* dr;
+	bool owning;
+
+public:
+	DataResourceHolder() : dr(nullptr), owning(false) {}
+	DataResourceHolder(DataResource* dr, bool owning) : dr(dr), owning(owning) {}
+	~DataResourceHolder() {
+		if (owns()) {
+			delete dr;
+		}
+	}
+
+	inline void initialize(DataResource* dr, bool owning) {
+#ifdef TORASU_CHECK_DOUBLE_INIT
+		if (this->dr != nullptr) throw std::logic_error("DataResourceHolder may not be intialized twice!");
+#endif
+		this->dr = dr;
+		this->owning = owning;
+	}
+
+	inline bool owns() const {
+		return owning;
+	}
+
+	inline DataResource* const get() const {
+		return dr;
+	}
+
+	/**
+	 * @brief  Ejects the data to take control of manual memory management
+	 * @note   Only available if owns() = true
+	 * @retval The pointer to the result that has been ejected
+	 */
+	inline DataResource* const eject() {
+#ifdef TORASU_CHECK_FALSE_EJECTION
+		if (!owns()) {
+			throw std::runtime_error("Ejected result that wasn't ejectable - owns() = false");
+		}
+#endif
+		owning = false;
+		return dr;
+	}
+
+
+
+};
 
 //
 // LOGGING
@@ -349,107 +450,6 @@ public:
 		fetchRenderResults(&rp, 1);
 		return rp.result;
 	}
-
-};
-
-//
-// DATA
-//
-
-union DDDataPointer {
-	unsigned char* b;
-	const char* s;
-};
-
-class DataDump {
-private:
-	DDDataPointer data;
-	int size;
-	std::function<void(DataDump*)>* freeFunc;
-	bool json;
-public:
-	inline DataDump(DDDataPointer data, int size, std::function<void(DataDump*)>* freeFunc, bool isJson = false)
-		: data(data), size(size), freeFunc(freeFunc), json(isJson) {}
-
-	~DataDump() {
-		if (freeFunc != nullptr) {
-			(*freeFunc)(this);
-		}
-	}
-
-	inline DDDataPointer const getData() {
-		return data;
-	}
-
-	inline int const getSize() {
-		return size;
-	}
-
-	inline bool isJson() {
-		return json;
-	}
-
-	inline DataDump* newReference() {
-		return new DataDump(data, size, nullptr, json);
-	}
-};
-
-class DataResource {
-public:
-	DataResource() {}
-	virtual ~DataResource() {}
-
-	virtual std::string getIdent() = 0;
-	virtual DataDump* dumpResource() = 0;
-	virtual DataResource* clone() = 0;
-};
-
-class DataResourceHolder {
-private:
-	DataResource* dr;
-	bool owning;
-
-public:
-	DataResourceHolder() : dr(nullptr), owning(false) {}
-	DataResourceHolder(DataResource* dr, bool owning) : dr(dr), owning(owning) {}
-	~DataResourceHolder() {
-		if (owns()) {
-			delete dr;
-		}
-	}
-
-	inline void initialize(DataResource* dr, bool owning) {
-#ifdef TORASU_CHECK_DOUBLE_INIT
-		if (this->dr != nullptr) throw std::logic_error("DataResourceHolder may not be intialized twice!");
-#endif
-		this->dr = dr;
-		this->owning = owning;
-	}
-
-	inline bool owns() const {
-		return owning;
-	}
-
-	inline DataResource* const get() const {
-		return dr;
-	}
-
-	/**
-	 * @brief  Ejects the data to take control of manual memory management
-	 * @note   Only available if owns() = true
-	 * @retval The pointer to the result that has been ejected
-	 */
-	inline DataResource* const eject() {
-#ifdef TORASU_CHECK_FALSE_EJECTION
-		if (!owns()) {
-			throw std::runtime_error("Ejected result that wasn't ejectable - owns() = false");
-		}
-#endif
-		owning = false;
-		return dr;
-	}
-
-
 
 };
 
