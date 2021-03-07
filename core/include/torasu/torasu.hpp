@@ -236,6 +236,9 @@ enum LogType {
 	/** @brief Contains data that shall be logged
 	 * @note Indicates that object is of type torasu::LogData - usage without being of that type will lead to undefined behavior */
 	LT_DATA = 20,
+	/** @brief Contains information about how long things have taken / how many resources have been used for certain application
+	 * @note Indicates that object is of type torasu::LogBenchmark - usage without being of that type will lead to undefined behavior */
+	LT_BENCHMARK = 21,
 	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
@@ -330,6 +333,85 @@ public:
 	}
 };
 
+/**
+ * @brief  Benchmark to be logged
+ */
+class LogBenchmark : public LogEntry {
+public:
+	/** @brief  Unit for storing benchmark-times */
+	typedef uint64_t bench_t;
+	/** @brief  Maximum value of bench_t / Also indicates that a value may not have been set */
+	inline static const bench_t bench_t_MAX = UINT64_MAX;
+
+	/** @brief  Selects which type of benchmak this is
+	 * and how BenchInfo should be interpreted */
+	enum BenchType {
+		/** @brief Tagged benchmark, describes a single operation with a tag
+		 * - OpInfo shall be interpreted as opTag, which is the tag/label of the operation */
+		BenchType_TAGGED = 0,
+		/** @brief Benchmark of the group the log message is in
+		 * - OpInfo shall be interpreted as toContinue, which is indicates if a followup-benchmark
+		 * continues the benchmark (true) or if this has been the last benchmark for the group (false) */
+		BenchType_GROUP = 1
+	} const benchType;
+
+	union BenchInfo {
+		/** @brief  Tag of operation (When using BenchType_TAGGED) */
+		std::string* opTag;
+		inline BenchInfo(std::string* opTag) : opTag(opTag) {}
+		/** @brief  Weather the operation is just supsneded and will be continued (true),
+		 * or if this is the last benchmark-section regarding this group (false) (When using BenchType_GROUP) */
+		bool toContinue;
+		inline BenchInfo(bool toContinue) : toContinue(toContinue) {}
+	} const benchInfo;
+
+	/** @brief  Actual time the operation took in 10^-6sec */
+	const bench_t elapsed;
+	/** @brief  CPU-time used in 10^-6sec */
+	const bench_t calcTime;
+	/** @brief  Time in 10^-6sec */
+	const bench_t position;
+
+private:
+	/** @brief Contstructor for group-benchmark, see createGroupBenchmark(...) for more info */
+	LogBenchmark(bench_t calcTime, bench_t elapsed, bench_t position, bool toContinue)
+		: LogEntry(LogType::LT_BENCHMARK), benchType(BenchType_GROUP),
+		  benchInfo(toContinue), calcTime(calcTime), elapsed(elapsed), position(position) {}
+
+public:
+	/**
+	 * @brief  Create a log-message, which notes the performance of a certain operation (identified by the opTag)
+	 * @param  opTag: The tag the operation should be tagged with
+	 * @param  calcTime: The CPU-time the operation took (in 10^-6sec)
+	 * @param  elapsed: The actual time the operation took
+	 * @param  position: The position in time the operation began (in 10^-6sec) - if unknwon set to bench_t_MAX
+	 */
+	LogBenchmark(const std::string& opTag, bench_t calcTime, bench_t elapsed, bench_t position)
+		: LogEntry(LogType::LT_BENCHMARK), benchType(BenchType_TAGGED),
+		  benchInfo(new std::string(opTag)), calcTime(calcTime), elapsed(elapsed), position(position) {}
+
+	/**
+	 * @brief  Create a log-message, which notes the performance of the group it is sent to
+	 * @note   This type of log-entry is intended log the performance of the operations done in the group,
+	 * 			therefore this may only be written to groups you have created yourself
+	 * 			or groups you recieved explicit permission to write this to.
+	 * 			Be careful when writing to groups/loginterfaces you have not created to not create any colisions.
+	 * @param  calcTime: The CPU-time the operation took (in 10^-6sec)
+	 * @param  elapsed: The actual time the operation took
+	 * @param  position: The position in time the operation began (in 10^-6sec) - if unknwon set to bench_t_MAX
+	 * @param  toContinue: true: there will be followup messages contuing the report,
+	 * 					  	false: this is the last benchmark regarding this group
+	 * @retval The created bench-LogEntry, needs to be freed by caller
+	 */
+	inline static LogBenchmark* createGroupBenchmark(bench_t calcTime, bench_t elapsed, bench_t position = bench_t_MAX, bool toContinue = false) {
+		return new LogBenchmark(calcTime, elapsed, position, toContinue);
+	}
+
+	~LogBenchmark() {
+		if (benchType == BenchType_TAGGED && benchInfo.opTag != nullptr) delete benchInfo.opTag;
+	}
+};
+
 class LogInterface {
 public:
 	/**
@@ -383,7 +465,12 @@ struct LogInstruction {
 	/** @brief The minimum level of log messages that should be recorded  */
 	LogLevel level;
 
-	explicit LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN) : logger(logger), level(level) {}
+	/** @brief Enabled options */
+	uint64_t options;
+
+	inline static uint64_t OPT_RUNNER_BENCH = 0x1;
+
+	explicit LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN, uint64_t options = 0x0) : logger(logger), level(level), options(options) {}
 };
 
 //

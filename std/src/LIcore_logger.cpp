@@ -2,6 +2,9 @@
 
 #include <memory>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
 
 namespace {
 
@@ -32,6 +35,7 @@ static const char* ANSI_BLUE = "\33[94m";
 static const char* ANSI_DARK_GREEN = "\33[32m";
 static const char* ANSI_GRAY = "\33[90m";
 static const char* ANSI_CYAN = "\33[36m";
+static const char* ANSI_MAGENTA = "\33[35m";
 
 const char* getLvlAnsi(torasu::LogLevel lvl) {
 	switch (lvl) {
@@ -184,6 +188,10 @@ void LIcore_logger::log(LogEntry* entry) {
 				auto* msgEntry = static_cast<LogMessage*>(entry);
 				if (useAnsi) message += getLvlAnsi(msgEntry->level);
 				prefix += getLvLName(msgEntry->level);
+
+			} else if (entry->type == LT_BENCHMARK) {
+				if (useAnsi) message += ANSI_MAGENTA;
+				prefix += "BENCH";
 			} else {
 				if (useAnsi) message += ANSI_CYAN;
 				prefix += "DATA ";
@@ -193,7 +201,7 @@ void LIcore_logger::log(LogEntry* entry) {
 
 			// Group Display
 			LIcore_logger_logstore::StoreGroup* foundGroup = nullptr;
-			bool isTag;
+			bool isTag = false;
 			size_t prefSize;
 			if (!entry->groupStack.empty()) {
 
@@ -235,6 +243,51 @@ void LIcore_logger::log(LogEntry* entry) {
 						firstLine = false;
 					}
 				}
+			} else if (entry->type == LT_BENCHMARK) {
+				LogBenchmark* benchEntry = static_cast<LogBenchmark*>(entry);
+				switch (benchEntry->benchType) {
+				case LogBenchmark::BenchType_TAGGED: {
+						auto* tag = benchEntry->benchInfo.opTag;
+						message += (tag != nullptr ? *tag : "<unnamed>") + ": ";
+						break;
+					}
+				case LogBenchmark::BenchType_GROUP:
+					break;
+				default: {
+						message += "<unknown-bench-type>: ";
+						break;
+					}
+				}
+				const auto divisor = 1000;
+				const char* unitLabel = "ms";
+
+				double calcTime = benchEntry->calcTime != LogBenchmark::bench_t_MAX ? static_cast<double>(benchEntry->calcTime) / divisor : NAN;
+				double elapsed = benchEntry->elapsed != LogBenchmark::bench_t_MAX ? static_cast<double>(benchEntry->elapsed) / divisor : NAN;
+				// double position = benchEntry->position != LogBenchmark::bench_t_MAX ? static_cast<double>(benchEntry->position) / divisor : NAN;
+
+				std::stringstream timeDisplayStr;
+
+				timeDisplayStr << std::setw(8);
+
+				timeDisplayStr << std::floor(calcTime*divisor)/divisor << unitLabel;
+
+				if (elapsed != NAN)
+					timeDisplayStr << " ELAPSED: " << std::floor(elapsed*divisor)/divisor << unitLabel;
+
+				// timeDisplayStr.precision(0);
+				// if (position != NAN)
+				// 	timeDisplayStr << " POS: " << std::floor(position) << unitLabel;
+
+				message += timeDisplayStr.str();
+
+				if (benchEntry->benchType == LogBenchmark::BenchType_GROUP) {
+					if (benchEntry->benchInfo.toContinue) {
+						message += " (to continue)";
+					} else {
+						// TODO Sum up totals if there has been multiple of those messages in the group
+					}
+				}
+
 			} else {
 				message += "[DataPacket-" + std::to_string(entry->type) + "]";
 			}

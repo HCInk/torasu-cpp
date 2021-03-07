@@ -619,6 +619,13 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Begin");
 
+	bool doBench = li.options & torasu::LogInstruction::OPT_RUNNER_BENCH;
+	std::chrono::system_clock::time_point benchStart;
+
+	if (doBench) {
+		benchStart = std::chrono::high_resolution_clock::now();
+	}
+
 	RenderInstruction ri(rctx, rs, this, li);
 
 	RenderResult* res = rnd->render(&ri);
@@ -629,6 +636,14 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 			delete rdyObjs;
 		}
 	};
+
+	if (doBench) {
+		auto dif = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - benchStart).count();
+		auto pos = std::chrono::duration_cast<std::chrono::microseconds>(benchStart.time_since_epoch()).count();
+
+		if (dif < 0) dif = 0;
+		li.logger->log(LogBenchmark::createGroupBenchmark(dif, dif, pos));
+	}
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
 
