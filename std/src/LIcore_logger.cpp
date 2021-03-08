@@ -267,7 +267,7 @@ void LIcore_logger::log(LogEntry* entry) {
 
 				std::stringstream timeDisplayStr;
 
-				timeDisplayStr << std::setw(8);
+				// timeDisplayStr << std::setw(8);
 
 				timeDisplayStr << std::floor(calcTime*divisor)/divisor << unitLabel;
 
@@ -278,14 +278,52 @@ void LIcore_logger::log(LogEntry* entry) {
 				// if (position != NAN)
 				// 	timeDisplayStr << " POS: " << std::floor(position) << unitLabel;
 
-				message += timeDisplayStr.str();
 
 				if (benchEntry->benchType == LogBenchmark::BenchType_GROUP) {
 					if (benchEntry->benchInfo.toContinue) {
-						message += " (to continue)";
+						timeDisplayStr << " (to continue)";
+						if (foundGroup != nullptr) foundGroup->groupBenchmarks.push_back(*benchEntry);
 					} else {
-						// TODO Sum up totals if there has been multiple of those messages in the group
+						if (foundGroup != nullptr) {
+							if (!foundGroup->groupBenchmarks.empty()) {
+								foundGroup->groupBenchmarks.push_back(*benchEntry);
+
+								double totalElapsed = NAN;
+								if (benchEntry->elapsed != LogBenchmark::bench_t_MAX &&
+										benchEntry->position != LogBenchmark::bench_t_MAX) {
+									auto firstBench = foundGroup->groupBenchmarks.begin();
+									if (firstBench->position != torasu::LogBenchmark::bench_t_MAX) {
+										size_t totalElapsedRaw = benchEntry->elapsed+(benchEntry->position-firstBench->position);
+										totalElapsed = static_cast<double>(totalElapsedRaw) / divisor;
+									}
+								}
+
+								double totalCalcTime;
+								{
+									size_t totalCalcTimeRaw = 0;
+									for (auto entry : foundGroup->groupBenchmarks) {
+										if (entry.calcTime != LogBenchmark::bench_t_MAX) {
+											totalCalcTimeRaw += entry.calcTime;
+										}
+									}
+									totalCalcTime = static_cast<double>(totalCalcTimeRaw) / divisor;
+								}
+
+								timeDisplayStr << "\n" + padStr(' ', prefSize) << " \t -> TOTAL: "
+											   << std::floor(totalCalcTime*divisor)/divisor << unitLabel;
+
+								if (totalElapsed != NAN)
+									timeDisplayStr << " ELAPSED: " << std::floor(totalElapsed*divisor)/divisor << unitLabel;
+
+							} else {
+								foundGroup->groupBenchmarks.push_back(*benchEntry);
+							}
+						}
 					}
+
+					message += timeDisplayStr.str();
+
+					if (foundGroup != nullptr) foundGroup->groupBenchmarks.push_back(*benchEntry);
 				}
 
 			} else {
