@@ -365,10 +365,10 @@ public:
 		inline BenchInfo(bool toContinue) : toContinue(toContinue) {}
 	} const benchInfo;
 
-	/** @brief  Actual time the operation took in 10^-6sec */
-	const bench_t elapsed;
 	/** @brief  CPU-time used in 10^-6sec */
 	const bench_t calcTime;
+	/** @brief  Actual time the operation took in 10^-6sec */
+	const bench_t elapsed;
 	/** @brief  Time in 10^-6sec */
 	const bench_t position;
 
