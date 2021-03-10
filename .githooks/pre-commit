@@ -1,2 +1,16 @@
 #!/bin/sh
+
+# Format unstaged
 PWD=$(git rev-parse --show-toplevel) . "$(git rev-parse --show-toplevel)/format.sh"
+
+# Stash unstaged changes
+git stash -q --keep-index
+
+# Format staged
+PWD=$(git rev-parse --show-toplevel) . "$(git rev-parse --show-toplevel)/format.sh"
+
+# Stage updated files
+git add -u
+
+# Re-apply original unstaged changes
+git stash pop -q
