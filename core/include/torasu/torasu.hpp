@@ -239,6 +239,9 @@ enum LogType {
 	/** @brief Contains information about how long things have taken / how many resources have been used for certain application
 	 * @note Indicates that object is of type torasu::LogBenchmark - usage without being of that type will lead to undefined behavior */
 	LT_BENCHMARK = 21,
+	/** @brief Contains information about the progress of the group
+	 * @note Indicates that object is of type torasu::LogProgress - usage without being of that type will lead to undefined behavior */
+	LT_PROGRESS = 22,
 	/** @brief Failed to determine the type of the log-entry */
 	LT_UNKNOWN = -1
 };
@@ -410,6 +413,42 @@ public:
 	~LogBenchmark() {
 		if (benchType == BenchType_TAGGED && benchInfo.opTag != nullptr) delete benchInfo.opTag;
 	}
+};
+
+
+/**
+ * @brief  Progress to be logged
+ */
+class LogProgress : public LogEntry {
+public:
+	/** @brief  The total number of units (-1 if unknown) */
+	const int64_t total;
+	/** @brief  How many tasks are done being processed (Range: 0 <= done <= total) */
+	const int64_t done;
+	/** @brief  How many tasks are currently being processed (Range: 0 <= done+pending <= total) */
+	const int64_t pending;
+	/** @brief  Label of the progress-entry at the position of done+pending (Only valid if pending > 0) */
+	const std::string label;
+
+	/**
+	 * @brief  Creates a log entry which indicates how much progress has been made
+	 * @param  total: The total number of units (-1 if unknown)
+	 * @param  done: How many tasks are done being processed (Range: 0 <= done <= total)
+	 * @param  pending: How many tasks are currently being processed (Range: 0 <= done+pending <= total)
+	 * @param  label: Label of the progress-entry at the position of done+pending (only valid if pending > 0)
+	 */
+	LogProgress(int64_t total, int64_t done, int64_t pending, std::string label = "")
+		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), pending(pending), label(label) {}
+
+	/**
+	 * @brief  Creates a log entry which indicates how much progress has been made (with pending = 1)
+	 * @param  total: The total number of units (-1 if unknown)
+	 * @param  done: How many tasks are done being processed (Range: 0 <= done <= total)
+	 * @param  label: Label of the progress-entry at the position of done+1 (only valid if done < total)
+	 */
+	LogProgress(int64_t total, int64_t done, std::string label = "")
+		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), pending(done < total ? 1 : 0), label(label) {}
+
 };
 
 class LogInterface {

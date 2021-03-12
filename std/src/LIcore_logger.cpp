@@ -32,6 +32,7 @@ static const char* ANSI_HIGHLIGTED_RED = "\33[97m\33[101m";
 static const char* ANSI_RED = "\33[91m";
 static const char* ANSI_YELLOW = "\33[93m";
 static const char* ANSI_BLUE = "\33[94m";
+static const char* ANSI_BRIGHT_GREEN = "\33[92m";
 static const char* ANSI_DARK_GREEN = "\33[32m";
 static const char* ANSI_GRAY = "\33[90m";
 static const char* ANSI_CYAN = "\33[36m";
@@ -192,6 +193,9 @@ void LIcore_logger::log(LogEntry* entry) {
 			} else if (entry->type == LT_BENCHMARK) {
 				if (useAnsi) message += ANSI_MAGENTA;
 				prefix += "BENCH";
+			} else if (entry->type == LT_PROGRESS) {
+				if (useAnsi) message += ANSI_BRIGHT_GREEN;
+				prefix += "PROG ";
 			} else {
 				if (useAnsi) message += ANSI_CYAN;
 				prefix += "DATA ";
@@ -326,6 +330,25 @@ void LIcore_logger::log(LogEntry* entry) {
 					if (foundGroup != nullptr) foundGroup->groupBenchmarks.push_back(*benchEntry);
 				}
 
+			} else if (entry->type == LT_PROGRESS) {
+				LogProgress* benchEntry = static_cast<LogProgress*>(entry);
+				if (benchEntry->total > 0) {
+					double progressVal = static_cast<double>(benchEntry->done) / benchEntry->total;
+
+					std::stringstream percDisp;
+					percDisp << std::setw(2) << std::setfill('0') << std::floor(progressVal*100) << "." << std::setw(2) << std::setfill('0') << std::floor( static_cast<int32_t>(progressVal*100*100) % 100 ) << "%";
+					message += percDisp.str();
+					message += " (" + std::to_string(benchEntry->done);
+					if (benchEntry->pending > 1) {
+						message += "[+" + std::to_string(benchEntry->pending) + "]";
+					}
+					message += "/" + std::to_string(benchEntry->total) + ")";
+				} else {
+					message += "xx.xx%";
+				}
+				if (!benchEntry->label.empty()) {
+					message += " - " + benchEntry->label;
+				}
 			} else {
 				message += "[DataPacket-" + std::to_string(entry->type) + "]";
 			}
