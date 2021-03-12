@@ -104,8 +104,8 @@ public:
 
 class LIcore_logger : public torasu::LogInterface {
 private:
-	bool useAnsi = true;
 	bool statusBar = true;
+	bool useAnsi = true;
 	std::mutex subIdCounterLock;
 	torasu::LogId subIdCounter = 0;
 	LIcore_logger_logstore logstore;
