@@ -512,6 +512,8 @@ struct LogInstruction {
 	/** @brief  Tells the runner to log detailed benchmarks of executions
 	 * @note Needs to be combined with OPT_RUNNER_BENCH to be effective */
 	inline static uint64_t OPT_RUNNER_BENCH_DETAILED = 0x2;
+	/** @brief  When set progress shall be reported */
+	inline static uint64_t OPT_PROGRESS = 0x4;
 
 	explicit LogInstruction(LogInterface* logger, LogLevel level = LogLevel::WARN, uint64_t options = 0x0) : logger(logger), level(level), options(options) {}
 };
