@@ -100,9 +100,16 @@ private:
 	torasu::LogId subIdCounter = 0;
 	LIcore_logger_logstore logstore;
 	std::mutex logMutex;
+	const std::string* currentStatus = nullptr;
+	size_t statusDispLength = 0;
+private:
+	void println(const std::string& str);
+	void setStatus(const std::string* newStatus, size_t statusDispLength);
+	int32_t getTerminalWidth();
 public:
 	LIcore_logger();
 	explicit LIcore_logger(bool useAnsi);
+	~LIcore_logger();
 	void log(LogEntry* entry) override;
 	LogId fetchSubId() override;
 	std::vector<LogId>* pathFromParent(LogInterface* parent) const override;
