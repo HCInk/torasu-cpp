@@ -167,7 +167,20 @@ private:
 	EIcore_runner* const runner;
 	const int64_t renderId;
 	const std::vector<int64_t>* const prioStack;
+	bool recordBench = false;
 
+	// Benchmarking  (only accessed by executor)
+	struct Benchmarking {
+		size_t benchStart;
+		size_t benchRecentResume;
+		size_t benchCalcSpent;
+		LogInterface* logger;
+		bool detailedLogging;
+
+		void init(LogInterface* logger=nullptr, bool detailedLogging=false);
+		void resume();
+		void stop(bool final = false);
+	} bench;
 
 	// Sub-task-data (locked by "subTasksLock")
 	std::mutex subTasksLock;

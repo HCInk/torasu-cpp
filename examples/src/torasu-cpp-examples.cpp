@@ -335,7 +335,7 @@ void renderErrorExample() {
 	auto& tree = mulC;
 
 	torasu::tstd::LIcore_logger logger;
-	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
+	torasu::LogInstruction li(&logger, LogLevel::DEBUG, torasu::LogInstruction::OPT_RUNNER_BENCH | torasu::LogInstruction::OPT_RUNNER_BENCH_DETAILED);
 	auto num = torasu::tstd::renderNum(&tree, &li);
 
 	std::cout << "Res: " << num.getNum() << std::endl;

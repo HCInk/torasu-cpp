@@ -26,6 +26,10 @@ public:
 		const std::string name;
 		/** @brief Logs created in the group */
 		std::vector<LogEntry*> logs;
+		/** @brief Benchmarks of the group */
+		std::vector<LogBenchmark> groupBenchmarks;
+		/** @brief Tagged benchmarks */
+		std::map<std::string, LogBenchmark> taggedBenchmarks;
 
 		/** @brief Root constructor for tree */
 		StoreGroup();

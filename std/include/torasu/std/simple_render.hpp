@@ -71,6 +71,9 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 
 	RenderResult* rr = rib.runRender(tree, &rctx, ei, logInstr);
 
+	// Close refs to logger if logger has been created here
+	if (logger) rr->closeRefs();
+
 	// Finding results
 
 	torasu::tools::CastedRenderSegmentResult<T> found = handle.getFrom(rr);
@@ -90,16 +93,19 @@ template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::str
 
 	auto srr = simpleRender<T>(tree, pl, format, &logInstr, ei);
 
+	if (!srr.check()) {
+		if (logInstr.level <= WARN) {
+			logInstr.logger->log(new LogMessage(WARN, "SimpleRender: The generated result may contain errors! (" + srr.getInfo() + ")",
+												new auto(*srr.rs.getRawInfo()) ));
+		}
+	}
+
 	if (srr.result == nullptr)
 		throw std::runtime_error(std::string() + "No result was generated! (" + srr.getInfo() + ")");
 
-	if (!srr.check()) {
-		if (logInstr.level <= WARN) {
-			li->logger->log(new LogMessage(WARN, "SimpleRender: The generated result may contain errors! (" + srr.getInfo() + ")",
-										   new auto(*srr.rs.getRawInfo()) ));
 
-		}
-	}
+	// Close refs to logger if logger has been created here
+	if (logger) srr.rr->closeRefs();
 
 	return srr;
 }

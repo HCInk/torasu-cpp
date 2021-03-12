@@ -443,6 +443,7 @@ inline void EIcore_runner_object::init() {
 	if (li.logger != nullptr) {
 		// Add interception-logger
 		li.logger = new EIcore_runner_object_logger(this, li.logger);
+		recordBench = li.options & torasu::LogInstruction::OPT_RUNNER_BENCH;
 	}
 #endif
 }
@@ -593,6 +594,39 @@ inline void EIcore_runner_object::setResultSettings(ResultSettings* rs) {
 	this->rs = rs;
 }
 
+// EICoreRunnerObject: Benchmarking
+
+void EIcore_runner_object::Benchmarking::init(LogInterface* logger, bool detailedLogging) {
+	this->logger = logger;
+	this->detailedLogging = detailedLogging;
+	benchCalcSpent = 0;
+	benchStart = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	benchRecentResume = benchStart;
+}
+
+void EIcore_runner_object::Benchmarking::resume() {
+	benchRecentResume = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+}
+
+void EIcore_runner_object::Benchmarking::stop(bool final) {
+	auto current = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+	int64_t elapsedResume = current - benchRecentResume;
+	if (elapsedResume < 0) elapsedResume = 0;
+	benchCalcSpent += elapsedResume;
+
+	if (logger != nullptr) {
+		if (detailedLogging) {
+			logger->log(LogBenchmark::createGroupBenchmark(elapsedResume, elapsedResume, benchRecentResume, !final));
+		} else {
+			if (final) {
+				int64_t elapsedTotal = current - benchStart;
+				if (elapsedTotal < 0) elapsedTotal = 0;
+				logger->log(LogBenchmark::createGroupBenchmark(benchCalcSpent, elapsedTotal, benchStart));
+			}
+		}
+	}
+}
+
 // EICoreRunnerObject: Execution Functions
 
 RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
@@ -619,6 +653,10 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Begin");
 
+	if (recordBench) {
+		bench.init(li.logger, li.options & torasu::LogInstruction::OPT_RUNNER_BENCH_DETAILED);
+	}
+
 	RenderInstruction ri(rctx, rs, this, li);
 
 	RenderResult* res = rnd->render(&ri);
@@ -629,6 +667,8 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 			delete rdyObjs;
 		}
 	};
+
+	if (recordBench) bench.stop(true);
 
 	if (li.level <= LogLevel::TRACE) li.logger->log( LogLevel::TRACE, "(Runner) Task " + addr + " (" + rnd->getType() + ") Finished");
 
@@ -741,108 +781,119 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 }
 
 void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t requestCount) {
-	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
-	if (lockSubTasks) subTasksLock.lock();
+	if (recordBench) bench.stop();
+	try {
+		bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
+		if (lockSubTasks) subTasksLock.lock();
 
-	struct FetchSet {
-		RenderResult** result;
-		EIcore_runner_object* task;
-	};
+		struct FetchSet {
+			RenderResult** result;
+			EIcore_runner_object* task;
+		};
 
-	std::vector<FetchSet> toFetch(requestCount);
+		std::vector<FetchSet> toFetch(requestCount);
 
 #if CHECK_REGISTRATION_ERRORS
-	// register guest-thread if called over interface (parent == nullptr)
-	if (parent == nullptr) runner->dbg_registerRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
+		// register guest-thread if called over interface (parent == nullptr)
+		if (parent == nullptr) runner->dbg_registerRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
 #endif
 
-	// Run not yet done jobs
-	for (int reqi = requestCount-1; reqi >= 0; reqi--) {
-		int64_t renderId = requests[reqi].renderId;
+		// Run not yet done jobs
+		for (int reqi = requestCount-1; reqi >= 0; reqi--) {
+			int64_t renderId = requests[reqi].renderId;
 
-		if (subTasks != NULL && ((uint32_t)renderId) < subTaskSize) {
+			if (subTasks != NULL && ((uint32_t)renderId) < subTaskSize) {
 
-			auto it = subTasks->begin()+renderId;
-			EIcore_runner_object* task = *it;
-			*it = NULL;
-			if (lockSubTasks) subTasksLock.unlock();
+				auto it = subTasks->begin()+renderId;
+				EIcore_runner_object* task = *it;
+				*it = NULL;
+				if (lockSubTasks) subTasksLock.unlock();
 
 
-			if (task != NULL) {
+				if (task != NULL) {
 
-				auto& fs = toFetch[requestCount-reqi-1];
-				// ^ in reverse, so that the last expected tasks to finish will be waited first,
-				// so less waits/suspends will be triggered
+					auto& fs = toFetch[requestCount-reqi-1];
+					// ^ in reverse, so that the last expected tasks to finish will be waited first,
+					// so less waits/suspends will be triggered
 
-				fs.task = task;
-				fs.result = &requests[reqi].result;
+					fs.task = task;
+					fs.result = &requests[reqi].result;
 
-				if (task->status == PENDING) {
-					std::unique_lock statLock(task->statusLock); // XXX This should be locked after queue
 					if (task->status == PENDING) {
+						std::unique_lock statLock(task->statusLock); // XXX This should be locked after queue
+						if (task->status == PENDING) {
 
-						// Run task if pending
+							// Run task if pending
 
-						task->status = RUNNING;
-						statLock.unlock();
+							task->status = RUNNING;
+							statLock.unlock();
 
-						std::function<void()> cleanup;
-						*fs.result = task->run(&cleanup);
-						// ^ Result can be updated without locking since there are currently no other threads accessing this
-						fs.task = nullptr;
-						cleanup();
+							std::function<void()> cleanup;
+							*fs.result = task->run(&cleanup);
+							// ^ Result can be updated without locking since there are currently no other threads accessing this
+							fs.task = nullptr;
+							cleanup();
 
-						if (runner->useQueue) { // Queue is not used in noQueue-mode
-							std::unique_lock lockedQueue(runner->taskQueueLock);
-							auto& taskQueue = runner->taskQueue;
-							// std::cout << "TQ-erase " << task << " (fetch-run)" << std::endl;
-							auto found = taskQueue.find(task);
-							if (found == taskQueue.end())
-								throw std::logic_error("Sanity-Check: Couldn't find matching task in queue!");
-							taskQueue.erase(found);
+							if (runner->useQueue) { // Queue is not used in noQueue-mode
+								std::unique_lock lockedQueue(runner->taskQueueLock);
+								auto& taskQueue = runner->taskQueue;
+								// std::cout << "TQ-erase " << task << " (fetch-run)" << std::endl;
+								auto found = taskQueue.find(task);
+								if (found == taskQueue.end())
+									throw std::logic_error("Sanity-Check: Couldn't find matching task in queue!");
+								taskQueue.erase(found);
+							}
+							delete task;
+
 						}
-						delete task;
-
 					}
+
+				} else {
+					std::ostringstream errMsg;
+					errMsg << "The object the given render-id ("
+						   << renderId
+						   << "), is reffering to, has already been fetched and freed!";
+					throw runtime_error(errMsg.str());
 				}
 
 			} else {
+				if (lockSubTasks) subTasksLock.unlock();
 				std::ostringstream errMsg;
-				errMsg << "The object the given render-id ("
+				errMsg << "The given render-id ("
 					   << renderId
-					   << "), is reffering to, has already been fetched and freed!";
+					   << ") was never created!";
 				throw runtime_error(errMsg.str());
 			}
 
-		} else {
-			if (lockSubTasks) subTasksLock.unlock();
-			std::ostringstream errMsg;
-			errMsg << "The given render-id ("
-				   << renderId
-				   << ") was never created!";
-			throw runtime_error(errMsg.str());
 		}
 
-	}
-
 #if CHECK_REGISTRATION_ERRORS
-	if (parent == nullptr) runner->dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
+		if (parent == nullptr) runner->dbg_unregisterRunning(EIcore_runner::EIcore_runner_dbg::GUEST);
 #endif
 
-	// Fetch results
-	for (auto& fs : toFetch) {
-		if (fs.task == nullptr) continue; // Skip already fetched tasks
-		*fs.result = fs.task->fetchOwnRenderResult();
-		delete fs.task;
+		// Fetch results
+		for (auto& fs : toFetch) {
+			if (fs.task == nullptr) continue; // Skip already fetched tasks
+			*fs.result = fs.task->fetchOwnRenderResult();
+			delete fs.task;
+		}
+
+	} catch (const std::exception* ex) {
+		if (recordBench) bench.resume();
+		throw ex;
 	}
+
+	if (recordBench) bench.resume();
 
 }
 
 void EIcore_runner_object::lock(LockId lockId) {
 	if (runner->concurrentTree) {
+		if (recordBench) bench.stop();
 		suspend();
 		elemHandler->lock(lockId);
 		unsuspend();
+		if (recordBench) bench.resume();
 	}
 }
 
