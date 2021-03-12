@@ -190,6 +190,7 @@ std::string makeProgressBar(std::string info, double done, double doing, size_t 
 			}
 		} else {
 			textSize = 0;
+			barSize = areaLeft;
 		}
 
 		if (info.length() > textSize) {
@@ -253,8 +254,15 @@ void LIcore_logger::log(LogEntry* entry) {
 			logstore.create(entry->groupStack, startEntry->name);
 		}
 		break;
-	case LT_GROUP_END:
+
+	case LT_GROUP_END: {
+			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
+			auto found = resolveStack->top();
+			if (found == nullptr) throw std::runtime_error("Failed to end log-group: Group not found!");
+			found->progress.finished = true;
+		}
 		break;
+
 	case LT_GROUP_UNREF: {
 			// message += "(FREE)" + groupStackToStr(entry->groupStack) + " * " + entry->text;
 			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
@@ -414,8 +422,29 @@ void LIcore_logger::log(LogEntry* entry) {
 				}
 
 			} else if (entry->type == LT_PROGRESS) {
-
 				LogProgress* progressEntry = static_cast<LogProgress*>(entry);
+
+				std::string progLabel;
+
+				if (foundGroup != nullptr) {
+					auto& progress = foundGroup->progress;
+					progress.total = progressEntry->total;
+					progress.doing = progressEntry->pending;
+					progress.done = progressEntry->done;
+					if (!progress.hasInfo) progress.hasInfo = true;
+
+					int32_t currPos = progress.done + progress.doing;
+					if ( progress.labelPos <= currPos
+							&& (!progressEntry->label.empty() || progress.labelPos != currPos) ) {
+						progress.label = progressEntry->label;
+						progress.labelPos = currPos;
+					}
+
+					progLabel = progress.label;
+				} else {
+					progLabel = progressEntry->label;
+				}
+
 
 				double progressVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->done) / progressEntry->total : NAN;
 				message += dispPercentage(progressVal, 2);
@@ -431,7 +460,7 @@ void LIcore_logger::log(LogEntry* entry) {
 
 				double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->pending) / progressEntry->total : NAN;
 				auto termWidth = getTerminalWidth();
-				std::string statusText = makeProgressBar(progressEntry->label, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
+				std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
 				auto* statusForm = new std::string(ANSI_BRIGHT_GREEN + statusText + ANSI_RESET);
 				setStatus(statusForm, statusText.length());
 				if (!progressEntry->label.empty()) {

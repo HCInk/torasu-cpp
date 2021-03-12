@@ -30,6 +30,15 @@ public:
 		std::vector<LogBenchmark> groupBenchmarks;
 		/** @brief Tagged benchmarks */
 		std::map<std::string, LogBenchmark> taggedBenchmarks;
+		struct ProgressInformation {
+			bool finished = false;
+			bool hasInfo = false;
+			int32_t total = -1;
+			int32_t done = 0;
+			int32_t doing = 0;
+			std::string label;
+			int32_t labelPos = -1;
+		} progress;
 
 		/** @brief Root constructor for tree */
 		StoreGroup();
