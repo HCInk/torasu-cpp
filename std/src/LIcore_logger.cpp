@@ -429,7 +429,7 @@ void LIcore_logger::log(LogEntry* entry) {
 				if (foundGroup != nullptr) {
 					auto& progress = foundGroup->progress;
 					progress.total = progressEntry->total;
-					progress.doing = progressEntry->pending;
+					progress.doing = progressEntry->doing;
 					progress.done = progressEntry->done;
 					if (!progress.hasInfo) progress.hasInfo = true;
 
@@ -451,14 +451,14 @@ void LIcore_logger::log(LogEntry* entry) {
 
 				if (progressEntry->total > 0) {
 					message += " (" + std::to_string(progressEntry->done);
-					if (progressEntry->pending > 1) {
-						message += "[+" + std::to_string(progressEntry->pending) + "]";
+					if (progressEntry->doing > 1) {
+						message += "[+" + std::to_string(progressEntry->doing) + "]";
 					}
 					message += "/" + std::to_string(progressEntry->total) + ")";
 				}
 
 
-				double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->pending) / progressEntry->total : NAN;
+				double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->doing) / progressEntry->total : NAN;
 				auto termWidth = getTerminalWidth();
 				std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
 				auto* statusForm = new std::string(ANSI_BRIGHT_GREEN + statusText + ANSI_RESET);

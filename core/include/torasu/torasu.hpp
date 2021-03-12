@@ -426,7 +426,7 @@ public:
 	/** @brief  How many tasks are done being processed (Range: 0 <= done <= total) */
 	const int64_t done;
 	/** @brief  How many tasks are currently being processed (Range: 0 <= done+pending <= total) */
-	const int64_t pending;
+	const int64_t doing;
 	/** @brief  Label of the progress-entry at the position of done+pending (Only valid if pending > 0) */
 	const std::string label;
 
@@ -434,11 +434,11 @@ public:
 	 * @brief  Creates a log entry which indicates how much progress has been made
 	 * @param  total: The total number of units (-1 if unknown)
 	 * @param  done: How many tasks are done being processed (Range: 0 <= done <= total)
-	 * @param  pending: How many tasks are currently being processed (Range: 0 <= done+pending <= total)
+	 * @param  doing: How many tasks are currently being processed (Range: 0 <= done+pending <= total)
 	 * @param  label: Label of the progress-entry at the position of done+pending (only valid if pending > 0)
 	 */
-	LogProgress(int64_t total, int64_t done, int64_t pending, std::string label = "")
-		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), pending(pending), label(label) {}
+	LogProgress(int64_t total, int64_t done, int64_t doing, std::string label = "")
+		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), doing(doing), label(label) {}
 
 	/**
 	 * @brief  Creates a log entry which indicates how much progress has been made (with pending = 1)
@@ -447,7 +447,7 @@ public:
 	 * @param  label: Label of the progress-entry at the position of done+1 (only valid if done < total)
 	 */
 	LogProgress(int64_t total, int64_t done, std::string label = "")
-		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), pending(done < total ? 1 : 0), label(label) {}
+		: LogEntry(LogType::LT_PROGRESS), total(total), done(done), doing(done < total ? 1 : 0), label(label) {}
 
 };
 
