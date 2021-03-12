@@ -30,6 +30,15 @@ public:
 		std::vector<LogBenchmark> groupBenchmarks;
 		/** @brief Tagged benchmarks */
 		std::map<std::string, LogBenchmark> taggedBenchmarks;
+		struct ProgressInformation {
+			bool finished = false;
+			bool hasInfo = false;
+			int32_t total = -1;
+			int32_t done = 0;
+			int32_t doing = 0;
+			std::string label;
+			int32_t labelPos = -1;
+		} progress;
 
 		/** @brief Root constructor for tree */
 		StoreGroup();
@@ -95,14 +104,22 @@ public:
 
 class LIcore_logger : public torasu::LogInterface {
 private:
+	bool statusBar = true;
 	bool useAnsi = true;
 	std::mutex subIdCounterLock;
 	torasu::LogId subIdCounter = 0;
 	LIcore_logger_logstore logstore;
 	std::mutex logMutex;
+	const std::string* currentStatus = nullptr;
+	size_t statusDispLength = 0;
+private:
+	void println(const std::string& str);
+	void setStatus(const std::string* newStatus, size_t statusDispLength);
+	int32_t getTerminalWidth();
 public:
 	LIcore_logger();
-	explicit LIcore_logger(bool useAnsi);
+	explicit LIcore_logger(bool statusBar, bool useAnsi);
+	~LIcore_logger();
 	void log(LogEntry* entry) override;
 	LogId fetchSubId() override;
 	std::vector<LogId>* pathFromParent(LogInterface* parent) const override;

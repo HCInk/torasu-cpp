@@ -342,6 +342,33 @@ void renderErrorExample() {
 
 }
 
+void progressExample() {
+
+	cout << "//" << endl
+		 << "// Progress Example" << endl
+		 << "//" << endl;
+
+	std::chrono::milliseconds initTime(500);
+	std::chrono::milliseconds dummyTime(100);
+
+	LIcore_logger logger;
+
+	logger.log(new LogProgress( -1, 0, "Initializing..." ));
+	std::this_thread::sleep_for(initTime);
+
+
+	size_t total = 50;
+
+	for (size_t i = 0; i < total; i++) {
+		logger.log(new LogProgress( total, i, "Doing " + std::to_string(i+1) + "/" + std::to_string(total) + "..." ));
+		std::this_thread::sleep_for(dummyTime);
+	}
+
+	logger.log(new LogProgress( total, total, "Finishing..." ));
+	std::this_thread::sleep_for(dummyTime);
+
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -350,31 +377,33 @@ int main(int argc, char** argv) {
 
 	checkLinkings();
 
-	boilerplate_execution_initializer();
+	// boilerplate_execution_initializer();
 
-	simpleDpTest();
+	// simpleDpTest();
 
-	simpleRenderExample1();
+	// simpleRenderExample1();
 
-	simpleRenderExample2();
+	// simpleRenderExample2();
 
-	jsonPropExample();
+	// jsonPropExample();
 
-	jsonFallbackExample();
+	// jsonFallbackExample();
 
-	mathExample();
+	// mathExample();
 
-	inlineMathExample();
+	// inlineMathExample();
 
-	slotTests();
+	// slotTests();
 
-	logExample();
+	// logExample();
 
-	renderLogExample();
+	// renderLogExample();
 
-	jsonParseFromStrExample();
+	// jsonParseFromStrExample();
 
-	renderErrorExample();
+	// renderErrorExample();
+
+	progressExample();
 
 	// taskDistTest();
 

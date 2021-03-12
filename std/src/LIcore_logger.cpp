@@ -6,6 +6,17 @@
 #include <iomanip>
 #include <cmath>
 
+
+#define FANCY_MODE_DISABLED 0
+#define FANCY_MODE_UNIX 0
+
+#define FANCY_MODE FANCY_MODE_UNIX
+
+#if FANCY_MODE == FANCY_MODE_UNIX
+	#include <sys/ioctl.h> //ioctl() and TIOCGWINSZ
+	#include <unistd.h> // for STDOUT_FILENO
+#endif
+
 namespace {
 
 const char* getLvLName(torasu::LogLevel lvl) {
@@ -32,6 +43,7 @@ static const char* ANSI_HIGHLIGTED_RED = "\33[97m\33[101m";
 static const char* ANSI_RED = "\33[91m";
 static const char* ANSI_YELLOW = "\33[93m";
 static const char* ANSI_BLUE = "\33[94m";
+static const char* ANSI_BRIGHT_GREEN = "\33[92m";
 static const char* ANSI_DARK_GREEN = "\33[32m";
 static const char* ANSI_GRAY = "\33[90m";
 static const char* ANSI_CYAN = "\33[36m";
@@ -146,6 +158,72 @@ static std::vector<std::string> visualizeRef(const std::vector<torasu::LogId>& c
 	}
 }
 
+std::string dispPercentage(double val, size_t decPlaces) {
+	std::stringstream percDisp;
+	if (!std::isnan(val)) {
+		size_t decPlacesPrec = std::pow(10, decPlaces);
+		percDisp << std::setw(2) << std::setfill('0') << std::floor(val*100);
+		if (decPlaces > 0) percDisp << "." << std::setw(decPlaces) << std::setfill('0') << std::floor( static_cast<int32_t>(val*100*decPlacesPrec) % decPlacesPrec );
+	} else {
+		percDisp << "xx";
+		if (decPlaces > 0) percDisp << "." << padStr('x', decPlaces);
+	}
+	percDisp << "%";
+	return percDisp.str();
+}
+
+std::string makeProgressBar(std::string info, double done, double doing, size_t width) {
+	std::string out;
+	out += dispPercentage(done, 2);
+	if (width > 20) {
+		out += " ";
+		int32_t areaLeft = width - out.length();
+		size_t textSize;
+		int32_t barSize = 0;
+		if (!info.empty()) {
+			if (areaLeft > 30) {
+				textSize = areaLeft/2;
+				if (textSize > 30) textSize = 30;
+				barSize = areaLeft - textSize;
+			} else {
+				textSize = areaLeft;
+			}
+		} else {
+			textSize = 0;
+			barSize = areaLeft;
+		}
+
+		if (info.length() > textSize) {
+			out += info.substr(0, textSize-3) + "...";
+		} else {
+			out += info + padStr(' ', textSize-info.length());
+		}
+
+		if (barSize > 5) {
+			barSize -= 4;
+
+			out += " [";
+			if (!std::isnan(done)) {
+
+				int32_t doneSize = !std::isnan(done) ? std::floor(done * barSize) : 0;
+				int32_t doingSize = !std::isnan(doing) ? std::ceil(doing * barSize) : 0;
+
+				int32_t restSize = barSize - doneSize - doingSize;
+
+				out += padStr('#', doneSize);
+				out += padStr('=', doingSize);
+				out += padStr(' ', restSize);
+
+			} else {
+				out += padStr('-', barSize);
+			}
+
+			out += "] ";
+		}
+	}
+	return out;
+}
+
 } // namespace
 
 
@@ -153,7 +231,14 @@ namespace torasu::tstd {
 
 LIcore_logger::LIcore_logger() {}
 
-LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
+LIcore_logger::LIcore_logger(bool statusBar, bool useAnsi) : statusBar(statusBar), useAnsi(useAnsi) {}
+
+LIcore_logger::~LIcore_logger() {
+	if (currentStatus != nullptr) {
+		std::cout << std::endl;
+		delete currentStatus;
+	}
+}
 
 void LIcore_logger::log(LogEntry* entry) {
 	std::unique_lock lck(logMutex);
@@ -169,8 +254,15 @@ void LIcore_logger::log(LogEntry* entry) {
 			logstore.create(entry->groupStack, startEntry->name);
 		}
 		break;
-	case LT_GROUP_END:
+
+	case LT_GROUP_END: {
+			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
+			auto found = resolveStack->top();
+			if (found == nullptr) throw std::runtime_error("Failed to end log-group: Group not found!");
+			found->progress.finished = true;
+		}
 		break;
+
 	case LT_GROUP_UNREF: {
 			// message += "(FREE)" + groupStackToStr(entry->groupStack) + " * " + entry->text;
 			std::unique_ptr<std::stack<LIcore_logger_logstore::StoreGroup*>> resolveStack(logstore.resolve(entry->groupStack));
@@ -192,6 +284,9 @@ void LIcore_logger::log(LogEntry* entry) {
 			} else if (entry->type == LT_BENCHMARK) {
 				if (useAnsi) message += ANSI_MAGENTA;
 				prefix += "BENCH";
+			} else if (entry->type == LT_PROGRESS) {
+				if (useAnsi) message += ANSI_BRIGHT_GREEN;
+				prefix += "PROG ";
 			} else {
 				if (useAnsi) message += ANSI_CYAN;
 				prefix += "DATA ";
@@ -326,6 +421,55 @@ void LIcore_logger::log(LogEntry* entry) {
 					if (foundGroup != nullptr) foundGroup->groupBenchmarks.push_back(*benchEntry);
 				}
 
+			} else if (entry->type == LT_PROGRESS) {
+				LogProgress* progressEntry = static_cast<LogProgress*>(entry);
+
+				std::string progLabel;
+
+				if (foundGroup != nullptr) {
+					auto& progress = foundGroup->progress;
+					progress.total = progressEntry->total;
+					progress.doing = progressEntry->doing;
+					progress.done = progressEntry->done;
+					if (!progress.hasInfo) progress.hasInfo = true;
+
+					int32_t currPos = progress.done + progress.doing;
+					if ( progress.labelPos <= currPos
+							&& (!progressEntry->label.empty() || progress.labelPos != currPos) ) {
+						progress.label = progressEntry->label;
+						progress.labelPos = currPos;
+					}
+
+					progLabel = progress.label;
+				} else {
+					progLabel = progressEntry->label;
+				}
+
+
+				double progressVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->done) / progressEntry->total : NAN;
+				message += dispPercentage(progressVal, 2);
+
+				if (progressEntry->total > 0) {
+					message += " (" + std::to_string(progressEntry->done);
+					if (progressEntry->doing > 1) {
+						message += "[+" + std::to_string(progressEntry->doing) + "]";
+					}
+					message += "/" + std::to_string(progressEntry->total) + ")";
+				}
+
+				if (!progressEntry->label.empty()) {
+					message += " - " + progressEntry->label;
+				}
+
+				if (statusBar) {
+					double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->doing) / progressEntry->total : NAN;
+					auto termWidth = getTerminalWidth();
+					std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
+					auto* statusForm = new std::string(ANSI_BRIGHT_GREEN + statusText + ANSI_RESET);
+					setStatus(statusForm, statusText.length());
+				}
+
+
 			} else {
 				message += "[DataPacket-" + std::to_string(entry->type) + "]";
 			}
@@ -344,7 +488,7 @@ void LIcore_logger::log(LogEntry* entry) {
 
 		// Print
 
-		std::cout << message << std::endl;
+		println(message);
 	}
 }
 
@@ -361,6 +505,51 @@ std::vector<LogId>* LIcore_logger::pathFromParent	(LogInterface* parent) const {
 	if (parent == this) return new std::vector<LogId>(); // Found: parent is this
 	else return nullptr; // Not found
 }
+
+static const char* RESET = "\r";
+static const char* VT100_CLEAR = "\33[2K";
+static const char* NEWLINE = "\n";
+
+void LIcore_logger::println(const std::string& str) {
+	if (currentStatus != nullptr) {
+		std::cout << RESET << padStr(' ', statusDispLength) << VT100_CLEAR << RESET // Clear current status-area
+				  << str << NEWLINE // Print line
+				  << *currentStatus << std::flush; // Re-write status
+	} else {
+		std::cout << str << NEWLINE;
+	}
+}
+
+
+void LIcore_logger::setStatus(const std::string* newStatus, size_t newStatusDispLength) {
+	if (currentStatus != nullptr) {
+		int32_t dispWidthToClear = statusDispLength;
+		int32_t currDispWidth = getTerminalWidth();
+		if (currDispWidth > 0 && dispWidthToClear > currDispWidth) dispWidthToClear = currDispWidth;
+
+		std::cout << RESET << padStr(' ', dispWidthToClear) << VT100_CLEAR << RESET; // Clear current status-area
+		delete currentStatus;
+	}
+	if (newStatus != nullptr) {
+		std::cout << *newStatus << std::flush; // Write new status
+	}
+	currentStatus = newStatus;
+	statusDispLength = newStatusDispLength;
+}
+
+int32_t LIcore_logger::getTerminalWidth() {
+#if FANCY_MODE == FANCY_MODE_UNIX
+	struct winsize size;
+	ioctl(STDOUT_FILENO, TIOCGWINSZ, &size);
+	return size.ws_col;
+#else
+	return -1;
+#endif
+}
+
+//
+// Logstore
+//
 
 torasu::tstd::LIcore_logger_logstore::LIcore_logger_logstore() {}
 torasu::tstd::LIcore_logger_logstore::~LIcore_logger_logstore() {}
