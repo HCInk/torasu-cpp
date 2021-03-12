@@ -105,6 +105,7 @@ public:
 class LIcore_logger : public torasu::LogInterface {
 private:
 	bool useAnsi = true;
+	bool statusBar = true;
 	std::mutex subIdCounterLock;
 	torasu::LogId subIdCounter = 0;
 	LIcore_logger_logstore logstore;
@@ -117,7 +118,7 @@ private:
 	int32_t getTerminalWidth();
 public:
 	LIcore_logger();
-	explicit LIcore_logger(bool useAnsi);
+	explicit LIcore_logger(bool statusBar, bool useAnsi);
 	~LIcore_logger();
 	void log(LogEntry* entry) override;
 	LogId fetchSubId() override;

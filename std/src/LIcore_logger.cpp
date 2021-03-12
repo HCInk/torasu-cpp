@@ -231,7 +231,7 @@ namespace torasu::tstd {
 
 LIcore_logger::LIcore_logger() {}
 
-LIcore_logger::LIcore_logger(bool useAnsi) : useAnsi(useAnsi) {}
+LIcore_logger::LIcore_logger(bool statusBar, bool useAnsi) : statusBar(statusBar), useAnsi(useAnsi) {}
 
 LIcore_logger::~LIcore_logger() {
 	if (currentStatus != nullptr) {
@@ -457,15 +457,18 @@ void LIcore_logger::log(LogEntry* entry) {
 					message += "/" + std::to_string(progressEntry->total) + ")";
 				}
 
-
-				double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->doing) / progressEntry->total : NAN;
-				auto termWidth = getTerminalWidth();
-				std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
-				auto* statusForm = new std::string(ANSI_BRIGHT_GREEN + statusText + ANSI_RESET);
-				setStatus(statusForm, statusText.length());
 				if (!progressEntry->label.empty()) {
 					message += " - " + progressEntry->label;
 				}
+
+				if (statusBar) {
+					double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->doing) / progressEntry->total : NAN;
+					auto termWidth = getTerminalWidth();
+					std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
+					auto* statusForm = new std::string(ANSI_BRIGHT_GREEN + statusText + ANSI_RESET);
+					setStatus(statusForm, statusText.length());
+				}
+
 
 			} else {
 				message += "[DataPacket-" + std::to_string(entry->type) + "]";
