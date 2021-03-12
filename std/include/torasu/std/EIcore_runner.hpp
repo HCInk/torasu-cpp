@@ -235,7 +235,7 @@ private:
 	EIcore_runner_object* obj;
 	LogInterface* logger;
 	bool registered = false;
-	std::mutex subIdCounterLock;
+	std::mutex groupLock;
 	torasu::LogId subIdCounter = 0;
 	LogId ownLogId;
 

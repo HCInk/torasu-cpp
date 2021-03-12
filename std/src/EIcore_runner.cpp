@@ -1025,12 +1025,15 @@ EIcore_runner_object_logger::~EIcore_runner_object_logger() {
 void EIcore_runner_object_logger::log(LogEntry* entry) {
 
 	if (!registered) {
-		ownLogId = logger->fetchSubId();
-		auto* regEntry =
-			new LogGroupStart(obj->rnd->getType());
-		regEntry->groupStack.push_back(ownLogId);
-		logger->log(regEntry);
-		registered = true;
+		std::unique_lock lock(groupLock);
+		if (!registered) {
+			ownLogId = logger->fetchSubId();
+			auto* regEntry =
+				new LogGroupStart(obj->rnd->getType());
+			regEntry->groupStack.push_back(ownLogId);
+			logger->log(regEntry);
+			registered = true;
+		}
 	}
 
 	entry->groupStack.push_back(ownLogId);
@@ -1040,7 +1043,7 @@ void EIcore_runner_object_logger::log(LogEntry* entry) {
 
 torasu::LogId EIcore_runner_object_logger::fetchSubId() {
 
-	std::unique_lock lock(subIdCounterLock);
+	std::unique_lock lock(groupLock);
 	auto subId = subIdCounter;
 	subIdCounter++;
 	return subId;
