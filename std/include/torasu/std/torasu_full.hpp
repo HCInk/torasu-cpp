@@ -18,6 +18,7 @@
 // STD NAMES
 #include <torasu/std/context_names.hpp>
 #include <torasu/std/pipeline_names.hpp>
+#include <torasu/std/property_names.hpp>
 
 // STD TOOLS
 #include <torasu/std/simple_render.hpp>
