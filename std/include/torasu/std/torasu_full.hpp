@@ -1,6 +1,24 @@
 #ifndef STD_INCLUDE_TORASU_STD_TORASU_FULL_HPP_
 #define STD_INCLUDE_TORASU_STD_TORASU_FULL_HPP_
 
+/*
+
+	 _____ ___  ____      _    ____  _   _
+	|_   _/ _ \|  _ \    / \  / ___|| | | |
+	  | || | | | |_) |  / _ \ \___ \| | | |
+	  | || |_| |  _ <  / ___ \ ___) | |_| |
+	  |_| \___/|_| \_\/_/   \_\____/ \___/
+
+			TORASU FULL-HEADER
+
+	-> This includes all public headers of TORASU
+
+!! Should only be used in situation when many components are used at once
+!! Otherwise use the individual headers to save compiletime
+!! Never use this in public headers!
+
+*/
+
 // CORE HEADERS
 #include <torasu/torasu.hpp>
 #include <torasu/json.hpp>
