@@ -191,6 +191,9 @@ public:
 // LOGGING
 //
 
+// Defines that logging modules are available
+#define TORASU_REG_LOGGING
+
 class LogInfoRef {
 public:
 	/** @brief  Group containing information about generation of the result */
