@@ -103,9 +103,21 @@ public:
 };
 
 class LIcore_logger : public torasu::LogInterface {
+public:
+	enum LogDisplayMode {
+		/** @brief Updating statusbar with the progress-messages hidden (also colored) */
+		FANCY = 30,
+		/** @brief Updating statusbar with every message printed. (also colored) */
+		FANCY_ALL = 25,
+		/** @brief Printed messages colored with ANSI-colors */
+		BASIC_CLOLORED = 20,
+		/** @brief Basic messages - uncolored */
+		BASIC = 10,
+		/** @brief (TODO) Print messages as json */
+		JSON = 0
+	};
 private:
-	bool statusBar = true;
-	bool useAnsi = true;
+	LogDisplayMode dispMode;
 	std::mutex subIdCounterLock;
 	torasu::LogId subIdCounter = 0;
 	LIcore_logger_logstore logstore;
@@ -117,8 +129,7 @@ private:
 	void setStatus(const std::string* newStatus, size_t statusDispLength);
 	int32_t getTerminalWidth();
 public:
-	LIcore_logger();
-	explicit LIcore_logger(bool statusBar, bool useAnsi);
+	explicit LIcore_logger(LogDisplayMode dispMode = FANCY);
 	~LIcore_logger();
 	void log(LogEntry* entry) override;
 	LogId fetchSubId() override;

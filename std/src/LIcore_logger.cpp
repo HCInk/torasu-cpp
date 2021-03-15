@@ -229,9 +229,7 @@ std::string makeProgressBar(std::string info, double done, double doing, size_t 
 
 namespace torasu::tstd {
 
-LIcore_logger::LIcore_logger() {}
-
-LIcore_logger::LIcore_logger(bool statusBar, bool useAnsi) : statusBar(statusBar), useAnsi(useAnsi) {}
+LIcore_logger::LIcore_logger(LogDisplayMode dispMode) : dispMode(dispMode) {}
 
 LIcore_logger::~LIcore_logger() {
 	if (currentStatus != nullptr) {
@@ -244,6 +242,7 @@ void LIcore_logger::log(LogEntry* entry) {
 	std::unique_lock lck(logMutex);
 	std::unique_ptr<LogEntry> entryHolder(entry);
 
+	bool useAnsi = dispMode >= BASIC_CLOLORED;
 	std::string message;
 
 	switch (entry->type) {
@@ -445,23 +444,29 @@ void LIcore_logger::log(LogEntry* entry) {
 					progLabel = progressEntry->label;
 				}
 
-
 				double progressVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->done) / progressEntry->total : NAN;
-				message += dispPercentage(progressVal, 2);
 
-				if (progressEntry->total > 0) {
-					message += " (" + std::to_string(progressEntry->done);
-					if (progressEntry->doing > 1) {
-						message += "[+" + std::to_string(progressEntry->doing) + "]";
+				if (dispMode <= FANCY_ALL) {
+
+					message += dispPercentage(progressVal, 2);
+
+					if (progressEntry->total > 0) {
+						message += " (" + std::to_string(progressEntry->done);
+						if (progressEntry->doing > 1) {
+							message += "[+" + std::to_string(progressEntry->doing) + "]";
+						}
+						message += "/" + std::to_string(progressEntry->total) + ")";
 					}
-					message += "/" + std::to_string(progressEntry->total) + ")";
+
+					if (!progressEntry->label.empty()) {
+						message += " - " + progressEntry->label;
+					}
+
+				} else {
+					message = "";
 				}
 
-				if (!progressEntry->label.empty()) {
-					message += " - " + progressEntry->label;
-				}
-
-				if (statusBar) {
+				if (dispMode >= FANCY_ALL) {
 					double doingVal = progressEntry->total > 0 ? static_cast<double>(progressEntry->doing) / progressEntry->total : NAN;
 					auto termWidth = getTerminalWidth();
 					std::string statusText = makeProgressBar(progLabel, progressVal, doingVal, termWidth >= 0 ? termWidth : 10);
