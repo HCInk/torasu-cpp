@@ -36,6 +36,7 @@ typedef std::function<void(void)> Callback;
 // DATA
 class DataDump;
 class DataResource;
+class DataResourceMask;
 class DataResourceHolder;
 
 // LOGGING
@@ -72,6 +73,7 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM (RENDER)
 class RenderResult;
 class ResultSegment;
+class RenderContextMask;
 
 // HELPER (READY)
 typedef uint64_t ReadyObject;
@@ -136,6 +138,61 @@ public:
 	virtual std::string getIdent() = 0;
 	virtual DataDump* dumpResource() = 0;
 	virtual DataResource* clone() = 0;
+};
+
+class DataResourceMask : public DataResource {
+public:
+	enum MaskCompareResult {
+		/** @brief The mask approves that the checked object is contained */
+		MCR_INSIDE,
+		/** @brief The mask denies that the checked object is contained */
+		MCR_OUTSIDE,
+		/** @brief The mask can't check if the object is contained or not */
+		MCR_UNKNOWN
+	};
+	DataResourceMask() {}
+	virtual ~DataResourceMask() {}
+
+	/** @brief  Check containment of other object
+	 * @param  obj: The object that shall be checked against it
+	 * @retval The MaskCompareResult of the comparison of both */
+	virtual MaskCompareResult check(const DataResource* obj) const = 0;
+
+	/** @brief  Merge two masks, into one which contains the intersections
+	 * @param  other: The other mask to be merged with
+	 * @retval The newly generated mask, nullptr if not mergable (Freed/Managed by caller) */
+	virtual DataResourceMask* merge(const DataResourceMask* other) const = 0;
+
+
+	virtual DataResourceMask* clone() = 0;
+
+	class DataResourceMaskUnknown;
+};
+
+
+class DataResourceMask::DataResourceMaskUnknown : public DataResourceMask {
+public:
+	DataResourceMaskUnknown() {}
+	~DataResourceMaskUnknown() {}
+
+	std::string getIdent() override {
+		return "T::DRMU";
+	}
+
+	DataDump* dumpResource() override {
+		return nullptr;
+	}
+
+	DataResourceMaskUnknown* clone() override {
+		return new DataResourceMaskUnknown();
+	}
+
+	MaskCompareResult check(const DataResource* obj) const override {
+		return MaskCompareResult::MCR_UNKNOWN;
+	}
+	DataResourceMask* merge(const DataResourceMask* other) const override {
+		return new DataResourceMaskUnknown();
+	}
 };
 
 class DataResourceHolder {
@@ -821,6 +878,79 @@ public:
 		return result.eject();
 	}
 	friend RenderResult;
+};
+
+class RenderContextMask {
+public:
+	std::map<std::string, DataResourceMask*>* maskMap;
+
+	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
+	RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap)
+		: maskMap(maskMap) {}
+
+	~RenderContextMask() {
+		for (auto& entry : *maskMap) {
+			if (entry.second != nullptr) delete entry.second;
+		}
+		delete maskMap;
+	}
+
+	inline DataResourceMask::MaskCompareResult check(RenderContext* rctx) {
+		DataResourceMask::MaskCompareResult res = DataResourceMask::MCR_INSIDE;
+		auto mapEnd = maskMap->end();
+		for (auto rctxEntry : *rctx) {
+			auto found = maskMap->find(rctxEntry.first);
+			if (found != mapEnd) {
+				switch (found->second->check(rctxEntry.second)) {
+				case DataResourceMask::MCR_INSIDE:
+					break;
+				case DataResourceMask::MCR_OUTSIDE: {
+						if (res == DataResourceMask::MCR_INSIDE)
+							res = DataResourceMask::MCR_OUTSIDE;
+						break;
+					}
+				case DataResourceMask::MCR_UNKNOWN:
+				default: {
+						res = DataResourceMask::MCR_UNKNOWN;
+						break;
+					}
+				}
+			}
+		}
+		return res;
+	}
+
+	/** @brief  Creates intersection of two RenderContextMask-objects
+	 * @retval Mask which containes the common areas between the two input masks (managed by caller) */
+	static inline RenderContextMask* merge(const RenderContextMask& a, const RenderContextMask& b) {
+		auto* mask = new RenderContextMask();
+		auto& maskMap = *mask->maskMap;
+		auto aEnd = a.maskMap->end();
+		auto bEnd = b.maskMap->end();
+		for (const auto& entry : *a.maskMap) {
+			DataResourceMask* valueMask;
+			auto found = b.maskMap->find(entry.first);
+			if (found != bEnd) { // In both a and b
+				valueMask = entry.second->merge(found->second);
+				if (valueMask == nullptr) {
+					valueMask = new DataResourceMask::DataResourceMaskUnknown();
+				}
+			} else { // Only in a
+				valueMask = entry.second->clone();
+			}
+			maskMap[entry.first] = valueMask;
+		}
+
+		for (const auto& entry : *b.maskMap) {
+			auto found = b.maskMap->find(entry.first);
+			if (found == aEnd) { // In only b
+				maskMap[found->first] = found->second->clone();
+			}
+		}
+
+		return mask;
+	}
+
 };
 
 // enum RIRefCall {
