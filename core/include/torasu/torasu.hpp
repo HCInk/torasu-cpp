@@ -885,7 +885,7 @@ public:
 	std::map<std::string, DataResourceMask*>* maskMap;
 
 	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
-	RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap)
+	explicit RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap)
 		: maskMap(maskMap) {}
 
 	~RenderContextMask() {
