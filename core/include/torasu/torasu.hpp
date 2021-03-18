@@ -132,12 +132,33 @@ public:
 
 class DataResource {
 public:
+	enum CompareResult {
+		/** @brief The first object is less then the second object */
+		LESS = -1,
+		/** @brief The first object is equal to the second object */
+		EQUAL = 0,
+		/** @brief The first object is greater then the second object */
+		GREATER = 1,
+		/** @brief The objects can't be compared since the types are different */
+		TYPE_ERR = 3
+	};
+
 	DataResource() {}
 	virtual ~DataResource() {}
 
 	virtual std::string getIdent() const = 0;
 	virtual DataDump* dumpResource() = 0;
 	virtual DataResource* clone() const = 0;
+
+	virtual CompareResult compare(const DataResource* other) const {
+		if (this == other) return EQUAL;
+
+		if (this->getIdent() == other->getIdent()) {
+			return (other > 0) ? GREATER : LESS;
+		} else {
+			return TYPE_ERR;
+		}
+	}
 };
 
 class DataResourceMask : public DataResource {
