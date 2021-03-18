@@ -942,7 +942,7 @@ public:
 		}
 
 		for (const auto& entry : *b.maskMap) {
-			auto found = b.maskMap->find(entry.first);
+			auto found = a.maskMap->find(entry.first);
 			if (found == aEnd) { // In only b
 				maskMap[found->first] = found->second->clone();
 			}
