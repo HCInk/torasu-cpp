@@ -30,7 +30,7 @@ std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& Dbimg_sequence::
 	return frames;
 }
 
-std::string Dbimg_sequence::getIdent() {
+std::string Dbimg_sequence::getIdent() const {
 	return "STD::DBIMG_SEQUENCE";
 }
 
@@ -38,7 +38,7 @@ DataDump* Dbimg_sequence::dumpResource() {
 	return nullptr; // TODO DataDump of Dbimg_sequence
 }
 
-Dbimg_sequence* Dbimg_sequence::clone() {
+Dbimg_sequence* Dbimg_sequence::clone() const {
 	return new Dbimg_sequence(*this);
 }
 

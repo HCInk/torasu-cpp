@@ -25,7 +25,7 @@ Dfile::Dfile(const Dfile& original)
 	std::copy(original.data, original.data+size, data);
 }
 
-std::string Dfile::getIdent() {
+std::string Dfile::getIdent() const {
 	return ident;
 }
 
@@ -33,7 +33,7 @@ DataDump* Dfile::dumpResource() {
 	return nullptr; // TODO Dfile-dumpResource
 }
 
-Dfile* Dfile::clone() {
+Dfile* Dfile::clone() const {
 	return new Dfile(*this);
 }
 

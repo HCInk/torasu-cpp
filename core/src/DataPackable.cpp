@@ -22,6 +22,14 @@ using json = torasu::json;
  * DP General
 */
 
+DataPackable::DataPackable(const DataPackable* original, bool loaded) : loaded(loaded) {
+	if (original->serializedJson.has_value())
+		serializedJson = original->serializedJson.value();
+
+	if (original->parsedJson.has_value())
+		serializedJson = original->parsedJson.value();
+}
+
 DataPackable::DataPackable(bool loaded) : loaded(loaded) {}
 
 DataPackable::DataPackable(std::string initialSerializedJson) {
@@ -60,19 +68,25 @@ DataDump* DataPackable::dumpResource() {
  * DP Universal
 */
 
-DPUniversal::DPUniversal(string jsonStripped) : DataPackable(jsonStripped) {}
-DPUniversal::DPUniversal(json jsonParsed) : DataPackable(jsonParsed) {}
 
-std::string DPUniversal::getIdent() {
-	if (!ident.has_value()) {
-		json identJson = getJson()["ident"];
-		if (identJson.is_string()) {
-			ident = identJson;
-		} else {
-			ident = string();
-		}
+inline void DPUniversal::init() {
+	json identJson = getJson()["ident"];
+	if (identJson.is_string()) {
+		ident = identJson;
+	} else {
+		ident = string();
 	}
-	return ident.value();
+}
+
+DPUniversal::DPUniversal(string jsonStripped) : DataPackable(jsonStripped) {
+	init();
+}
+DPUniversal::DPUniversal(json jsonParsed) : DataPackable(jsonParsed) {
+	init();
+}
+
+std::string DPUniversal::getIdent() const {
+	return ident;
 }
 
 void DPUniversal::load() {
@@ -85,7 +99,7 @@ json DPUniversal::makeJson() {
 					  " since it practically doesnt have a 'loaded' state");
 }
 
-DPUniversal* DPUniversal::clone() {
+DPUniversal* DPUniversal::clone() const {
 	return new DPUniversal(*this);
 }
 

@@ -60,7 +60,7 @@ public:
 
 	void load() override;
 	torasu::json makeJson() override;
-	Daudio_buffer_FORMAT* clone() override;
+	Daudio_buffer_FORMAT* clone() const override;
 };
 
 
@@ -81,9 +81,9 @@ public:
 	Daudio_buffer_CHANNEL* getChannels() const;
 	size_t getChannelCount() const;
 
-	std::string getIdent() override;
+	std::string getIdent() const override;
 	DataDump* dumpResource() override;
-	Daudio_buffer* clone() override;
+	Daudio_buffer* clone() const override;
 
 };
 

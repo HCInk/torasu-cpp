@@ -49,7 +49,7 @@ DataDump* Daudio_buffer::dumpResource() {
 	throw std::logic_error("dumpResource() not implemented for Daudio_buffer");
 }
 
-std::string Daudio_buffer::getIdent() {
+std::string Daudio_buffer::getIdent() const {
 	return IDENT;
 }
 //                                                                                                                         Only delete old ref if not from instantiation
@@ -74,7 +74,7 @@ uint8_t* Daudio_buffer::initChannel(size_t channelIndex, size_t sampleRate, Daud
 	return data;
 }
 
-Daudio_buffer* Daudio_buffer::clone() {
+Daudio_buffer* Daudio_buffer::clone() const {
 	return new Daudio_buffer(*this);
 }
 
@@ -111,7 +111,7 @@ torasu::json Daudio_buffer_FORMAT::makeJson() {
 	};
 }
 
-Daudio_buffer_FORMAT* Daudio_buffer_FORMAT::clone() {
+Daudio_buffer_FORMAT* Daudio_buffer_FORMAT::clone() const {
 	return new Daudio_buffer_FORMAT(*this);
 }
 

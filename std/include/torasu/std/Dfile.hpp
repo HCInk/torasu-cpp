@@ -24,9 +24,9 @@ public:
 	~Dfile();
 	Dfile(const Dfile&);
 
-	std::string getIdent() override;
+	std::string getIdent() const override;
 	DataDump* dumpResource() override;
-	Dfile* clone() override;
+	Dfile* clone() const override;
 
 	inline uint8_t* getFileData() {
 		return data;

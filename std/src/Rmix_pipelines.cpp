@@ -23,11 +23,11 @@ torasu::json Dmix_pipelines_conf::makeJson() {
 	return json;
 }
 
-std::string Dmix_pipelines_conf::getIdent() {
+std::string Dmix_pipelines_conf::getIdent() const {
 	return "STD::DMIX_PIPELINES_CONF";
 }
 
-Dmix_pipelines_conf* Dmix_pipelines_conf::clone() {
+Dmix_pipelines_conf* Dmix_pipelines_conf::clone() const {
 	return new Dmix_pipelines_conf(*this);
 }
 

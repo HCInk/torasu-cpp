@@ -30,6 +30,10 @@ protected:
 		loaded = true;
 	}
 
+	bool inline isLoaded() const {
+		return loaded;
+	}
+
 	void inline ensureLoaded() {
 		if (!loaded) {
 			load();
@@ -41,6 +45,7 @@ protected:
 	virtual torasu::json makeJson() = 0;
 
 public:
+	explicit DataPackable(const DataPackable* original, bool loaded);
 	explicit DataPackable(bool loaded = true);
 	explicit DataPackable(std::string initialSerializedJson);
 	explicit DataPackable(torasu::json initialJson);
@@ -73,9 +78,9 @@ public:
 };
 
 class DPUniversal : public DataPackable {
-
 private:
-	std::optional<std::string> ident;
+	std::string ident;
+	void init();
 
 protected:
 	void load() override;
@@ -85,8 +90,8 @@ public:
 	explicit DPUniversal(std::string jsonStripped);
 	explicit DPUniversal(torasu::json jsonParsed);
 
-	std::string getIdent() override;
-	DPUniversal* clone() override;
+	std::string getIdent() const override;
+	DPUniversal* clone() const override;
 };
 
 } /* namespace torasu */

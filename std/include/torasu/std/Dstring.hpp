@@ -27,8 +27,8 @@ public:
 
 	const std::string& getString();
 
-	std::string getIdent() override;
-	Dstring* clone() override;
+	std::string getIdent() const override;
+	Dstring* clone() const override;
 };
 
 } // namespace torasu::tstd

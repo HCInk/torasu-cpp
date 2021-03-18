@@ -135,9 +135,9 @@ public:
 	DataResource() {}
 	virtual ~DataResource() {}
 
-	virtual std::string getIdent() = 0;
+	virtual std::string getIdent() const = 0;
 	virtual DataDump* dumpResource() = 0;
-	virtual DataResource* clone() = 0;
+	virtual DataResource* clone() const = 0;
 };
 
 class DataResourceMask : public DataResource {
@@ -164,7 +164,7 @@ public:
 	virtual DataResourceMask* merge(const DataResourceMask* other) const = 0;
 
 
-	virtual DataResourceMask* clone() = 0;
+	virtual DataResourceMask* clone() const = 0;
 
 	class DataResourceMaskUnknown;
 };
@@ -175,7 +175,7 @@ public:
 	DataResourceMaskUnknown() {}
 	~DataResourceMaskUnknown() {}
 
-	std::string getIdent() override {
+	std::string getIdent() const override {
 		return "T::DRMU";
 	}
 
@@ -183,7 +183,7 @@ public:
 		return nullptr;
 	}
 
-	DataResourceMaskUnknown* clone() override {
+	DataResourceMaskUnknown* clone() const override {
 		return new DataResourceMaskUnknown();
 	}
 
@@ -764,7 +764,7 @@ public:
 		: ident(TORASU_FORMAT_PREFIX + dataType) {}
 	virtual ~ResultFormatSettings() {}
 
-	std::string getIdent() override {
+	std::string getIdent() const override {
 		return ident;
 	}
 

@@ -21,7 +21,7 @@ const std::string& Dstring::getString() {
 	return string;
 }
 
-std::string Dstring::getIdent() {
+std::string Dstring::getIdent() const {
 	return ident;
 }
 
@@ -38,7 +38,7 @@ torasu::json Dstring::makeJson() {
 	return string;
 }
 
-Dstring* Dstring::clone() {
+Dstring* Dstring::clone() const {
 	return new Dstring(*this);
 }
 

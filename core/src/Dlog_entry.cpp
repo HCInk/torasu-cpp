@@ -76,6 +76,9 @@ const char* typeToStr(torasu::LogType type) {
 
 namespace torasu {
 
+Dlog_entry::Dlog_entry(const Dlog_entry& original)
+	: DataPackable(&original, false) {}
+
 Dlog_entry::Dlog_entry(const LogEntry& entry)
 	: entry(new LogEntry(entry)) {}
 
@@ -98,7 +101,7 @@ LogEntry Dlog_entry::getEntry() {
 	return *entry;
 }
 
-std::string Dlog_entry::getIdent() {
+std::string Dlog_entry::getIdent() const {
 	return "T::DLOG_ENTRY";
 }
 
@@ -204,8 +207,7 @@ torasu::json Dlog_entry::makeJson() {
 	return json;
 }
 
-Dlog_entry* Dlog_entry::clone() {
-	ensureLoaded();
+Dlog_entry* Dlog_entry::clone() const {
 	return new Dlog_entry(*entry);
 }
 

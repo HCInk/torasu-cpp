@@ -29,8 +29,8 @@ public:
 	void set(const std::string& key, const std::string& value);
 	void erase(const std::string& key);
 
-	std::string getIdent() override;
-	Dstring_map* clone() override;
+	std::string getIdent() const override;
+	Dstring_map* clone() const override;
 
 };
 
