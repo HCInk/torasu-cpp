@@ -981,6 +981,36 @@ public:
 		return mask;
 	}
 
+	/** @brief  Creates intersection of n RenderContextMask-objects
+	 * @param  masks: List of pointers to masks to be merged
+	 * @retval Mask which containes the common areas between the two input masks (managed by caller) */
+	static inline RenderContextMask* merge(std::initializer_list<const RenderContextMask*> masks) {
+
+		switch (masks.size()) {
+		case 0:
+			return new RenderContextMask();
+		case 1:
+			return new RenderContextMask(**masks.begin());
+		default:
+			break;
+		}
+
+		auto it = masks.begin();
+
+		RenderContextMask* mask;
+		{
+			auto* a = *it;
+			it++;
+			mask = merge(*a, **it);
+			it++;
+		}
+
+		for (auto end = masks.end(); it != end; it++)
+			mask->mergeInto(**it);
+
+		return mask;
+	}
+
 };
 
 // enum RIRefCall {
