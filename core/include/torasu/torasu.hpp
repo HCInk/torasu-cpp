@@ -920,6 +920,31 @@ public:
 		return res;
 	}
 
+	/** @brief  Limits the mask of the current object to the other object */
+	inline void mergeInto(const RenderContextMask& other) {
+		auto thisEnd = maskMap->end();
+		auto otherEnd = other.maskMap->end();
+		for (auto& entry : *maskMap) {
+			auto found = other.maskMap->find(entry.first);
+			if (found != otherEnd) { // In both a and b
+				auto* oldMask = entry.second;
+				auto* newMask = oldMask->merge(found->second);
+				if (newMask == nullptr) {
+					newMask = new DataResourceMask::DataResourceMaskUnknown();
+				}
+				entry.second = newMask;
+				delete oldMask;
+			}
+		}
+
+		for (const auto& entry : *other.maskMap) {
+			auto found = maskMap->find(entry.first);
+			if (found == thisEnd) { // In only b
+				(*maskMap)[found->first] = found->second->clone();
+			}
+		}
+	}
+
 	/** @brief  Creates intersection of two RenderContextMask-objects
 	 * @retval Mask which containes the common areas between the two input masks (managed by caller) */
 	static inline RenderContextMask* merge(const RenderContextMask& a, const RenderContextMask& b) {
