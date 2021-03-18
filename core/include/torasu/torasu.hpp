@@ -187,9 +187,13 @@ public:
 
 	virtual DataResourceMask* clone() const = 0;
 
-	class DataResourceMaskUnknown;
-};
+	virtual bool isUnknown() const {
+		return false;
+	}
 
+	class DataResourceMaskUnknown;
+	class DataResourceMaskSingle;
+};
 
 class DataResourceMask::DataResourceMaskUnknown : public DataResourceMask {
 public:
@@ -211,8 +215,45 @@ public:
 	MaskCompareResult check(const DataResource* obj) const override {
 		return MaskCompareResult::MCR_UNKNOWN;
 	}
+
 	DataResourceMask* merge(const DataResourceMask* other) const override {
-		return new DataResourceMaskUnknown();
+		return clone();
+	}
+
+	bool isUnknown() const override {
+		return false;
+	}
+};
+
+class DataResourceMask::DataResourceMaskSingle : public DataResourceMask {
+private:
+	DataResource* dr;
+public:
+	explicit DataResourceMaskSingle(DataResource* dr) : dr(dr) {}
+	~DataResourceMaskSingle() {}
+
+	std::string getIdent() const override {
+		return "T::DRMS";
+	}
+
+	DataDump* dumpResource() override {
+		return nullptr; // TODO Nested DPs
+	}
+
+	DataResourceMaskSingle* clone() const override {
+		return new DataResourceMaskSingle(dr->clone());
+	}
+
+	MaskCompareResult check(const DataResource* obj) const override {
+		return dr->compare(obj) == EQUAL ? MCR_INSIDE : MCR_OUTSIDE;
+	}
+
+	DataResourceMask* merge(const DataResourceMask* other) const override {
+		if (other->check(dr)) {
+			return clone();
+		} else {
+			return new DataResourceMaskUnknown();
+		}
 	}
 };
 
