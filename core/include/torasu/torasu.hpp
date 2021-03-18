@@ -885,6 +885,11 @@ public:
 	std::map<std::string, DataResourceMask*>* maskMap;
 
 	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
+	RenderContextMask(const RenderContextMask& orig) : maskMap(orig.maskMap) {
+		for (auto& entry : *maskMap)
+			entry.second = entry.second != nullptr ? entry.second->clone() : nullptr;
+	}
+
 	explicit RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap)
 		: maskMap(maskMap) {}
 
