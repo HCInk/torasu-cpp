@@ -251,6 +251,7 @@ public:
 	friend class EIcore_runner_object;
 };
 
+/*
 enum EIcore_runner_rdystate_LOADSTATE {
 	NOT_LAODED,
 	LOADING,
@@ -262,6 +263,7 @@ public:
 	uint64_t useCount = 0;
 	EIcore_runner_rdystate_LOADSTATE loaded = NOT_LAODED;
 };
+*/
 
 class EIcore_runner_elemhandler : public ElementExecutionOpaque {
 private:
@@ -271,7 +273,7 @@ private:
 
 	// Ready-States
 	std::mutex readyStatesLock; // Lock for readyStates and its contents
-	std::map<ReadyObject, EIcore_runner_rdystate> readyStates;
+	std::vector<ReadyState*> readyStates;
 
 	// Locks
 	std::mutex lockStatesLock; // Lock for lockStates and its contents
@@ -290,8 +292,6 @@ public:
 	EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent);
 	~EIcore_runner_elemhandler();
 
-	void readyElement(const ReadyObjects& toReady, ExecutionInterface* ei);
-	void unreadyElement(const ReadyObjects& toUnready);
 	void lock(uint64_t lockId);
 	void unlock(uint64_t lockId);
 };

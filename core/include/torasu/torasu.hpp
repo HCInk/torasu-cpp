@@ -75,18 +75,11 @@ class RenderResult;
 class ResultSegment;
 class RenderContextMask;
 
-// HELPER (READY)
-typedef uint64_t ReadyObject;
-typedef std::vector<ReadyObject> ReadyObjects;
-
 // DOWNSTREAM (READY)
-class ReadyRequest;
 class ReadyInstruction;
-class UnreadyInstruction;
 
 // UPSTREAM (READY)
-class ObjectReadyResult;
-typedef std::vector<ObjectReadyResult> ElementReadyResult;
+class ReadyState;
 
 //
 // DATA
@@ -729,9 +722,7 @@ public:
 		if (elementExecutionOpaque != nullptr) delete elementExecutionOpaque;
 	}
 
-	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
-	virtual ElementReadyResult* ready(const ReadyInstruction& ri) = 0;
-	virtual void unready(const UnreadyInstruction& uri) = 0;
+	virtual void ready(ReadyInstruction* ri) = 0;
 
 	virtual std::string getType() = 0;
 	virtual DataResource* getData() = 0;
@@ -1205,85 +1196,56 @@ public:
 // DOWNSTREAM (READY)
 //
 
-/**
- * @brief  Request to fetch which objects need to be made ready to run a desired task (ReadyObjects)
- */
-class ReadyRequest {
-private:
-	std::vector<std::string> ops;
-	RenderContext* rctx;
-public:
-	inline ReadyRequest(std::vector<std::string> ops, RenderContext* rctx)
-		: ops(ops), rctx(rctx)  {}
-	~ReadyRequest() {}
-
-	inline std::vector<std::string>& getOpeations() {
-		return ops;
-	}
-
-	inline RenderContext* getRenderContext() {
-		return rctx;
-	}
-};
-
-/**
- * @brief  Instruction to make an Element ready
- */
 class ReadyInstruction {
-private:
-	ReadyObjects objects;
-	ExecutionInterface* ei;
-
 public:
-	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei)
-		: objects(objects), ei(ei) {}
-	~ReadyInstruction() {}
+	/** @brief  The operations/segemnts to be made ready */
+	const std::vector<std::string> ops;
+	/** @brief  The target-RenderContext to be made ready towards */
+	const RenderContext* rctx;
+	/** @brief  The ExecutionInterface to be used run executions required to made ready */
+	const ExecutionInterface* ei;
+	/** @brief  The LogInterface to log messages */
+	const LogInstruction li;
 
-	inline ReadyObjects& getObjects() {
-		return objects;
-	}
+	/**
+	 * @brief  Save pointer to state - should always exactly be called once
+	 * @note   This should be given to the function as early as possible,
+	 * 			so the ready should block as less as possible other actions
+	 * @param  state: The state to be set
+	 * 	- It should already contain opeations and the render-context-mask (RCTXM)
+	 * 	- All other data should be complete on completin of the ready-function
+	 * 	- Provide a nullptr ONLY to signalize that this wont have ANY ready-states for ANY operation
+	 */
+	virtual void setSatate(const ReadyState* state) = 0;
 
-	inline ExecutionInterface* getExecutionInterface() {
-		return ei;
-	}
-};
+	ReadyInstruction(std::vector<std::string> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
+		: ops(ops), rctx(rctx), ei(ei), li(li) {}
+	virtual ~ReadyInstruction() {}
 
-/**
- * @brief  Instruction to unready an Element
- */
-class UnreadyInstruction {
-private:
-	ReadyObjects objects;
-
-public:
-	inline explicit UnreadyInstruction(ReadyObjects objects)
-		: objects(objects) {}
-	~UnreadyInstruction() {}
-
-	inline ReadyObjects& getObjects() {
-		return objects;
-	}
 };
 
 //
 // UPSTREAM (READY)
 //
 
-/**
- * @brief  Result of making a object inside an Element ready
- */
-class ObjectReadyResult {
-private:
-	ReadyObject obj;
-
+class ReadyState {
 public:
-	inline explicit ObjectReadyResult(ReadyObject obj)
-		: obj(obj) {}
-	~ObjectReadyResult();
+	ReadyState() {}
+	virtual ~ReadyState() {}
 
-	inline ReadyObject getObject() {
-		return obj;
-	}
+	/** @brief The operations this state is valid for
+	 * (Pointer is valid as long the object won't be modified/freed) */
+	virtual const std::vector<std::string>* getOperations() const = 0;
+
+	/** @brief The mask of RenderContexts this state is valid for
+	 * (Pointer is valid as long the object won't be modified/freed) */
+	virtual const RenderContextMask* getContextMask() const = 0;
+
+	/** @brief Memory the object takes up (in bytes) */
+	virtual size_t size() const = 0;
+
+	/** @brief Clone the object */
+	virtual ReadyState* clone() const = 0;
 };
 
 } /* namespace torasu */

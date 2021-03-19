@@ -133,21 +133,38 @@ RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
 	return new RenderResult(summarizedStatus, results);
 }
 
+NoneReadyState::NoneReadyState(const std::vector<std::string>& operations)
+	: operations(new std::vector<std::string>(operations)), rctxm(new RenderContextMask()) {}
+
+NoneReadyState::NoneReadyState(const NoneReadyState& orig)
+	: operations(new std::vector<std::string>(*orig.operations)), rctxm(new RenderContextMask()) {}
+
+NoneReadyState::~NoneReadyState() {
+	delete operations;
+	delete rctxm;
+}
+
+const std::vector<std::string>* NoneReadyState::getOperations() const {
+	return operations;
+}
+
+const RenderContextMask* NoneReadyState::getContextMask() const {
+	return rctxm;
+}
+
+size_t NoneReadyState::size() const {
+	return sizeof(NoneReadyState);
+}
+
+NoneReadyState* NoneReadyState::clone() const {
+	return new NoneReadyState(*this);
+}
+
 ReadylessElement::ReadylessElement() {}
 ReadylessElement::~ReadylessElement() {}
 
-ReadyObjects* ReadylessElement::requestReady(const ReadyRequest& ri) {
-	return nullptr;
-}
-
-ElementReadyResult* ReadylessElement::ready(const ReadyInstruction& ri) {
-	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
-						   "so ready() should never be called!");
-}
-
-void ReadylessElement::unready(const UnreadyInstruction& uri) {
-	throw std::logic_error("ReadylessElement-usage-error: Element never emitted any ReadyObjects over requestReady(),"
-						   "so unready() should never be called!");
+void ReadylessElement::ready(ReadyInstruction* ri) {
+	ri->setSatate(nullptr);
 }
 
 SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)

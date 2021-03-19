@@ -635,14 +635,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		ops.push_back(rss->getPipeline());
 	}
 
-	ReadyRequest rdyRequest(ops, rctx);
-	ReadyObjects* rdyObjs = rnd->requestReady(rdyRequest);
-
-	bool makeReady = rdyObjs != nullptr;
-
-	if (makeReady) {
-		elemHandler->readyElement(*rdyObjs, this);
-	}
+	// TODO Do ready-stuff
 
 	std::string addr;
 	{
@@ -661,11 +654,11 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 
 	RenderResult* res = rnd->render(&ri);
 
-	*outCleanupFunction = [this, makeReady, rdyObjs]() {
-		if (makeReady) {
-			elemHandler->unreadyElement(*rdyObjs);
-			delete rdyObjs;
-		}
+	*outCleanupFunction = [/* this, makeReady, rdyObjs */]() {
+		// if (makeReady) {
+		// 	elemHandler->unreadyElement(*rdyObjs);
+		// 	delete rdyObjs;
+		// }
 	};
 
 	if (recordBench) bench.stop(true);
@@ -1103,6 +1096,8 @@ EIcore_runner_elemhandler::EIcore_runner_elemhandler(Element* elem, EIcore_runne
 
 EIcore_runner_elemhandler::~EIcore_runner_elemhandler() {}
 
+/*
+
 void EIcore_runner_elemhandler::readyElement(const ReadyObjects& toReady, ExecutionInterface* ei) {
 
 	// Index for what objects are
@@ -1196,6 +1191,8 @@ void EIcore_runner_elemhandler::unreadyElement(const ReadyObjects& toUnready) {
 
 	readyStatesLock.unlock();
 }
+
+*/
 
 void EIcore_runner_elemhandler::lock(LockId lockId) {
 
