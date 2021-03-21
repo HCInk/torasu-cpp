@@ -630,12 +630,31 @@ void EIcore_runner_object::Benchmarking::stop(bool final) {
 // EICoreRunnerObject: Execution Functions
 
 RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
-	std::vector<std::string> ops;
-	for (auto& rss : *rs) {
-		ops.push_back(rss->getPipeline());
-	}
 
-	// TODO Do ready-stuff
+	ReadyState* rdyState = nullptr;
+	{
+		std::vector<std::string> ops;
+		for (auto& rss : *rs) {
+			ops.push_back(rss->getPipeline());
+		}
+
+		struct ReadyInstr : public ReadyInstruction {
+			ReadyState* state = nullptr;
+
+			ReadyInstr(std::vector<std::string> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
+				: ReadyInstruction(ops, rctx, ei, li) {}
+
+			void setState(ReadyState* state) override {
+				this->state = state;
+			}
+		} rdyi(ops, rctx, this, this->li);
+
+		rnd->ready(&rdyi);
+
+		rdyState = rdyi.state;
+
+		// TODO Currently WIP / non-cached
+	}
 
 	std::string addr;
 	{
@@ -650,15 +669,12 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		bench.init(li.logger, li.options & torasu::LogInstruction::OPT_RUNNER_BENCH_DETAILED);
 	}
 
-	RenderInstruction ri(rctx, rs, this, li);
+	RenderInstruction ri(rctx, rs, this, li, rdyState);
 
 	RenderResult* res = rnd->render(&ri);
 
-	*outCleanupFunction = [/* this, makeReady, rdyObjs */]() {
-		// if (makeReady) {
-		// 	elemHandler->unreadyElement(*rdyObjs);
-		// 	delete rdyObjs;
-		// }
+	*outCleanupFunction = [rdyState]() {
+		if (rdyState != nullptr) delete rdyState;
 	};
 
 	if (recordBench) bench.stop(true);
