@@ -1206,9 +1206,9 @@ public:
 	/** @brief  The operations/segemnts to be made ready */
 	const std::vector<std::string> ops;
 	/** @brief  The target-RenderContext to be made ready towards */
-	const RenderContext* rctx;
+	const RenderContext* const rctx;
 	/** @brief  The ExecutionInterface to be used run executions required to made ready */
-	const ExecutionInterface* ei;
+	ExecutionInterface* const ei;
 	/** @brief  The LogInterface to log messages */
 	const LogInstruction li;
 
