@@ -1221,7 +1221,7 @@ public:
 	 * 	- All other data should be complete on completin of the ready-function
 	 * 	- Provide a nullptr ONLY to signalize that this wont have ANY ready-states for ANY operation
 	 */
-	virtual void setState(const ReadyState* state) = 0;
+	virtual void setState(ReadyState* state) = 0;
 
 	ReadyInstruction(std::vector<std::string> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
 		: ops(ops), rctx(rctx), ei(ei), li(li) {}
