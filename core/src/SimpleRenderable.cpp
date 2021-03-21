@@ -164,7 +164,7 @@ ReadylessElement::ReadylessElement() {}
 ReadylessElement::~ReadylessElement() {}
 
 void ReadylessElement::ready(ReadyInstruction* ri) {
-	ri->setSatate(nullptr);
+	ri->setState(nullptr);
 }
 
 SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
