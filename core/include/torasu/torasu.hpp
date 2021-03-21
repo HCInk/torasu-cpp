@@ -753,10 +753,11 @@ private:
 	ResultSettings* rs;
 	ExecutionInterface* ei;
 	LogInstruction li;
+	ReadyState* rdys;
 
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li)
-		: rctx(rctx), rs(rs), ei(ei), li(li) {}
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li, ReadyState* rdys)
+		: rctx(rctx), rs(rs), ei(ei), li(li), rdys(rdys) {}
 
 	~RenderInstruction() {}
 
@@ -774,6 +775,10 @@ public:
 
 	inline LogInstruction getLogInstruction() {
 		return li;
+	}
+
+	inline ReadyState* const getReadyState() {
+		return rdys;
 	}
 };
 
