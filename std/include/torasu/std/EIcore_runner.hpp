@@ -21,6 +21,7 @@ namespace torasu::tstd {
 
 class EIcore_runner_object;
 class EIcore_runner_object_logger;
+class EIcore_runner_cacheinterface;
 class EIcore_runner_elemhandler;
 
 struct EIcore_runner_object_cmp {
@@ -65,6 +66,9 @@ protected:
 	int64_t consecutiveFedCycles = 0; // Consecutive cycles without task shortage
 	std::list<EIcore_runner_thread> threads; // !!! Never edit if doRun=false
 	volatile bool scheduleCleanThreads = false;
+
+	// Caching (MT-safe)
+	EIcore_runner_cacheinterface* const cache;
 
 	struct EIcore_runner_dbg {
 		enum RegisterReason {
@@ -139,6 +143,7 @@ public:
 	EIcore_runner_object* createInterface(std::vector<int64_t>* prioStack=NULL);
 
 	friend class EIcore_runner_object;
+	friend class EIcore_runner_elemhandler;
 };
 
 enum EIcore_runner_object_status {
@@ -265,19 +270,61 @@ public:
 };
 */
 
+class EIcore_runner_cacheinterface {
+public:
+	class CacheHandle {
+	public:
+		double genTimeStamp;
+		double calcTime;
+		size_t hits;
+		size_t size;
+		bool inUse;
+
+		CacheHandle(double genTimeStamp, double calcTime, size_t hits, bool inUse)
+			: genTimeStamp(genTimeStamp), calcTime(calcTime), hits(hits), inUse(inUse) {}
+
+		/** @brief Last call before delete is done
+		 * @retval true: delete may proceed
+		 * 			- false: delete may not be called / resource still in use */
+		virtual bool tryDereference() = 0;
+		virtual ~CacheHandle() {}
+	};
+private:
+	std::mutex opLock;
+	int64_t maxMem;
+	int64_t totalUsed = 0;
+	std::set<CacheHandle*> handles;
+
+	bool reserveSpace(int64_t space);
+public:
+	explicit EIcore_runner_cacheinterface(int64_t maxMem);
+	~EIcore_runner_cacheinterface();
+
+	// MT-Support
+
+	static double now();
+	void add(CacheHandle* handle);
+	void remove(CacheHandle* handle);
+};
+
 class EIcore_runner_elemhandler : public ElementExecutionOpaque {
 private:
+	class LoadedReadyState;
+
 	// Information about the element
 	Element* elem;
 	EIcore_runner* parent;
+	EIcore_runner_cacheinterface* cache;
 
 	// Ready-States
 	std::mutex readyStatesLock; // Lock for readyStates and its contents
-	std::vector<ReadyState*> readyStates;
+	std::set<LoadedReadyState*> readyStates;
 
 	// Locks
 	std::mutex lockStatesLock; // Lock for lockStates and its contents
 	std::map<LockId, std::mutex> lockStates;
+
+	void cleanReady();
 
 public:
 	static inline EIcore_runner_elemhandler* getHandler(Element* elem, EIcore_runner* parent) {
@@ -291,6 +338,19 @@ public:
 
 	EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent);
 	~EIcore_runner_elemhandler();
+
+	class ReadyStateHandle {
+	private:
+		LoadedReadyState* lrs;
+		explicit ReadyStateHandle(LoadedReadyState* lrs);
+	public:
+		ReadyState* const state;
+		~ReadyStateHandle();
+
+		friend LoadedReadyState;
+	};
+
+	ReadyStateHandle* ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, torasu::ExecutionInterface* ei, LogInstruction li);
 
 	void lock(uint64_t lockId);
 	void unlock(uint64_t lockId);
