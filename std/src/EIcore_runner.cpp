@@ -1186,7 +1186,9 @@ public:
 
 	LoadedReadyState(torasu::ReadyState* rdys, EIcore_runner_elemhandler* handler)
 		: CacheHandle(-1, -1, 1, true), uses(1), handler(handler), rdys(rdys) {
-		handler->readyStates.insert(this);
+		// vs-code extension is kinda dumb there (tested on vscode-cpptools 1.2.2)
+		// Cast required since it appreantly detects 'this' as 'LoadedReadyState' instead of 'EIcore_runner_elemhandler::LoadedReadyState'
+		handler->readyStates.insert( (EIcore_runner_elemhandler::LoadedReadyState*) this);
 	}
 
 	ReadyStateHandle* finish(double calcTime) {
@@ -1195,7 +1197,8 @@ public:
 		this->size = rdys->size();
 		handler->cache->add(this);
 
-		return new ReadyStateHandle(this);
+		// same thing with vs-code ext as above
+		return new ReadyStateHandle( (EIcore_runner_elemhandler::LoadedReadyState*) this);
 	}
 
 	ReadyStateHandle* newUse() {
@@ -1204,7 +1207,8 @@ public:
 		uses++;
 		hits++;
 
-		return new ReadyStateHandle(this);
+		// same thing with vs-code ext as above
+		return new ReadyStateHandle( (EIcore_runner_elemhandler::LoadedReadyState*) this);
 	}
 
 	void unregUse() {
@@ -1218,7 +1222,8 @@ public:
 		std::unique_lock listLck(handler->readyStatesLock);
 		std::unique_lock useLck(useLock);
 		if (inUse) return false;
-		handler->readyStates.erase(this);
+		// same thing with vs-code ext-dumbness as above
+		handler->readyStates.erase( (EIcore_runner_elemhandler::LoadedReadyState*) this);
 		return true;
 	}
 
