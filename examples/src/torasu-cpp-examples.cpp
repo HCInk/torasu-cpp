@@ -381,19 +381,19 @@ int main(int argc, char** argv) {
 
 	// simpleDpTest();
 
-	// simpleRenderExample1();
+	simpleRenderExample1();
 
-	// simpleRenderExample2();
+	simpleRenderExample2();
 
 	// jsonPropExample();
 
 	// jsonFallbackExample();
 
-	// mathExample();
+	mathExample();
 
-	// inlineMathExample();
+	inlineMathExample();
 
-	// slotTests();
+	slotTests();
 
 	// logExample();
 
