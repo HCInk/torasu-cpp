@@ -881,63 +881,6 @@ enum ResultSegmentStatus {
 	ResultSegmentStatus_OK_WARN = 2
 };
 
-class ResultSegment {
-private:
-	ResultSegmentStatus status;
-	DataResourceHolder result;
-	LogInfoRef* rir;
-
-public:
-	/**
-	 * @brief  Creates a ResultSegment (only status, without content)
-	 * @note  This constructor should only be used if a result wasn't generated
-	 * @param  status: Calculation-status of the segment
-	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
-	 */
-	explicit inline ResultSegment(ResultSegmentStatus status, LogInfoRef* rir = nullptr)
-		: status(status), result(), rir(rir) {}
-
-	/**
-	 * @brief  Creates a ResultSegment
-	 * @param  status: Calculation-status of the segment
-	 * @param  result: The result of the calculation of the segment
-	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
-	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
-	 */
-	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, LogInfoRef* rir = nullptr)
-		: status(status), result(result, freeResult), rir(rir) {}
-
-	~ResultSegment() {
-		if (rir != nullptr) delete rir;
-	}
-
-	inline ResultSegmentStatus const getStatus() {
-		return status;
-	}
-
-	inline DataResource* const getResult() {
-		return result.get();
-	}
-
-	inline LogInfoRef* getResultInfoRef() {
-		return rir;
-	}
-
-	inline bool const canFreeResult() {
-		return result.owns();
-	}
-
-	/**
-	 * @brief  Ejects result to take control of manual memory management
-	 * @note   Only available if canFreeResult() = true
-	 * @retval The pointer to the result that has been ejected
-	 */
-	inline DataResource* const ejectResult() {
-		return result.eject();
-	}
-	friend RenderResult;
-};
-
 class RenderContextMask {
 public:
 	std::map<std::string, DataResourceMask*>* maskMap;
@@ -1069,6 +1012,90 @@ public:
 		return mask;
 	}
 
+};
+
+class ResultSegment {
+private:
+	ResultSegmentStatus status;
+	DataResourceHolder result;
+	RenderContextMask* rctxm = nullptr;
+	LogInfoRef* rir;
+
+public:
+	/**
+	 * @brief  Creates a ResultSegment (only status, without content)
+	 * @note  This constructor should only be used if a result wasn't generated
+	 * @param  status: Calculation-status of the segment
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	explicit inline ResultSegment(ResultSegmentStatus status, LogInfoRef* rir = nullptr)
+		: status(status), result(), rir(rir) {}
+
+	/**
+	 * @brief  Creates a ResultSegment
+	 * @param  status: Calculation-status of the segment
+	 * @param  result: The result of the calculation of the segment
+	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, LogInfoRef* rir = nullptr)
+		: status(status), result(result, freeResult), rir(rir) {}
+
+	/**
+	 * @brief  Creates a ResultSegment (only status, without content)
+	 * @note  This constructor should only be used if a result wasn't generated
+	 * @param  status: Calculation-status of the segment
+	 * @param  rctxm: The RenderContext-range this status is valid in
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, RenderContextMask* rctxm, LogInfoRef* rir = nullptr)
+		: status(status), rctxm(rctxm), rir(rir) {}
+
+	/**
+	 * @brief  Creates a ResultSegment
+	 * @param  status: Calculation-status of the segment
+	 * @param  result: The result of the calculation of the segment
+	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 * @param  rctxm: The RenderContext-range this result is valid in
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, RenderContextMask* rctxm, LogInfoRef* rir = nullptr)
+		: status(status), result(result, freeResult), rctxm(rctxm), rir(rir) {}
+
+	~ResultSegment() {
+		if (rctxm != nullptr) delete rctxm;
+		if (rir != nullptr) delete rir;
+	}
+
+	inline ResultSegmentStatus const getStatus() {
+		return status;
+	}
+
+	inline DataResource* const getResult() {
+		return result.get();
+	}
+
+	inline const RenderContextMask* getResultMask() const {
+		return rctxm;
+	}
+
+	inline LogInfoRef* getResultInfoRef() {
+		return rir;
+	}
+
+	inline bool const canFreeResult() {
+		return result.owns();
+	}
+
+	/**
+	 * @brief  Ejects result to take control of manual memory management
+	 * @note   Only available if canFreeResult() = true
+	 * @retval The pointer to the result that has been ejected
+	 */
+	inline DataResource* const ejectResult() {
+		return result.eject();
+	}
+	friend RenderResult;
 };
 
 // enum RIRefCall {
