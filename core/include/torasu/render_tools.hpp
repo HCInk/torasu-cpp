@@ -190,6 +190,7 @@ public:
 	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::RenderHelper* helper, bool collectMask = true) {
 		auto result = findResult<T>(rr, segKey, &helper->lrib);
 		if (collectMask) helper->collectMask(result.getResultMask());
+		return result;
 	}
 
 };
