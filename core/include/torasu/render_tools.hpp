@@ -76,6 +76,10 @@ public:
 		return result;
 	}
 
+	inline const RenderContextMask* getResultMask() const {
+		return rs != nullptr ? rs->getResultMask() : nullptr;
+	}
+
 	inline bool canFreeResult() const {
 		return rs ? rs->canFreeResult() : false;
 	}
