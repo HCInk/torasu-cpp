@@ -20,6 +20,46 @@ namespace torasu::tools {
 // RenderTools
 //
 
+template<class T> class CastedRenderSegmentResult;
+
+/**
+ * @brief  Tool to help making operations inside a renderable easier
+ * 		- Manages: Logging and building of info ref; Result-masking and -generation
+ */
+class RenderHelper {
+private:
+	ExecutionInterface* const ei;
+	LogInstruction li;
+	RenderContext* const rctx;
+	RenderContextMask* resMask;
+public:
+	torasu::tools::LogInfoRefBuilder lrib;
+
+	explicit RenderHelper(RenderInstruction* ri);
+	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx);
+	~RenderHelper();
+
+	/** @brief  Will collect another rctx-mask into the result-mask
+	 * - The generated mask will be used in buildResult(..) or can be manually fetched with takeResMask() */
+	void collectMask(const RenderContextMask* mask);
+
+	/** @brief  Takes the result-mask based on the masks collected via collectMask(...)
+	 * @note   Should only be called once - Second calls will give an invalid result - Is also called in buildResult(...) */
+	RenderContextMask* takeResMask();
+
+	/** @brief  Builds a result without a payload (uses internal tools to enrich the result with the requested data)
+	 * @param  status: The status of the result
+	 * @retval The genrated segment (managed by caller) */
+	ResultSegment* buildResult(ResultSegmentStatus status);
+
+	/** @brief  Builds a result with a payload (uses internal tools to enrich the result with the requested data)
+	 * @param  dr: The payload of the result
+	 * @param  status: The status of the result (if OK and warnings/erros have been collected in lrib, will be set to OK_WARN)
+	 * @retval The genrated segment (managed by caller) */
+	ResultSegment* buildResult(DataResource* dr, ResultSegmentStatus status = ResultSegmentStatus_OK);
+};
+
+
 template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
@@ -145,6 +185,11 @@ public:
 
 	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {
 		return findResult<T>(rr, segKey, infoBuilder);
+	}
+
+	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::RenderHelper* helper, bool collectMask = true) {
+		auto result = findResult<T>(rr, segKey, &helper->lrib);
+		if (collectMask) helper->collectMask(result.getResultMask());
 	}
 
 };
