@@ -884,6 +884,7 @@ enum ResultSegmentStatus {
 class RenderContextMask {
 public:
 	std::map<std::string, DataResourceMask*>* maskMap;
+	bool freeMapContents = true;
 
 	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
 	RenderContextMask(const RenderContextMask& orig) : maskMap(orig.maskMap) {
@@ -891,14 +892,29 @@ public:
 			entry.second = entry.second != nullptr ? entry.second->clone() : nullptr;
 	}
 
-	explicit RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap)
-		: maskMap(maskMap) {}
+	explicit RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap, bool freeMapContents = true)
+		: maskMap(maskMap), freeMapContents(freeMapContents) {}
 
 	~RenderContextMask() {
-		for (auto& entry : *maskMap) {
-			if (entry.second != nullptr) delete entry.second;
+		if (freeMapContents) {
+			for (auto& entry : *maskMap) {
+				if (entry.second != nullptr) delete entry.second;
+			}
 		}
 		delete maskMap;
+	}
+
+	/** @brief  Filters mask - Removes entries with given keys
+	 * @param  toFilter: The keys of the entries to be removed
+	 * @retval The filtered mask using references - thereforce the original RenderContextMask
+	 * 			should be kept valid during the existence of the filtered mask */
+	inline RenderContextMask* filter(std::vector<std::string> toFilter) const {
+		auto* refClone = new RenderContextMask(new std::map<std::string, DataResourceMask*>(*maskMap), false);
+
+		for (const auto& currKey : toFilter)
+			refClone->maskMap->erase(currKey);
+
+		return refClone;
 	}
 
 	inline DataResourceMask::MaskCompareResult check(RenderContext* rctx) {
@@ -1012,6 +1028,27 @@ public:
 		return mask;
 	}
 
+
+	inline void resolveUnknownsFromRctx(torasu::RenderContext* rctx) {
+		for (auto maskEntry : *maskMap) {
+			if (maskEntry.second->isUnknown()) {
+				delete maskEntry.second;
+				maskEntry.second = new DataResourceMask::DataResourceMaskSingle((*rctx)[maskEntry.first]->clone());
+			}
+		}
+	}
+
+	static inline RenderContextMask* fromRctx(torasu::RenderContext* rctx) {
+		auto* mask = new RenderContextMask();
+
+		for (auto rctxEntry : *rctx) {
+			(*mask->maskMap)[rctxEntry.first] = new DataResourceMask::DataResourceMaskSingle(rctxEntry.second->clone());
+		}
+
+		return mask;
+	}
+
+
 };
 
 class ResultSegment {
@@ -1077,6 +1114,10 @@ public:
 
 	inline const RenderContextMask* getResultMask() const {
 		return rctxm;
+	}
+
+	inline void updateResultMask(RenderContextMask* rctxm) {
+		this->rctxm = rctxm;
 	}
 
 	inline LogInfoRef* getResultInfoRef() {
