@@ -65,18 +65,9 @@ RenderContextMask* RenderHelper::takeResMask() {
 		mask = resMask;
 		resMask = nullptr;
 
-		for (auto maskEntry : *mask->maskMap) {
-			if (maskEntry.second->isUnknown()) {
-				delete maskEntry.second;
-				maskEntry.second = new DataResourceMask::DataResourceMaskSingle((*rctx)[maskEntry.first]->clone());
-			}
-		}
+		mask->resolveUnknownsFromRctx(rctx);
 	} else {
-		mask = new RenderContextMask();
-
-		for (auto rctxEntry : *rctx) {
-			(*mask->maskMap)[rctxEntry.first] = new DataResourceMask::DataResourceMaskSingle(rctxEntry.second->clone());
-		}
+		mask = RenderContextMask::fromRctx(rctx);
 
 	}
 
