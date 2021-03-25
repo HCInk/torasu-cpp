@@ -61,14 +61,10 @@ void RenderHelper::collectMask(const RenderContextMask* mask) {
 RenderContextMask* RenderHelper::takeResMask() {
 	RenderContextMask* mask;
 
-	if (resMask != nullptr) {
-		mask = resMask;
+	mask = resMask;
+	if (mask != nullptr) {
 		resMask = nullptr;
-
 		mask->resolveUnknownsFromRctx(rctx);
-	} else {
-		mask = RenderContextMask::fromRctx(rctx);
-
 	}
 
 	return mask;

@@ -1038,17 +1038,6 @@ public:
 		}
 	}
 
-	static inline RenderContextMask* fromRctx(torasu::RenderContext* rctx) {
-		auto* mask = new RenderContextMask();
-
-		for (auto rctxEntry : *rctx) {
-			(*mask->maskMap)[rctxEntry.first] = new DataResourceMask::DataResourceMaskSingle(rctxEntry.second->clone());
-		}
-
-		return mask;
-	}
-
-
 };
 
 class ResultSegment {
