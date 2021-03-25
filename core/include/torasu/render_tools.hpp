@@ -27,10 +27,11 @@ template<class T> class CastedRenderSegmentResult;
  * 		- Manages: Logging and building of info ref; Result-masking and -generation
  */
 class RenderHelper {
-private:
+public:
 	ExecutionInterface* const ei;
 	LogInstruction li;
 	RenderContext* const rctx;
+private:
 	RenderContextMask* resMask;
 public:
 	torasu::tools::LogInfoRefBuilder lrib;
@@ -57,6 +58,20 @@ public:
 	 * @param  status: The status of the result (if OK and warnings/erros have been collected in lrib, will be set to OK_WARN)
 	 * @retval The genrated segment (managed by caller) */
 	ResultSegment* buildResult(DataResource* dr, ResultSegmentStatus status = ResultSegmentStatus_OK);
+
+	/** @brief Checks if logs with the given log-level may be logged */
+	inline bool mayLog(torasu::LogLevel level) const {
+		return li.level <= level;
+	}
+
+	//
+	// Passthru / Aliases
+	//
+
+	/** @brief Fetch render result from ExecutionIntrface */
+	inline torasu::RenderResult* fetchRenderResult(uint64_t rid) {
+		return ei->fetchRenderResult(rid);
+	}
 };
 
 
@@ -232,15 +247,24 @@ public:
 		return RenderResultSegmentHandle<T>(segKey);
 	}
 
-	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
-		return enqueueRender(rnd.get(), rctx, ei, li, prio);
-	}
-
 	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
 #ifdef TORASU_CHECK_RENDER_NULL_RCTX
 		if (rctx == nullptr) throw std::logic_error("Can't enqueue render without a render-context");
 #endif
 		return ei->enqueueRender(rnd, rctx, getResultSetttings(), li, prio);
+	}
+
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rctx, ei, li, prio);
+	}
+
+	inline uint64_t enqueueRender(Renderable* rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
+		if (rctx == nullptr) rctx = rh->rctx;
+		return rh->ei->enqueueRender(rnd, rctx, getResultSetttings(), rh->li, prio);
+	}
+
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rh, rctx, prio);
 	}
 
 	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
