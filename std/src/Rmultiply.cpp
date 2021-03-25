@@ -25,9 +25,6 @@ Rmultiply::~Rmultiply() {
 ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
 	torasu::tools::RenderHelper rh(ri);
-	auto* ei = ri->getExecutionInterface();
-	auto li = ri->getLogInstruction();
-	auto* rctx = ri->getRenderContext();
 	auto& lirb = rh.lrib;
 
 	const auto selPipleine = resSettings->getPipeline();
@@ -37,11 +34,11 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 		tools::RenderInstructionBuilder rib;
 		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
 
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
+		auto rendA = rib.enqueueRender(a, &rh);
+		auto rendB = rib.enqueueRender(b, &rh);
 
-		std::unique_ptr<RenderResult> resA(ei->fetchRenderResult(rendA));
-		std::unique_ptr<RenderResult> resB(ei->fetchRenderResult(rendB));
+		std::unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
+		std::unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
 
 		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA.get(), &rh);
 		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB.get(), &rh);
@@ -50,15 +47,14 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 			Dnum* mulRes = new Dnum(a.getResult()->getNum() * b.getResult()->getNum());
 			return rh.buildResult(mulRes);
 		} else {
-			if (li.level <= WARN) {
-				torasu::tools::LogInfoRefBuilder errorCauses(li);
+			if (rh.mayLog(WARN)) {
+				torasu::tools::LogInfoRefBuilder errorCauses(lirb.linstr);
 				if (!a)
 					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
 				if (!b)
 					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
 
 				lirb.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
-
 			}
 
 			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
@@ -77,11 +73,11 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		// Sub-Renderings
 
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
+		auto rendA = rib.enqueueRender(a, &rh);
+		auto rendB = rib.enqueueRender(b, &rh);
 
-		std::unique_ptr<RenderResult> resA(ei->fetchRenderResult(rendA));
-		std::unique_ptr<RenderResult> resB(ei->fetchRenderResult(rendB));
+		std::unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
+		std::unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
 
 		// Calculating Result from Results
 
@@ -124,8 +120,8 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 			return rh.buildResult(result);
 		} else {
 
-			if (li.level <= WARN) {
-				torasu::tools::LogInfoRefBuilder errorCauses(li);
+			if (rh.mayLog(WARN)) {
+				torasu::tools::LogInfoRefBuilder errorCauses(lirb.linstr);
 				if (!a)
 					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
 				if (!b)
