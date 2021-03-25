@@ -1186,6 +1186,7 @@ public:
 
 	LoadedReadyState(torasu::ReadyState* rdys, EIcore_runner_elemhandler* handler)
 		: CacheHandle(-1, -1, 1, true), uses(1), handler(handler), rdys(rdys) {
+		useLock.lock(); // Lock until finish(...) is called
 		// vs-code extension is kinda dumb there (tested on vscode-cpptools 1.2.2)
 		// Cast required since it appreantly detects 'this' as 'LoadedReadyState' instead of 'EIcore_runner_elemhandler::LoadedReadyState'
 		handler->readyStates.insert( (EIcore_runner_elemhandler::LoadedReadyState*) this);
@@ -1196,6 +1197,7 @@ public:
 		this->calcTime = calcTime;
 		this->size = rdys->size();
 		handler->cache->add(this);
+		useLock.unlock();
 
 		// same thing with vs-code ext as above
 		return new ReadyStateHandle( (EIcore_runner_elemhandler::LoadedReadyState*) this);
@@ -1267,7 +1269,12 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 		}
 	} readyHandler(ops, rctx, ei, li, &state, &listLck, this);
 
-	elem->ready(&readyHandler);
+	try {
+		elem->ready(&readyHandler);
+	} catch (const std::exception& ex) {
+		if (li.level <= ERROR) li.logger->log(ERROR, std::string("An error occurred while making object ready! - Message: ") + ex.what());
+	}
+
 
 	if (state != nullptr) {
 		// TODO Benchmark the result to calculate a non-dummy calcTime
