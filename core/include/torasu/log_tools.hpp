@@ -9,8 +9,8 @@
 
 namespace torasu::tools {
 
-inline void log_checked(torasu::LogInstruction li, torasu::LogLevel lvl, std::string msg) {
-	if (li.level <= lvl) li.logger->log(lvl, msg);
+inline void log_checked(torasu::LogInstruction li, torasu::LogLevel lvl, std::string msg, LogInfoRef* lir = nullptr) {
+	if (li.level <= lvl) li.logger->log(new torasu::LogMessage(lvl, msg, lir));
 }
 
 class LogInfoRefBuilder {
