@@ -1263,7 +1263,7 @@ public:
 	/** @brief  The operations/segemnts to be made ready */
 	const std::vector<std::string> ops;
 	/** @brief  The target-RenderContext to be made ready towards */
-	const RenderContext* const rctx;
+	/* TODO make const */ RenderContext* const rctx;
 	/** @brief  The ExecutionInterface to be used run executions required to made ready */
 	ExecutionInterface* const ei;
 	/** @brief  The LogInterface to log messages */
