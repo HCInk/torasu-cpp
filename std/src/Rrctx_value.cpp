@@ -17,7 +17,7 @@ torasu::ResultSegment* Rrctx_value::renderSegment(torasu::ResultSegmentSettings*
 		if (found != rctx->end() && found->second != nullptr) {
 			return new ResultSegment(ResultSegmentStatus_OK, found->second->clone(), true);
 		} else {
-			return new ResultSegment(ResultSegmentStatus_OK_WARN);
+			return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
 		}
 
 	} else {
