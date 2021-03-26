@@ -223,7 +223,9 @@ private:
 	DataResource* dr;
 public:
 	explicit DataResourceMaskSingle(DataResource* dr) : dr(dr) {}
-	~DataResourceMaskSingle() {}
+	~DataResourceMaskSingle() {
+		delete dr;
+	}
 
 	std::string getIdent() const override {
 		return "T::DRMS";
@@ -961,7 +963,7 @@ public:
 
 		for (const auto& entry : *other.maskMap) {
 			auto found = maskMap->find(entry.first);
-			if (found == thisEnd) { // In only b
+			if (found != thisEnd) { // In only b
 				(*maskMap)[found->first] = found->second->clone();
 			}
 		}
