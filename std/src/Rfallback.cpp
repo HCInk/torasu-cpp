@@ -1,6 +1,7 @@
 #include "../include/torasu/std/Rfallback.hpp"
 
 #include <memory>
+#include <torasu/render_tools.hpp>
 
 namespace torasu::tstd {
 
@@ -19,7 +20,7 @@ Rfallback::~Rfallback() {}
 
 ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
-	auto* ei = ri->getExecutionInterface();
+	tools::RenderHelper rh(ri);
 
 	// If no option succeeded, this level will indicate a possible cause of the error
 	// The higher the level the more important it is
@@ -32,53 +33,85 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 		INTERNAL_ERROR = 2,
 	} fallbackLevel = NO_SEGMENTS;
 
-	for (auto& slot : slots) {
-		torasu::ResultSettings rs = {resSettings};
-		auto rid = ei->enqueueRender(slot.second.get(), ri->getRenderContext(), &rs, ri->getLogInstruction(), 0);
+	bool logWarns = rh.mayLog(torasu::WARN);
+	bool logDetails = rh.mayLog(torasu::DEBUG);
 
-		std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rid));
+	size_t optNo = 0;
+	for (auto& slot : slots) {
+		optNo++;
+		torasu::ResultSettings rs = {resSettings};
+		auto rid = rh.ei->enqueueRender(slot.second.get(), ri->getRenderContext(), &rs, ri->getLogInstruction(), 0);
+
+		std::unique_ptr<RenderResult> rr(rh.fetchRenderResult(rid));
 
 		auto* res = rr->getResults();
 
 		auto foundResult = res->find(resSettings->getKey());
 
 		if (foundResult == res->end()) {
-			// Error: This element has not provided the requested segment
+			rh.lrib.hasError = true;
+			rh.collectMask(nullptr);
+			if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
+											   + " has not provided the requested result.");
+			if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
 			continue;
 		}
 
 		auto* rseg = foundResult->second;
 		ResultSegmentStatus status = rseg->getStatus();
+		rh.collectMask(rseg->getResultMask());
 
 		if (status < 0) {
 			switch (status) {
 			case ResultSegmentStatus_INVALID_SEGMENT:
 				// Signalizes that no resource is a available:
 				// Planned use of fallback
+				if (logDetails) rh.lrib.logCause(torasu::DEBUG, "Option No. " + std::to_string(optNo)
+													 + " signalized that no result is present. Skipping. (As planned on no result-presence)",
+													 new auto(*rseg->getResultInfoRef()));
 				break;
 			case ResultSegmentStatus_INVALID_FORMAT:
 				// Error: Note invalid format
+				rh.lrib.hasError = true;
+				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
+												   + " encountered a format error, skipping to next fallback.",
+												   new auto(*rseg->getResultInfoRef()));
 				if (fallbackLevel < INVALID_FORMAT) fallbackLevel = INVALID_FORMAT;
 				break;
 			case ResultSegmentStatus_INTERNAL_ERROR:
 				// Error: Note Internal error
+				rh.lrib.hasError = true;
+				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
+												   + " encountered an internal error, skipping to next fallback.",
+												   new auto(*rseg->getResultInfoRef()));
 				if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
 				break;
 			default:
 				// Error: Note unexpected status-code
+				rh.lrib.hasError = true;
+				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
+												   + " encountered an unknown error-code (" + std::to_string(status) + "), skipping to next fallback.",
+												   new auto(*rseg->getResultInfoRef()));
 				if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
 				break;
 			}
 			continue;
+		} else if (status == ResultSegmentStatus_OK_WARN) {
+			rh.lrib.hasError = true;
+			if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
+											   + " signalized that it may contain errors. Still taking.",
+											   new auto(*rseg->getResultInfoRef()));
 		}
 
-		torasu::ResultSegmentStatus resStatus =
-			fallbackLevel == NO_SEGMENTS ? ResultSegmentStatus_OK : ResultSegmentStatus_OK_WARN;
+		if (logDetails) rh.li.logger->log(torasu::DEBUG, "Selected Option No. " + std::to_string(optNo));
+
+		if (fallbackLevel != NO_SEGMENTS) rh.lrib.hasError = true;
 
 		if (rseg->canFreeResult()) {
-			return new ResultSegment(resStatus, rseg->ejectResult(), true);
+			return rh.buildResult(rseg->ejectResult());
 		} else {
-			return new ResultSegment(resStatus, rseg->getResult(), false);
+			return new ResultSegment(!rh.lrib.hasError ? torasu::ResultSegmentStatus_OK: torasu::ResultSegmentStatus_OK_WARN,
+									 rseg->getResult(), false, rh.takeResMask(), rh.lrib.build());
 		}
 
 
@@ -104,7 +137,10 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 		break;
 	}
 
-	return new ResultSegment(resStatus);
+	if (logWarns) rh.lrib.logCauseSummary(torasu::WARN, "No matching fallback applied."
+											  " (" + std::to_string(optNo) + " options checked)");
+
+	return rh.buildResult(resStatus);
 
 }
 
