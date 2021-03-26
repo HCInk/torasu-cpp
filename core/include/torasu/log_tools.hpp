@@ -82,6 +82,12 @@ public:
 		return logCauseDirect(new LogMessage(level, message, lirb.build()));
 	}
 
+	LogId logCauseSummary(LogLevel level, std::string message) {
+		auto* causesBuilt = build();
+		causes->clear();
+		return logCause(level, message, causesBuilt);
+	}
+
 	void addCause(LogId tag) {
 		if (tag != LogId_MAX) {
 			getCauses()->insert(tag);
