@@ -51,24 +51,23 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		// Getting url
 
-		auto* ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto* rctx = ri->getRenderContext();
+		tools::RenderHelper rh(ri);
 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderId = rib.enqueueRender(urlRnd, rctx, ei, li);
-		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, rctx, ei, li) : 0;
+		auto renderId = rib.enqueueRender(urlRnd, &rh);
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, &rh) : 0;
 
 		std::string url;
 		{
-			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderId));
+			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
 
 			auto fetchedRes = segHandle.getFrom(rndRes.get());
 
 			if (fetchedRes.getResult() == nullptr) {
-				throw std::runtime_error("Error fetching url!");
+				rh.lrib.logCause(LogLevel::WARN, "Error fetching url!", fetchedRes.takeInfoTag());
+				return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
 			}
 
 			url = fetchedRes.getResult()->getString();
@@ -76,14 +75,16 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		std::string headers = "";
 		if (headersRnd.get() != nullptr) {
-			std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderIdHeaders));
+			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderIdHeaders));
 
 			auto fetchedRes = segHandle.getFrom(rndRes.get());
 
 			if (fetchedRes.getResult() != nullptr) {
 				headers = fetchedRes.getResult()->getString();
 			} else {
-				torasu::tools::log_checked(li, LogLevel::WARN, "Failed to provide headers, will skip headers.");
+				if (rh.mayLog(WARN)) {
+					rh.lrib.logCause(LogLevel::WARN, "Failed to provide headers, will skip headers.", fetchedRes.takeInfoTag());
+				}
 			}
 
 		}
@@ -126,10 +127,10 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		Dfile* file = new Dfile(size);
 		copy(data, data+size, file->getFileData());
 
-		torasu::tools::log_checked(li, LogLevel::DEBUG,
+		torasu::tools::log_checked(rh.li, LogLevel::DEBUG,
 								   "Loaded net-file \"" + url + "\" (" + std::to_string(size) + "byte)");
 
-		return new ResultSegment(ResultSegmentStatus_OK, file, true);
+		return rh.buildResult(file);
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
 	}
