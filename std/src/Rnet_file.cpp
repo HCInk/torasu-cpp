@@ -63,7 +63,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		{
 			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get());
+			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
 
 			if (fetchedRes.getResult() == nullptr) {
 				rh.lrib.logCause(LogLevel::WARN, "Error fetching url!", fetchedRes.takeInfoTag());
@@ -77,7 +77,7 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 		if (headersRnd.get() != nullptr) {
 			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderIdHeaders));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get());
+			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
 
 			if (fetchedRes.getResult() != nullptr) {
 				headers = fetchedRes.getResult()->getString();
