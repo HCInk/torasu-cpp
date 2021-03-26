@@ -7,6 +7,8 @@
 #include <sstream> //for std::stringstream 
 #include <stack> //for std::stack 
 
+#include <torasu/log_tools.hpp>
+
 using namespace std;
 
 // Intercepts own log-group for every sub-task
@@ -1277,6 +1279,9 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 
 
 	if (state != nullptr) {
+		if (state->rdys->getContextMask() == nullptr)
+			torasu::tools::log_checked(li, torasu::INFO, "Ready-State contains has no mask! This may lead to very reduced performance, since it can't be cached");
+
 		// TODO Benchmark the result to calculate a non-dummy calcTime
 		return state->finish(1000);
 	}
