@@ -95,8 +95,7 @@ template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::str
 
 	if (!srr.check()) {
 		if (logInstr.level <= WARN) {
-			logInstr.logger->log(new LogMessage(WARN, "SimpleRender: The generated result may contain errors! (" + srr.getInfo() + ")",
-												new auto(*srr.rs.getRawInfo()) ));
+			logInstr.logger->log(new LogMessage(WARN, "SimpleRender: The generated result may contain errors! (" + srr.getInfo() + ")", srr.rs.getRawInfoCopy() ));
 		}
 	}
 

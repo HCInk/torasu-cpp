@@ -102,7 +102,7 @@ public:
 				   << "\"!";
 			if (infoBuilder != nullptr) {
 				infoBuilder->hasError = true;
-				infoTag = infoBuilder->logCause(WARN, errMsg.str(), new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, errMsg.str(), getRawInfoCopy() );
 				return;
 			} else {
 				throw std::logic_error(errMsg.str());
@@ -115,11 +115,10 @@ public:
 			infoBuilder->hasError = true;
 			switch (status) {
 			case ResultSegmentStatus_OK_WARN:
-				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", getRawInfoCopy() );
 				break;
 			default:
-				infoTag = infoBuilder->logCause(WARN, "Sub-render returned with abnormal status " + std::to_string(status),
-												new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, "Sub-render returned with abnormal status " + std::to_string(status), getRawInfoCopy() );
 				break;
 			}
 		}
@@ -147,8 +146,13 @@ public:
 		return status;
 	}
 
-	inline LogInfoRef* getRawInfo() const {
+	inline const LogInfoRef* getRawInfo() const {
 		return rs ? rs->getResultInfoRef() : nullptr;
+	}
+
+	inline LogInfoRef* getRawInfoCopy() const {
+		const auto* rawInfo = getRawInfo();
+		return rawInfo != nullptr ? new auto(*rawInfo) : nullptr;
 	}
 
 	inline LogId takeInfoTag() {
