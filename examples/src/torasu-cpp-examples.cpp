@@ -182,7 +182,9 @@ void jsonFallbackExample() {
 
 	torasu::tstd::Rfallback tree({&json1, &json2});
 
-	Dstring resStr = torasu::tstd::renderString(&tree);
+	torasu::tstd::LIcore_logger logger;
+	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
+	Dstring resStr = torasu::tstd::renderString(&tree, nullptr, &li);
 
 	std::cout << "EXEC-RES: \"" << resStr.getString() << "\"" << std::endl;
 
@@ -299,7 +301,7 @@ void renderLogExample() {
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::TRACE);
 
-	torasu::tstd::renderNum(&tree, &li);
+	torasu::tstd::renderNum(&tree, nullptr, &li);
 
 }
 
@@ -316,7 +318,7 @@ void jsonParseFromStrExample() {
 
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::DEBUG);
-	auto string = torasu::tstd::renderString(&prop, &li);
+	auto string = torasu::tstd::renderString(&prop, nullptr, &li);
 
 	std::cout << "Res: " << string.getString() << std::endl;
 
@@ -336,7 +338,7 @@ void renderErrorExample() {
 
 	torasu::tstd::LIcore_logger logger;
 	torasu::LogInstruction li(&logger, LogLevel::DEBUG, torasu::LogInstruction::OPT_RUNNER_BENCH | torasu::LogInstruction::OPT_RUNNER_BENCH_DETAILED);
-	auto num = torasu::tstd::renderNum(&tree, &li);
+	auto num = torasu::tstd::renderNum(&tree, nullptr, &li);
 
 	std::cout << "Res: " << num.getNum() << std::endl;
 
