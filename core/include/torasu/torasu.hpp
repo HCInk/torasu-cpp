@@ -244,7 +244,7 @@ public:
 	}
 
 	DataResourceMask* merge(const DataResourceMask* other) const override {
-		if (other->check(dr)) {
+		if (other->check(dr) == MCR_INSIDE) {
 			return clone();
 		} else {
 			return new DataResourceMaskUnknown();
