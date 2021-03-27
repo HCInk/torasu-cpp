@@ -175,6 +175,7 @@ private:
 	bool recordBench = false;
 
 	// Benchmarking  (only accessed by executor)
+	// All values in microseconds (sec*10^-6)
 	struct Benchmarking {
 		size_t benchStart;
 		size_t benchRecentResume;
@@ -231,6 +232,7 @@ public:
 	void treestat(LogInstruction li, bool lock=true);
 
 	friend class EIcore_runner;
+	friend class EIcore_runner_elemhandler;
 	friend class EIcore_runner_object_logger;
 	friend struct EIcore_runner_object_cmp;
 };
@@ -350,7 +352,7 @@ public:
 		friend LoadedReadyState;
 	};
 
-	ReadyStateHandle* ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, torasu::ExecutionInterface* ei, LogInstruction li);
+	ReadyStateHandle* ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li);
 
 	void lock(uint64_t lockId);
 	void unlock(uint64_t lockId);

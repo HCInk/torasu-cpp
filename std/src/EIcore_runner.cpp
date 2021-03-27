@@ -1245,7 +1245,7 @@ EIcore_runner_elemhandler::ReadyStateHandle::~ReadyStateHandle() {
 	lrs->unregUse();
 }
 
-EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, torasu::ExecutionInterface* ei, LogInstruction li) {
+EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
 	std::unique_lock listLck(readyStatesLock);
 
 	// Look for existing state in list
@@ -1287,8 +1287,8 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 		std::unique_lock<std::mutex>* listLock;
 		EIcore_runner_elemhandler* elemHandler;
 	public:
-		ReadyHandler(const std::vector<std::string>& ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
-			: ReadyInstruction(ops, rctx, ei, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
+		ReadyHandler(const std::vector<std::string>& ops, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
+			: ReadyInstruction(ops, rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
 
 		void setState(ReadyState* state) override {
 			if (state != nullptr) {
@@ -1296,7 +1296,13 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 			}
 			listLock->unlock();
 		}
-	} readyHandler(ops, rctx, ei, li, &state, &listLck, this);
+	} readyHandler(ops, rctx, obj, li, &state, &listLck, this);
+
+	bool previousDoBenchSetting = obj->recordBench;
+
+	obj->recordBench = true;
+
+	obj->bench.init(li.options & LogInstruction::OPT_RUNNER_BENCH ? li.logger : nullptr, li.options & LogInstruction::OPT_RUNNER_BENCH_DETAILED);
 
 	try {
 		elem->ready(&readyHandler);
@@ -1304,13 +1310,15 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 		if (li.level <= ERROR) li.logger->log(ERROR, std::string("An error occurred while making object ready! - Message: ") + ex.what());
 	}
 
+	obj->bench.stop(true);
+	obj->recordBench = previousDoBenchSetting;
 
 	if (state != nullptr) {
 		if (state->rdys->getContextMask() == nullptr)
 			torasu::tools::log_checked(li, torasu::INFO, "Ready-State contains has no mask! This may lead to very reduced performance, since it can't be cached");
 
 		// TODO Benchmark the result to calculate a non-dummy calcTime
-		return state->finish(1000);
+		return state->finish((double) obj->bench.benchCalcSpent / (1000*1000));
 	}
 
 	return nullptr;
