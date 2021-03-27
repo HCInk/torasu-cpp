@@ -963,8 +963,8 @@ public:
 
 		for (const auto& entry : *other.maskMap) {
 			auto found = maskMap->find(entry.first);
-			if (found != thisEnd) { // In only b
-				(*maskMap)[found->first] = found->second->clone();
+			if (found == thisEnd) { // In only b
+				(*maskMap)[entry.first] = entry.second->clone();
 			}
 		}
 	}
