@@ -1189,9 +1189,11 @@ public:
 	LoadedReadyState(torasu::ReadyState* rdys, EIcore_runner_elemhandler* handler)
 		: CacheHandle(-1, -1, 1, true), uses(1), handler(handler), rdys(rdys) {
 		useLock.lock(); // Lock until finish(...) is called
-		// vs-code extension is kinda dumb there (tested on vscode-cpptools 1.2.2)
-		// Cast required since it appreantly detects 'this' as 'LoadedReadyState' instead of 'EIcore_runner_elemhandler::LoadedReadyState'
-		handler->readyStates.insert( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+		if (rdys->getContextMask() != nullptr) { // Only add if it has a valid mask
+			// vs-code extension is kinda dumb there (tested on vscode-cpptools 1.2.2)
+			// Cast required since it appreantly detects 'this' as 'LoadedReadyState' instead of 'EIcore_runner_elemhandler::LoadedReadyState'
+			handler->readyStates.insert( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+		}
 	}
 
 	ReadyStateHandle* finish(double calcTime) {
@@ -1246,11 +1248,36 @@ EIcore_runner_elemhandler::ReadyStateHandle::~ReadyStateHandle() {
 EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, torasu::ExecutionInterface* ei, LogInstruction li) {
 	std::unique_lock listLck(readyStatesLock);
 
-	// TODO Add finding in list
-	auto found = readyStates.begin();
+	// Look for existing state in list
 
-	if (found != readyStates.end())
-		return (*found)->newUse();
+	for (auto* currentState : readyStates) {
+		// Multiop madness
+		bool hasMatchingOps = true;
+		for (auto searchedOp : ops) {
+			bool hasFound = false;
+			for (auto foundOp : *currentState->rdys->getOperations()) {
+				if (foundOp == searchedOp) {
+					hasFound = true;
+					break;
+				}
+			}
+			if (!hasFound) {
+				hasMatchingOps = false;
+				break;
+			}
+		}
+
+		if (!hasMatchingOps) break;
+
+		// Check mask
+
+		auto checkResult = currentState->rdys->getContextMask()->check(rctx);
+		if (checkResult == torasu::DataResourceMask::MaskCompareResult::MCR_INSIDE) {
+			return currentState->newUse();
+		}
+	}
+
+	// Create new ready-state
 
 	LoadedReadyState* state = nullptr;
 
