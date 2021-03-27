@@ -919,7 +919,7 @@ public:
 		return refClone;
 	}
 
-	inline DataResourceMask::MaskCompareResult check(RenderContext* rctx) {
+	inline DataResourceMask::MaskCompareResult check(RenderContext* rctx) const {
 		DataResourceMask::MaskCompareResult res = DataResourceMask::MCR_INSIDE;
 		auto mapEnd = maskMap->end();
 		for (auto rctxEntry : *rctx) {
