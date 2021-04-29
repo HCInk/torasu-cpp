@@ -29,8 +29,8 @@ public:
 
 	double getNum();
 
-	std::string getIdent() override;
-	Dnum* clone() override;
+	std::string getIdent() const override;
+	Dnum* clone() const override;
 
 };
 

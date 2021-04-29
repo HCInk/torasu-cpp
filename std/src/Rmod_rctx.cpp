@@ -25,15 +25,52 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd.get(), cRctx, ei, li));
 
-	torasu::DataResource* valueDr = (*valrr.get()->getResults())["v"]->getResult(); // Lifetime: Until valrr is destructed
+	// Lifetime: Until valrr is destructed
+	auto* valrseg = (*valrr.get()->getResults())["v"];
+	torasu::DataResource* valueDr = valrseg->getResult();
 
 	RenderContext newRctx(*cRctx);
 
-	newRctx[data.getA()] = valueDr;
+	std::string replacedValKey = data.getA();
+
+	newRctx[replacedValKey] = valueDr;
 
 	auto rid = ei->enqueueRender(mainRnd.get(), &newRctx, ri->getResultSettings(), ri->getLogInstruction(), 0);
 
 	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
+
+	auto* results = rr->getResults();
+
+	if (results != nullptr) {
+		for (auto res : *results) {
+
+			const RenderContextMask* payloadMask = res.second->getResultMask();
+			const RenderContextMask* valMask = valrseg->getResultMask();
+
+			if (valMask == nullptr) {
+				if (payloadMask != nullptr) {
+					delete payloadMask;
+					payloadMask = nullptr;
+					res.second->updateResultMask(nullptr);
+				}
+				continue;
+			}
+
+			// Both masks are valid
+
+			std::unique_ptr<RenderContextMask> filtered(payloadMask->filter({replacedValKey}));
+
+			RenderContextMask* merged = RenderContextMask::merge(*filtered, *valMask);
+
+			res.second->updateResultMask(merged);
+
+			filtered.reset();
+			delete payloadMask;
+
+			merged->resolveUnknownsFromRctx(cRctx);
+
+		}
+	}
 
 	return rr;
 }

@@ -25,10 +25,11 @@ public:
 	Dstring(torasu::json jsonParsed, bool json);
 	explicit Dstring(std::string str);
 
-	const std::string& getString();
+	const std::string& getString() const;
 
-	std::string getIdent() override;
-	Dstring* clone() override;
+	torasu::DataResource::CompareResult compare(const DataResource* other) const override;
+	std::string getIdent() const override;
+	Dstring* clone() const override;
 };
 
 } // namespace torasu::tstd

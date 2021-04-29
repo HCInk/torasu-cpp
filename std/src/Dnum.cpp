@@ -21,7 +21,7 @@ double Dnum::getNum() {
 	return num;
 }
 
-std::string Dnum::getIdent() {
+std::string Dnum::getIdent() const {
 	return ident;
 }
 
@@ -38,7 +38,7 @@ torasu::json Dnum::makeJson() {
 	return num;
 }
 
-Dnum* Dnum::clone() {
+Dnum* Dnum::clone() const {
 	return new Dnum(*this);
 }
 

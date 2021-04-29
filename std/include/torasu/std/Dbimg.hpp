@@ -25,9 +25,9 @@ public:
 
 	void clear();
 
-	std::string getIdent() override;
+	std::string getIdent() const override;
 	DataDump* dumpResource() override;
-	Dbimg* clone() override;
+	Dbimg* clone() const override;
 
 	inline uint32_t getWidth() const {
 		return width;
@@ -61,7 +61,7 @@ public:
 
 	void load() override;
 	torasu::json makeJson() override;
-	Dbimg_FORMAT* clone() override;
+	Dbimg_FORMAT* clone() const override;
 
 };
 

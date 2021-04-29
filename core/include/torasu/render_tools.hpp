@@ -20,6 +20,61 @@ namespace torasu::tools {
 // RenderTools
 //
 
+template<class T> class CastedRenderSegmentResult;
+
+/**
+ * @brief  Tool to help making operations inside a renderable easier
+ * 		- Manages: Logging and building of info ref; Result-masking and -generation
+ */
+class RenderHelper {
+public:
+	ExecutionInterface* const ei;
+	LogInstruction li;
+	RenderContext* const rctx;
+private:
+	RenderContextMask* resMask;
+public:
+	torasu::tools::LogInfoRefBuilder lrib;
+
+	explicit RenderHelper(RenderInstruction* ri);
+	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx);
+	~RenderHelper();
+
+	/** @brief  Will collect another rctx-mask into the result-mask
+	 * - The generated mask will be used in buildResult(..) or can be manually fetched with takeResMask() */
+	void collectMask(const RenderContextMask* mask);
+
+	/** @brief  Takes the result-mask based on the masks collected via collectMask(...)
+	 * @note   Should only be called once - Second calls will give an invalid result - Is also called in buildResult(...) */
+	RenderContextMask* takeResMask();
+
+	/** @brief  Builds a result without a payload (uses internal tools to enrich the result with the requested data)
+	 * @param  status: The status of the result
+	 * @retval The genrated segment (managed by caller) */
+	ResultSegment* buildResult(ResultSegmentStatus status);
+
+	/** @brief  Builds a result with a payload (uses internal tools to enrich the result with the requested data)
+	 * @param  dr: The payload of the result
+	 * @param  status: The status of the result (if OK and warnings/erros have been collected in lrib, will be set to OK_WARN)
+	 * @retval The genrated segment (managed by caller) */
+	ResultSegment* buildResult(DataResource* dr, ResultSegmentStatus status = ResultSegmentStatus_OK);
+
+	/** @brief Checks if logs with the given log-level may be logged */
+	inline bool mayLog(torasu::LogLevel level) const {
+		return li.level <= level;
+	}
+
+	//
+	// Passthru / Aliases
+	//
+
+	/** @brief Fetch render result from ExecutionIntrface */
+	inline torasu::RenderResult* fetchRenderResult(uint64_t rid) {
+		return ei->fetchRenderResult(rid);
+	}
+};
+
+
 template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
@@ -47,7 +102,7 @@ public:
 				   << "\"!";
 			if (infoBuilder != nullptr) {
 				infoBuilder->hasError = true;
-				infoTag = infoBuilder->logCause(WARN, errMsg.str(), new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, errMsg.str(), getRawInfoCopy() );
 				return;
 			} else {
 				throw std::logic_error(errMsg.str());
@@ -60,11 +115,10 @@ public:
 			infoBuilder->hasError = true;
 			switch (status) {
 			case ResultSegmentStatus_OK_WARN:
-				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", getRawInfoCopy() );
 				break;
 			default:
-				infoTag = infoBuilder->logCause(WARN, "Sub-render returned with abnormal status " + std::to_string(status),
-												new auto(*getRawInfo()));
+				infoTag = infoBuilder->logCause(WARN, "Sub-render returned with abnormal status " + std::to_string(status), getRawInfoCopy() );
 				break;
 			}
 		}
@@ -74,6 +128,10 @@ public:
 
 	inline T* getResult() const {
 		return result;
+	}
+
+	inline const RenderContextMask* getResultMask() const {
+		return rs != nullptr ? rs->getResultMask() : nullptr;
 	}
 
 	inline bool canFreeResult() const {
@@ -88,8 +146,13 @@ public:
 		return status;
 	}
 
-	inline LogInfoRef* getRawInfo() const {
+	inline const LogInfoRef* getRawInfo() const {
 		return rs ? rs->getResultInfoRef() : nullptr;
+	}
+
+	inline LogInfoRef* getRawInfoCopy() const {
+		const auto* rawInfo = getRawInfo();
+		return rawInfo != nullptr ? new auto(*rawInfo) : nullptr;
 	}
 
 	inline LogId takeInfoTag() {
@@ -143,6 +206,12 @@ public:
 		return findResult<T>(rr, segKey, infoBuilder);
 	}
 
+	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::RenderHelper* helper, bool collectMask = true) {
+		auto result = findResult<T>(rr, segKey, &helper->lrib);
+		if (collectMask) helper->collectMask(result.getResultMask());
+		return result;
+	}
+
 };
 
 class RenderInstructionBuilder {
@@ -182,15 +251,24 @@ public:
 		return RenderResultSegmentHandle<T>(segKey);
 	}
 
-	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
-		return enqueueRender(rnd.get(), rctx, ei, li, prio);
-	}
-
 	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
 #ifdef TORASU_CHECK_RENDER_NULL_RCTX
 		if (rctx == nullptr) throw std::logic_error("Can't enqueue render without a render-context");
 #endif
 		return ei->enqueueRender(rnd, rctx, getResultSetttings(), li, prio);
+	}
+
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rctx, ei, li, prio);
+	}
+
+	inline uint64_t enqueueRender(Renderable* rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
+		if (rctx == nullptr) rctx = rh->rctx;
+		return rh->ei->enqueueRender(rnd, rctx, getResultSetttings(), rh->li, prio);
+	}
+
+	inline uint64_t enqueueRender(RenderableSlot rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
+		return enqueueRender(rnd.get(), rh, rctx, prio);
 	}
 
 	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {

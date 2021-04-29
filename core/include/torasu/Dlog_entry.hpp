@@ -12,17 +12,18 @@ private:
 	LogEntry* entry = nullptr;
 
 public:
+	explicit Dlog_entry(const Dlog_entry& original);
 	explicit Dlog_entry(const LogEntry& entry);
 	explicit Dlog_entry(torasu::json json);
 	explicit Dlog_entry(std::string jsonStr);
 	~Dlog_entry();
 	LogEntry getEntry();
 
-	std::string getIdent() override;
+	std::string getIdent() const override;
 	void load() override;
 	torasu::json makeJson() override;
 
-	Dlog_entry* clone() override;
+	Dlog_entry* clone() const override;
 
 };
 

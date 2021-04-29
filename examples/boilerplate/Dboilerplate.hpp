@@ -24,8 +24,8 @@ public:
 	Dboilerplate(std::string str, double num);
 	~Dboilerplate();
 
-	std::string getIdent() override;
-	Dboilerplate* clone() override;
+	std::string getIdent() const override;
+	Dboilerplate* clone() const override;
 
 	std::string getStr();
 	double getNum();

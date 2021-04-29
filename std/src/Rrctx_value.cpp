@@ -12,12 +12,17 @@ torasu::ResultSegment* Rrctx_value::renderSegment(torasu::ResultSegmentSettings*
 
 		auto* rctx = ri->getRenderContext();
 
-		auto found = rctx->find(mapping.getA());
+		auto rctxKey = mapping.getA();
+		auto found = rctx->find(rctxKey);
+		auto* foundData = found->second;
 
-		if (found != rctx->end() && found->second != nullptr) {
-			return new ResultSegment(ResultSegmentStatus_OK, found->second->clone(), true);
+		auto* resultMask = new RenderContextMask();
+		(*resultMask->maskMap)[rctxKey] = new DataResourceMask::DataResourceMaskSingle(foundData != nullptr ? foundData->clone() : nullptr);
+
+		if (found != rctx->end() && foundData != nullptr) {
+			return new ResultSegment(ResultSegmentStatus_OK, foundData->clone(), true, resultMask);
 		} else {
-			return new ResultSegment(ResultSegmentStatus_OK_WARN);
+			return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, resultMask);
 		}
 
 	} else {

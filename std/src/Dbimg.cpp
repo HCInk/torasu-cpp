@@ -36,7 +36,7 @@ void Dbimg::clear() {
 	std::fill(data32, data32+(width*height), 0x00);
 }
 
-std::string Dbimg::getIdent() {
+std::string Dbimg::getIdent() const {
 	return IDENT;
 }
 
@@ -44,7 +44,7 @@ DataDump* Dbimg::dumpResource() {
 	return nullptr; // TODO DataDump of Rbimg
 }
 
-Dbimg* Dbimg::clone() {
+Dbimg* Dbimg::clone() const {
 	return new Dbimg(*this);
 }
 
@@ -79,7 +79,7 @@ torasu::json Dbimg_FORMAT::makeJson() {
 	};
 }
 
-Dbimg_FORMAT* Dbimg_FORMAT::clone() {
+Dbimg_FORMAT* Dbimg_FORMAT::clone() const {
 	return new Dbimg_FORMAT(*this);
 }
 

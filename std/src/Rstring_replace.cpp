@@ -34,50 +34,60 @@ torasu::ResultSegment* Rstring_replace::renderSegment(torasu::ResultSegmentSetti
 	std::string pipeline = resSettings->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING) {
 
-		auto* ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto* rctx = ri->getRenderContext();
+		tools::RenderHelper rh(ri);
 
 		// Sub-renderings
 
 		torasu::tools::RenderInstructionBuilder rib;
 		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderIdSrc = rib.enqueueRender(srcRnd, rctx, ei, li);
-		auto renderIdBefore = rib.enqueueRender(beforeRnd, rctx, ei, li);
-		auto renderIdAfter = rib.enqueueRender(afterRnd, rctx, ei, li);
+		auto renderIdSrc = rib.enqueueRender(srcRnd, &rh);
+		auto renderIdBefore = rib.enqueueRender(beforeRnd, &rh);
+		auto renderIdAfter = rib.enqueueRender(afterRnd, &rh);
 
-		std::unique_ptr<torasu::RenderResult> rrSrc(ei->fetchRenderResult(renderIdSrc));
-		std::unique_ptr<torasu::RenderResult> rrBefore(ei->fetchRenderResult(renderIdBefore));
-		std::unique_ptr<torasu::RenderResult> rrAfter(ei->fetchRenderResult(renderIdAfter));
+		std::unique_ptr<torasu::RenderResult> rrSrc(rh.fetchRenderResult(renderIdSrc));
+		std::unique_ptr<torasu::RenderResult> rrBefore(rh.fetchRenderResult(renderIdBefore));
+		std::unique_ptr<torasu::RenderResult> rrAfter(rh.fetchRenderResult(renderIdAfter));
 
-		auto fetchedSrc = segHandle.getFrom(rrSrc.get());
-		auto fetchedBefore = segHandle.getFrom(rrBefore.get());
-		auto fetchedAfter = segHandle.getFrom(rrAfter.get());
+		auto fetchedSrc = segHandle.getFrom(rrSrc.get(), &rh);
+		auto fetchedBefore = segHandle.getFrom(rrBefore.get(), &rh);
+		auto fetchedAfter = segHandle.getFrom(rrAfter.get(), &rh);
 
 		// Evaluation
 
 		if (fetchedSrc.getResult() == nullptr) {
-			throw std::runtime_error("Source for replacement cant be provided!");
+			if (rh.mayLog(torasu::WARN)) {
+				rh.lrib.logCause(torasu::WARN, "Source for replacement cant be provided!", fetchedSrc.takeInfoTag());
+			}
+			rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
 		}
 
 		std::string srcStr = fetchedSrc.getResult()->getString();
 
-		if (fetchedBefore.getResult() == nullptr || fetchedAfter.getResult() == nullptr) {
+		if (!fetchedBefore || !fetchedAfter) {
 			// TODO note that one of the results couldnt be provided
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK_WARN, new torasu::tstd::Dstring(srcStr), true);
+			if (rh.mayLog(torasu::WARN)) {
+
+				torasu::tools::LogInfoRefBuilder errorCauses(rh.lrib.linstr);
+				if (!fetchedBefore)
+					errorCauses.logCause(WARN, "Before-string failed to render.", fetchedBefore.takeInfoTag());
+				if (!fetchedAfter)
+					errorCauses.logCause(WARN, "After-string failed to render.", fetchedAfter.takeInfoTag());
+
+				rh.lrib.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
+			}
+
+			return rh.buildResult(new torasu::tstd::Dstring(srcStr), torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 		std::string beforeStr = fetchedBefore.getResult()->getString();
 		std::string afterStr = fetchedAfter.getResult()->getString();
 
-		if (beforeStr.length() < 1) {
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(srcStr), true);
+		if (!beforeStr.empty()) {
+			findAndReplaceAll(&srcStr, beforeStr, afterStr);
 		}
 
-		findAndReplaceAll(&srcStr, beforeStr, afterStr);
-
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(srcStr), true);
+		return rh.buildResult(new torasu::tstd::Dstring(srcStr));
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}

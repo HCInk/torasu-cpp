@@ -7,6 +7,8 @@
 #include <sstream> //for std::stringstream 
 #include <stack> //for std::stack 
 
+#include <torasu/log_tools.hpp>
+
 using namespace std;
 
 // Intercepts own log-group for every sub-task
@@ -34,6 +36,7 @@ using namespace std;
 #define MAX_RETRIES 50
 #define RETRY_WAIT 10
 #define CYCLE_BUMP_THRESHOLD 10
+#define CACHE_MEM_MAX 1024*1024*1024
 
 namespace torasu::tstd {
 
@@ -42,14 +45,15 @@ namespace torasu::tstd {
 //
 
 EIcore_runner::EIcore_runner(bool useQueue, bool concurrent)
-	: useQueue(useQueue), concurrentTree(concurrent), concurrentInterface(concurrent) {
+	: useQueue(useQueue), concurrentTree(concurrent), concurrentInterface(concurrent),
+	  cache(new EIcore_runner_cacheinterface(CACHE_MEM_MAX)) {
 #if INIT_DBG
 	dbg_init();
 #endif
 }
 
 EIcore_runner::EIcore_runner(size_t maxRunning)
-	: threadCountMax(maxRunning) {
+	: threadCountMax(maxRunning), cache(new EIcore_runner_cacheinterface(CACHE_MEM_MAX)) {
 #if INIT_DBG
 	dbg_init();
 #endif
@@ -61,6 +65,7 @@ EIcore_runner::~EIcore_runner() {
 #if INIT_DBG
 	dbg_cleanup();
 #endif
+	delete cache;
 }
 
 // EIcore_runner: Registration Helpers
@@ -630,18 +635,15 @@ void EIcore_runner_object::Benchmarking::stop(bool final) {
 // EICoreRunnerObject: Execution Functions
 
 RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
-	std::vector<std::string> ops;
-	for (auto& rss : *rs) {
-		ops.push_back(rss->getPipeline());
-	}
 
-	ReadyRequest rdyRequest(ops, rctx);
-	ReadyObjects* rdyObjs = rnd->requestReady(rdyRequest);
+	torasu::tstd::EIcore_runner_elemhandler::ReadyStateHandle* rdyHandle;
+	{
+		std::vector<std::string> ops;
+		for (auto& rss : *rs) {
+			ops.push_back(rss->getPipeline());
+		}
 
-	bool makeReady = rdyObjs != nullptr;
-
-	if (makeReady) {
-		elemHandler->readyElement(*rdyObjs, this);
+		rdyHandle = elemHandler->ready(ops, rctx, this, li);
 	}
 
 	std::string addr;
@@ -657,15 +659,12 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 		bench.init(li.logger, li.options & torasu::LogInstruction::OPT_RUNNER_BENCH_DETAILED);
 	}
 
-	RenderInstruction ri(rctx, rs, this, li);
+	RenderInstruction ri(rctx, rs, this, li, rdyHandle != nullptr ? rdyHandle->state : nullptr);
 
 	RenderResult* res = rnd->render(&ri);
 
-	*outCleanupFunction = [this, makeReady, rdyObjs]() {
-		if (makeReady) {
-			elemHandler->unreadyElement(*rdyObjs);
-			delete rdyObjs;
-		}
+	*outCleanupFunction = [rdyHandle]() {
+		if (rdyHandle != nullptr) delete rdyHandle;
 	};
 
 	if (recordBench) bench.stop(true);
@@ -1095,13 +1094,244 @@ bool EIcore_runner_object_cmp::operator()(EIcore_runner_object* const& r, EIcore
 }
 
 //
+// EIcore_runner_cacheinterface
+//
+
+EIcore_runner_cacheinterface::EIcore_runner_cacheinterface(int64_t maxMem)
+	: maxMem(maxMem) {}
+
+EIcore_runner_cacheinterface::~EIcore_runner_cacheinterface() {
+	for (auto* handle : handles) {
+		if (handle->tryDereference()) {
+			delete handle;
+		} else {
+			std::cerr << "Got a no-dereference for a cached handle on freeing chache! - not freeing" << std::endl;
+		}
+	}
+}
+
+double EIcore_runner_cacheinterface::now() {
+	double ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+					std::chrono::system_clock::now().time_since_epoch()).count();
+	return ms / 1000;
+}
+
+bool EIcore_runner_cacheinterface::reserveSpace(int64_t space) {
+	totalUsed += space;
+
+	if (totalUsed <= maxMem) return true;
+
+	std::multimap<double, CacheHandle*> ranked;
+
+	double now = this->now() + 0.001;
+
+	for (CacheHandle* handle : handles) {
+		if (handle->inUse) continue;
+		double existingFor = now - handle->genTimeStamp;
+		double value = handle->calcTime * handle->hits / handle->size / existingFor;
+
+		ranked.insert(std::pair<double,CacheHandle*>(value, handle));
+	}
+
+	for (auto rankedHandle : ranked) {
+		CacheHandle* handle = rankedHandle.second;
+		if (handle->tryDereference()) {
+			totalUsed -= handle->size;
+
+			handles.erase(handle);
+			delete handle;
+
+			if (totalUsed <= maxMem) return true;
+		}
+	}
+
+	return false;
+}
+
+void EIcore_runner_cacheinterface::add(CacheHandle* handle) {
+	std::unique_lock lck(opLock);
+
+	reserveSpace(handle->size);
+
+	handles.insert(handle);
+
+}
+
+void EIcore_runner_cacheinterface::remove(CacheHandle* handle) {
+	std::unique_lock lck(opLock);
+
+	totalUsed -= handle->size;
+
+	handles.erase(handle);
+
+}
+
+//
 // EIcore_runner_elemhandler
 //
 
 EIcore_runner_elemhandler::EIcore_runner_elemhandler(Element* elem, EIcore_runner* parent)
-	: elem(elem), parent(parent) {}
+	: elem(elem), parent(parent), cache(parent->cache) {}
 
-EIcore_runner_elemhandler::~EIcore_runner_elemhandler() {}
+EIcore_runner_elemhandler::~EIcore_runner_elemhandler() {
+	cleanReady();
+}
+
+class EIcore_runner_elemhandler::LoadedReadyState : public EIcore_runner_cacheinterface::CacheHandle {
+private:
+	std::mutex useLock;
+	size_t uses;
+	EIcore_runner_elemhandler* handler;
+
+public:
+	torasu::ReadyState* const rdys;
+
+	LoadedReadyState(torasu::ReadyState* rdys, EIcore_runner_elemhandler* handler)
+		: CacheHandle(-1, -1, 1, true), uses(1), handler(handler), rdys(rdys) {
+		useLock.lock(); // Lock until finish(...) is called
+		if (rdys->getContextMask() != nullptr) { // Only add if it has a valid mask
+			// vs-code extension is kinda dumb there (tested on vscode-cpptools 1.2.2)
+			// Cast required since it appreantly detects 'this' as 'LoadedReadyState' instead of 'EIcore_runner_elemhandler::LoadedReadyState'
+			handler->readyStates.insert( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+		}
+	}
+
+	ReadyStateHandle* finish(double calcTime) {
+		this->genTimeStamp = torasu::tstd::EIcore_runner_cacheinterface::now();
+		this->calcTime = calcTime;
+		this->size = rdys->size();
+		handler->cache->add(this);
+		useLock.unlock();
+
+		// same thing with vs-code ext as above
+		return new ReadyStateHandle( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+	}
+
+	ReadyStateHandle* newUse() {
+		std::unique_lock useLck(useLock);
+		if (uses <= 0) inUse = true;
+		uses++;
+		hits++;
+
+		// same thing with vs-code ext as above
+		return new ReadyStateHandle( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+	}
+
+	void unregUse() {
+		std::unique_lock useLck(useLock);
+		uses--;
+		if (uses <= 0) inUse = false;
+	}
+
+
+	bool tryDereference() override {
+		std::unique_lock listLck(handler->readyStatesLock);
+		std::unique_lock useLck(useLock);
+		if (inUse) return false;
+		// same thing with vs-code ext-dumbness as above
+		handler->readyStates.erase( (EIcore_runner_elemhandler::LoadedReadyState*) this);
+		return true;
+	}
+
+	~LoadedReadyState() {
+		delete rdys;
+	}
+};
+
+EIcore_runner_elemhandler::ReadyStateHandle::ReadyStateHandle(LoadedReadyState* lrs)
+	: lrs(lrs), state(lrs->rdys) {}
+
+EIcore_runner_elemhandler::ReadyStateHandle::~ReadyStateHandle() {
+	lrs->unregUse();
+}
+
+EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
+	std::unique_lock listLck(readyStatesLock);
+
+	// Look for existing state in list
+
+	for (auto* currentState : readyStates) {
+		// Multiop madness
+		bool hasMatchingOps = true;
+		for (auto searchedOp : ops) {
+			bool hasFound = false;
+			for (auto foundOp : *currentState->rdys->getOperations()) {
+				if (foundOp == searchedOp) {
+					hasFound = true;
+					break;
+				}
+			}
+			if (!hasFound) {
+				hasMatchingOps = false;
+				break;
+			}
+		}
+
+		if (!hasMatchingOps) break;
+
+		// Check mask
+
+		auto checkResult = currentState->rdys->getContextMask()->check(rctx);
+		if (checkResult == torasu::DataResourceMask::MaskCompareResult::MCR_INSIDE) {
+			return currentState->newUse();
+		}
+	}
+
+	// Create new ready-state
+
+	LoadedReadyState* state = nullptr;
+
+	class ReadyHandler : public torasu::ReadyInstruction {
+	private:
+		LoadedReadyState** stateOut;
+		std::unique_lock<std::mutex>* listLock;
+		EIcore_runner_elemhandler* elemHandler;
+	public:
+		ReadyHandler(const std::vector<std::string>& ops, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
+			: ReadyInstruction(ops, rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
+
+		void setState(ReadyState* state) override {
+			if (state != nullptr) {
+				*stateOut = new EIcore_runner_elemhandler::LoadedReadyState(state, elemHandler);
+			}
+			listLock->unlock();
+		}
+	} readyHandler(ops, rctx, obj, li, &state, &listLck, this);
+
+	bool previousDoBenchSetting = obj->recordBench;
+
+	obj->recordBench = true;
+
+	obj->bench.init(li.options & LogInstruction::OPT_RUNNER_BENCH ? li.logger : nullptr, li.options & LogInstruction::OPT_RUNNER_BENCH_DETAILED);
+
+	try {
+		elem->ready(&readyHandler);
+	} catch (const std::exception& ex) {
+		if (li.level <= ERROR) li.logger->log(ERROR, std::string("An error occurred while making object ready! - Message: ") + ex.what());
+	}
+
+	obj->bench.stop(true);
+	obj->recordBench = previousDoBenchSetting;
+
+	if (state != nullptr) {
+		if (state->rdys->getContextMask() == nullptr)
+			torasu::tools::log_checked(li, torasu::INFO, "Ready-State contains has no mask! This may lead to very reduced performance, since it can't be cached");
+
+		// TODO Benchmark the result to calculate a non-dummy calcTime
+		return state->finish((double) obj->bench.benchCalcSpent / (1000*1000));
+	}
+
+	return nullptr;
+}
+
+void EIcore_runner_elemhandler::cleanReady() {
+	for (LoadedReadyState* rdyState : readyStates) {
+		cache->remove(rdyState);
+		delete rdyState;
+	}
+}
+
+/*
 
 void EIcore_runner_elemhandler::readyElement(const ReadyObjects& toReady, ExecutionInterface* ei) {
 
@@ -1196,6 +1426,8 @@ void EIcore_runner_elemhandler::unreadyElement(const ReadyObjects& toUnready) {
 
 	readyStatesLock.unlock();
 }
+
+*/
 
 void EIcore_runner_elemhandler::lock(LockId lockId) {
 

@@ -36,6 +36,7 @@ typedef std::function<void(void)> Callback;
 // DATA
 class DataDump;
 class DataResource;
+class DataResourceMask;
 class DataResourceHolder;
 
 // LOGGING
@@ -72,19 +73,13 @@ typedef std::vector<ResultSegmentSettings*> ResultSettings;
 // UPSTREAM (RENDER)
 class RenderResult;
 class ResultSegment;
-
-// HELPER (READY)
-typedef uint64_t ReadyObject;
-typedef std::vector<ReadyObject> ReadyObjects;
+class RenderContextMask;
 
 // DOWNSTREAM (READY)
-class ReadyRequest;
 class ReadyInstruction;
-class UnreadyInstruction;
 
 // UPSTREAM (READY)
-class ObjectReadyResult;
-typedef std::vector<ObjectReadyResult> ElementReadyResult;
+class ReadyState;
 
 //
 // DATA
@@ -130,12 +125,131 @@ public:
 
 class DataResource {
 public:
+	enum CompareResult {
+		/** @brief The first object is less then the second object */
+		LESS = -1,
+		/** @brief The first object is equal to the second object */
+		EQUAL = 0,
+		/** @brief The first object is greater then the second object */
+		GREATER = 1,
+		/** @brief The objects can't be compared since the types are different */
+		TYPE_ERR = 3
+	};
+
 	DataResource() {}
 	virtual ~DataResource() {}
 
-	virtual std::string getIdent() = 0;
+	virtual std::string getIdent() const = 0;
 	virtual DataDump* dumpResource() = 0;
-	virtual DataResource* clone() = 0;
+	virtual DataResource* clone() const = 0;
+
+	virtual CompareResult compare(const DataResource* other) const {
+		if (this == other) return EQUAL;
+
+		if (this->getIdent() == other->getIdent()) {
+			return (other > 0) ? GREATER : LESS;
+		} else {
+			return TYPE_ERR;
+		}
+	}
+};
+
+class DataResourceMask : public DataResource {
+public:
+	enum MaskCompareResult {
+		/** @brief The mask approves that the checked object is contained */
+		MCR_INSIDE,
+		/** @brief The mask denies that the checked object is contained */
+		MCR_OUTSIDE,
+		/** @brief The mask can't check if the object is contained or not */
+		MCR_UNKNOWN
+	};
+	DataResourceMask() {}
+	virtual ~DataResourceMask() {}
+
+	/** @brief  Check containment of other object
+	 * @param  obj: The object that shall be checked against it
+	 * @retval The MaskCompareResult of the comparison of both */
+	virtual MaskCompareResult check(const DataResource* obj) const = 0;
+
+	/** @brief  Merge two masks, into one which contains the intersections
+	 * @param  other: The other mask to be merged with
+	 * @retval The newly generated mask, nullptr if not mergable (Freed/Managed by caller) */
+	virtual DataResourceMask* merge(const DataResourceMask* other) const = 0;
+
+
+	virtual DataResourceMask* clone() const = 0;
+
+	virtual bool isUnknown() const {
+		return false;
+	}
+
+	class DataResourceMaskUnknown;
+	class DataResourceMaskSingle;
+};
+
+class DataResourceMask::DataResourceMaskUnknown : public DataResourceMask {
+public:
+	DataResourceMaskUnknown() {}
+	~DataResourceMaskUnknown() {}
+
+	std::string getIdent() const override {
+		return "T::DRMU";
+	}
+
+	DataDump* dumpResource() override {
+		return nullptr;
+	}
+
+	DataResourceMaskUnknown* clone() const override {
+		return new DataResourceMaskUnknown();
+	}
+
+	MaskCompareResult check(const DataResource* obj) const override {
+		return MaskCompareResult::MCR_UNKNOWN;
+	}
+
+	DataResourceMask* merge(const DataResourceMask* other) const override {
+		return clone();
+	}
+
+	bool isUnknown() const override {
+		return false;
+	}
+};
+
+class DataResourceMask::DataResourceMaskSingle : public DataResourceMask {
+private:
+	DataResource* dr;
+public:
+	explicit DataResourceMaskSingle(DataResource* dr) : dr(dr) {}
+	~DataResourceMaskSingle() {
+		delete dr;
+	}
+
+	std::string getIdent() const override {
+		return "T::DRMS";
+	}
+
+	DataDump* dumpResource() override {
+		return nullptr; // TODO Nested DPs
+	}
+
+	DataResourceMaskSingle* clone() const override {
+		return new DataResourceMaskSingle(dr->clone());
+	}
+
+	MaskCompareResult check(const DataResource* obj) const override {
+		return dr->compare(obj) == EQUAL ? MCR_INSIDE : MCR_OUTSIDE;
+	}
+
+	DataResourceMask* merge(const DataResourceMask* other) const override {
+		if (other->check(dr) == MCR_INSIDE) {
+			return clone();
+		} else {
+			return new DataResourceMaskUnknown();
+		}
+	}
 };
 
 class DataResourceHolder {
@@ -610,9 +724,7 @@ public:
 		if (elementExecutionOpaque != nullptr) delete elementExecutionOpaque;
 	}
 
-	virtual ReadyObjects* requestReady(const ReadyRequest& ri) = 0;
-	virtual ElementReadyResult* ready(const ReadyInstruction& ri) = 0;
-	virtual void unready(const UnreadyInstruction& uri) = 0;
+	virtual void ready(ReadyInstruction* ri) = 0;
 
 	virtual std::string getType() = 0;
 	virtual DataResource* getData() = 0;
@@ -643,10 +755,11 @@ private:
 	ResultSettings* rs;
 	ExecutionInterface* ei;
 	LogInstruction li;
+	ReadyState* rdys;
 
 public:
-	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li)
-		: rctx(rctx), rs(rs), ei(ei), li(li) {}
+	inline RenderInstruction(RenderContext* rctx, ResultSettings* rs, ExecutionInterface* ei, LogInstruction li, ReadyState* rdys)
+		: rctx(rctx), rs(rs), ei(ei), li(li), rdys(rdys) {}
 
 	~RenderInstruction() {}
 
@@ -664,6 +777,10 @@ public:
 
 	inline LogInstruction getLogInstruction() {
 		return li;
+	}
+
+	inline ReadyState* const getReadyState() {
+		return rdys;
 	}
 };
 
@@ -707,7 +824,7 @@ public:
 		: ident(TORASU_FORMAT_PREFIX + dataType) {}
 	virtual ~ResultFormatSettings() {}
 
-	std::string getIdent() override {
+	std::string getIdent() const override {
 		return ident;
 	}
 
@@ -766,10 +883,170 @@ enum ResultSegmentStatus {
 	ResultSegmentStatus_OK_WARN = 2
 };
 
+class RenderContextMask {
+public:
+	std::map<std::string, DataResourceMask*>* maskMap;
+	bool freeMapContents = true;
+
+	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
+	RenderContextMask(const RenderContextMask& orig) : maskMap(orig.maskMap) {
+		for (auto& entry : *maskMap)
+			entry.second = entry.second != nullptr ? entry.second->clone() : nullptr;
+	}
+
+	explicit RenderContextMask(std::map<std::string, DataResourceMask*>* maskMap, bool freeMapContents = true)
+		: maskMap(maskMap), freeMapContents(freeMapContents) {}
+
+	~RenderContextMask() {
+		if (freeMapContents) {
+			for (auto& entry : *maskMap) {
+				if (entry.second != nullptr) delete entry.second;
+			}
+		}
+		delete maskMap;
+	}
+
+	/** @brief  Filters mask - Removes entries with given keys
+	 * @param  toFilter: The keys of the entries to be removed
+	 * @retval The filtered mask using references - thereforce the original RenderContextMask
+	 * 			should be kept valid during the existence of the filtered mask */
+	inline RenderContextMask* filter(std::vector<std::string> toFilter) const {
+		auto* refClone = new RenderContextMask(new std::map<std::string, DataResourceMask*>(*maskMap), false);
+
+		for (const auto& currKey : toFilter)
+			refClone->maskMap->erase(currKey);
+
+		return refClone;
+	}
+
+	inline DataResourceMask::MaskCompareResult check(RenderContext* rctx) const {
+		DataResourceMask::MaskCompareResult res = DataResourceMask::MCR_INSIDE;
+		auto mapEnd = maskMap->end();
+		for (auto rctxEntry : *rctx) {
+			auto found = maskMap->find(rctxEntry.first);
+			if (found != mapEnd) {
+				switch (found->second->check(rctxEntry.second)) {
+				case DataResourceMask::MCR_INSIDE:
+					break;
+				case DataResourceMask::MCR_OUTSIDE: {
+						if (res == DataResourceMask::MCR_INSIDE)
+							res = DataResourceMask::MCR_OUTSIDE;
+						break;
+					}
+				case DataResourceMask::MCR_UNKNOWN:
+				default: {
+						res = DataResourceMask::MCR_UNKNOWN;
+						break;
+					}
+				}
+			}
+		}
+		return res;
+	}
+
+	/** @brief  Limits the mask of the current object to the other object */
+	inline void mergeInto(const RenderContextMask& other) {
+		auto thisEnd = maskMap->end();
+		auto otherEnd = other.maskMap->end();
+		for (auto& entry : *maskMap) {
+			auto found = other.maskMap->find(entry.first);
+			if (found != otherEnd) { // In both a and b
+				auto* oldMask = entry.second;
+				auto* newMask = oldMask->merge(found->second);
+				if (newMask == nullptr) {
+					newMask = new DataResourceMask::DataResourceMaskUnknown();
+				}
+				entry.second = newMask;
+				delete oldMask;
+			}
+		}
+
+		for (const auto& entry : *other.maskMap) {
+			auto found = maskMap->find(entry.first);
+			if (found == thisEnd) { // In only b
+				(*maskMap)[entry.first] = entry.second->clone();
+			}
+		}
+	}
+
+	/** @brief  Creates intersection of two RenderContextMask-objects
+	 * @retval Mask which containes the common areas between the two input masks (managed by caller) */
+	static inline RenderContextMask* merge(const RenderContextMask& a, const RenderContextMask& b) {
+		auto* mask = new RenderContextMask();
+		auto& maskMap = *mask->maskMap;
+		auto aEnd = a.maskMap->end();
+		auto bEnd = b.maskMap->end();
+		for (const auto& entry : *a.maskMap) {
+			DataResourceMask* valueMask;
+			auto found = b.maskMap->find(entry.first);
+			if (found != bEnd) { // In both a and b
+				valueMask = entry.second->merge(found->second);
+				if (valueMask == nullptr) {
+					valueMask = new DataResourceMask::DataResourceMaskUnknown();
+				}
+			} else { // Only in a
+				valueMask = entry.second->clone();
+			}
+			maskMap[entry.first] = valueMask;
+		}
+
+		for (const auto& entry : *b.maskMap) {
+			auto found = a.maskMap->find(entry.first);
+			if (found == aEnd) { // In only b
+				maskMap[found->first] = found->second->clone();
+			}
+		}
+
+		return mask;
+	}
+
+	/** @brief  Creates intersection of n RenderContextMask-objects
+	 * @param  masks: List of pointers to masks to be merged
+	 * @retval Mask which containes the common areas between the two input masks (managed by caller) */
+	static inline RenderContextMask* merge(std::initializer_list<const RenderContextMask*> masks) {
+
+		switch (masks.size()) {
+		case 0:
+			return new RenderContextMask();
+		case 1:
+			return new RenderContextMask(**masks.begin());
+		default:
+			break;
+		}
+
+		auto it = masks.begin();
+
+		RenderContextMask* mask;
+		{
+			auto* a = *it;
+			it++;
+			mask = merge(*a, **it);
+			it++;
+		}
+
+		for (auto end = masks.end(); it != end; it++)
+			mask->mergeInto(**it);
+
+		return mask;
+	}
+
+
+	inline void resolveUnknownsFromRctx(torasu::RenderContext* rctx) {
+		for (auto maskEntry : *maskMap) {
+			if (maskEntry.second->isUnknown()) {
+				delete maskEntry.second;
+				maskEntry.second = new DataResourceMask::DataResourceMaskSingle((*rctx)[maskEntry.first]->clone());
+			}
+		}
+	}
+
+};
+
 class ResultSegment {
 private:
 	ResultSegmentStatus status;
 	DataResourceHolder result;
+	RenderContextMask* rctxm = nullptr;
 	LogInfoRef* rir;
 
 public:
@@ -792,7 +1069,29 @@ public:
 	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, LogInfoRef* rir = nullptr)
 		: status(status), result(result, freeResult), rir(rir) {}
 
+	/**
+	 * @brief  Creates a ResultSegment (only status, without content)
+	 * @note  This constructor should only be used if a result wasn't generated
+	 * @param  status: Calculation-status of the segment
+	 * @param  rctxm: The RenderContext-range this status is valid in
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, RenderContextMask* rctxm, LogInfoRef* rir = nullptr)
+		: status(status), rctxm(rctxm), rir(rir) {}
+
+	/**
+	 * @brief  Creates a ResultSegment
+	 * @param  status: Calculation-status of the segment
+	 * @param  result: The result of the calculation of the segment
+	 * @param  freeResult: Flag to destruct the DataResource of the result (true=will destruct)
+	 * @param  rctxm: The RenderContext-range this result is valid in
+	 * @param  rir: References to Information in the Logs about the result (shall be valid until the callback containing this is called with RIR_UNREF)
+	 */
+	inline ResultSegment(ResultSegmentStatus status, DataResource* result, bool freeResult, RenderContextMask* rctxm, LogInfoRef* rir = nullptr)
+		: status(status), result(result, freeResult), rctxm(rctxm), rir(rir) {}
+
 	~ResultSegment() {
+		if (rctxm != nullptr) delete rctxm;
 		if (rir != nullptr) delete rir;
 	}
 
@@ -802,6 +1101,14 @@ public:
 
 	inline DataResource* const getResult() {
 		return result.get();
+	}
+
+	inline const RenderContextMask* getResultMask() const {
+		return rctxm;
+	}
+
+	inline void updateResultMask(RenderContextMask* rctxm) {
+		this->rctxm = rctxm;
 	}
 
 	inline LogInfoRef* getResultInfoRef() {
@@ -953,85 +1260,56 @@ public:
 // DOWNSTREAM (READY)
 //
 
-/**
- * @brief  Request to fetch which objects need to be made ready to run a desired task (ReadyObjects)
- */
-class ReadyRequest {
-private:
-	std::vector<std::string> ops;
-	RenderContext* rctx;
-public:
-	inline ReadyRequest(std::vector<std::string> ops, RenderContext* rctx)
-		: ops(ops), rctx(rctx)  {}
-	~ReadyRequest() {}
-
-	inline std::vector<std::string>& getOpeations() {
-		return ops;
-	}
-
-	inline RenderContext* getRenderContext() {
-		return rctx;
-	}
-};
-
-/**
- * @brief  Instruction to make an Element ready
- */
 class ReadyInstruction {
-private:
-	ReadyObjects objects;
-	ExecutionInterface* ei;
-
 public:
-	inline ReadyInstruction(ReadyObjects objects, ExecutionInterface* ei)
-		: objects(objects), ei(ei) {}
-	~ReadyInstruction() {}
+	/** @brief  The operations/segemnts to be made ready */
+	const std::vector<std::string> ops;
+	/** @brief  The target-RenderContext to be made ready towards */
+	/* TODO make const */ RenderContext* const rctx;
+	/** @brief  The ExecutionInterface to be used run executions required to made ready */
+	ExecutionInterface* const ei;
+	/** @brief  The LogInterface to log messages */
+	const LogInstruction li;
 
-	inline ReadyObjects& getObjects() {
-		return objects;
-	}
+	/**
+	 * @brief  Save pointer to state - should always exactly be called once
+	 * @note   This should be given to the function as early as possible,
+	 * 			so the ready should block as less as possible other actions
+	 * @param  state: The state to be set
+	 * 	- It should already contain opeations and the render-context-mask (RCTXM)
+	 * 	- All other data should be complete on completin of the ready-function
+	 * 	- Provide a nullptr ONLY to signalize that this wont have ANY ready-states for ANY operation
+	 */
+	virtual void setState(ReadyState* state) = 0;
 
-	inline ExecutionInterface* getExecutionInterface() {
-		return ei;
-	}
-};
+	ReadyInstruction(std::vector<std::string> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
+		: ops(ops), rctx(rctx), ei(ei), li(li) {}
+	virtual ~ReadyInstruction() {}
 
-/**
- * @brief  Instruction to unready an Element
- */
-class UnreadyInstruction {
-private:
-	ReadyObjects objects;
-
-public:
-	inline explicit UnreadyInstruction(ReadyObjects objects)
-		: objects(objects) {}
-	~UnreadyInstruction() {}
-
-	inline ReadyObjects& getObjects() {
-		return objects;
-	}
 };
 
 //
 // UPSTREAM (READY)
 //
 
-/**
- * @brief  Result of making a object inside an Element ready
- */
-class ObjectReadyResult {
-private:
-	ReadyObject obj;
-
+class ReadyState {
 public:
-	inline explicit ObjectReadyResult(ReadyObject obj)
-		: obj(obj) {}
-	~ObjectReadyResult();
+	ReadyState() {}
+	virtual ~ReadyState() {}
 
-	inline ReadyObject getObject() {
-		return obj;
-	}
+	/** @brief The operations this state is valid for
+	 * (Pointer is valid as long the object won't be modified/freed) */
+	virtual const std::vector<std::string>* getOperations() const = 0;
+
+	/** @brief The mask of RenderContexts this state is valid for
+	 * (Pointer is valid as long the object won't be modified/freed) */
+	virtual const RenderContextMask* getContextMask() const = 0;
+
+	/** @brief Memory the object takes up (in bytes) */
+	virtual size_t size() const = 0;
+
+	/** @brief Clone the object */
+	virtual ReadyState* clone() const = 0;
 };
 
 } /* namespace torasu */

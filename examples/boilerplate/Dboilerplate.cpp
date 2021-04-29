@@ -12,11 +12,11 @@ Dboilerplate::Dboilerplate(std::string str, double num)
 
 Dboilerplate::~Dboilerplate() {}
 
-std::string Dboilerplate::getIdent() {
+std::string Dboilerplate::getIdent() const {
 	return "EXAMPLE::DBOILERPLATE";
 }
 
-Dboilerplate* Dboilerplate::clone() {
+Dboilerplate* Dboilerplate::clone() const {
 	return new Dboilerplate(*this);
 }
 

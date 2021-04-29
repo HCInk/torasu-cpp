@@ -52,11 +52,11 @@ torasu::json Dstring_map::makeJson() {
 	return json;
 }
 
-std::string Dstring_map::getIdent() {
+std::string Dstring_map::getIdent() const {
 	return "STD::STR_MAP";
 }
 
-Dstring_map* Dstring_map::clone() {
+Dstring_map* Dstring_map::clone() const {
 	return new Dstring_map(*this);
 }
 

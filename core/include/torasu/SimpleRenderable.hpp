@@ -2,6 +2,7 @@
 #define CORE_INCLUDE_TORASU_SIMPLERENDERABLE_HPP_
 
 #include <string>
+#include <vector>
 
 #include <torasu/torasu.hpp>
 #include <torasu/RenderableProperties.hpp>
@@ -79,6 +80,21 @@ public:
 	RenderResult* render(RenderInstruction* ri) override;
 };
 
+
+class NoneReadyState : public ReadyState {
+private:
+	std::vector<std::string>* operations;
+	RenderContextMask* rctxm;
+public:
+	explicit NoneReadyState(const std::vector<std::string>& operations);
+	NoneReadyState(const NoneReadyState& orig);
+	~NoneReadyState();
+	const std::vector<std::string>* getOperations() const override;
+	const RenderContextMask* getContextMask() const override;
+	size_t size() const override;
+	NoneReadyState* clone() const override;
+};
+
 /**
  * @brief  Element which overrides Ready-functions whith dummies, so they dont have to be explitily implemented
  */
@@ -89,9 +105,7 @@ protected:
 public:
 	virtual ~ReadylessElement();
 
-	ReadyObjects* requestReady(const ReadyRequest& ri) override;
-	ElementReadyResult* ready(const ReadyInstruction& ri) override;
-	void unready(const UnreadyInstruction& uri) override;
+	void ready(ReadyInstruction* ri) override;
 };
 
 /**

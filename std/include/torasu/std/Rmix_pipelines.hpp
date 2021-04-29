@@ -53,8 +53,8 @@ protected:
 public:
 	~Dmix_pipelines_conf();
 
-	std::string getIdent() override;
-	Dmix_pipelines_conf* clone() override;
+	std::string getIdent() const override;
+	Dmix_pipelines_conf* clone() const override;
 
 	friend Rmix_pipelines;
 };

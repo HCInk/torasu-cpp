@@ -19,9 +19,9 @@ Rstring::~Rstring() {
 torasu::ResultSegment* Rstring::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
 	std::string pipeline = resSettings->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING) {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, str, false);
+		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, str, false, new RenderContextMask());
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());
 	}
 }
 

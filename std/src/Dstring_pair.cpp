@@ -14,7 +14,7 @@ Dstring_pair::Dstring_pair(std::string a, std::string b)
 
 Dstring_pair::~Dstring_pair() {}
 
-std::string Dstring_pair::getIdent() {
+std::string Dstring_pair::getIdent() const {
 	return "STD::DSTRING_PAIR";
 }
 
@@ -42,7 +42,7 @@ torasu::json Dstring_pair::makeJson() {
 	return json;
 }
 
-Dstring_pair* Dstring_pair::clone() {
+Dstring_pair* Dstring_pair::clone() const {
 	return new Dstring_pair(*this);
 }
 
