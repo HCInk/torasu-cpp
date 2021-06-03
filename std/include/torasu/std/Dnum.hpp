@@ -28,6 +28,9 @@ public:
 
 	virtual ~Dnum();
 
+	void operator=(Dnum value);
+	void operator=(double value);
+
 	double getNum();
 
 	std::string getIdent() const override;

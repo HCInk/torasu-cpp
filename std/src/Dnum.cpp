@@ -15,6 +15,16 @@ Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
 Dnum::Dnum() : num(0) {}
 Dnum::Dnum(double num) : num(num) {}
 
+void Dnum::operator=(Dnum value) {
+	setUpdate();
+	this->num = value.getNum();
+}
+
+void Dnum::operator=(double value) {
+	setUpdate();
+	this->num = value;
+}
+
 Dnum::~Dnum() {}
 
 double Dnum::getNum() {
