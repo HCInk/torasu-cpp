@@ -147,7 +147,7 @@ public:
 		if (this == other) return EQUAL;
 
 		if (this->getIdent() == other->getIdent()) {
-			return (other > 0) ? GREATER : LESS;
+			return (other > this) ? GREATER : LESS;
 		} else {
 			return TYPE_ERR;
 		}
