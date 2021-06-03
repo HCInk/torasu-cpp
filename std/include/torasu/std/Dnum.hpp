@@ -21,6 +21,7 @@ protected:
 	torasu::json makeJson() override;
 
 public:
+	Dnum();
 	explicit Dnum(std::string jsonStripped);
 	explicit Dnum(torasu::json jsonParsed);
 	explicit Dnum(double num);
