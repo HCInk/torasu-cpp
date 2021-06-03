@@ -8,6 +8,7 @@
 #define CORE_INCLUDE_TORASU_DATAPACKABLE_HPP_
 
 #include <utility>
+#include <optional>
 #include <string>
 
 #include <torasu/json.hpp>
@@ -25,6 +26,11 @@ private:
 
 	void parse();
 protected:
+
+	void inline setUpdate() {
+		serializedJson.reset();
+		parsedJson.reset();
+	}
 
 	void inline setLoaded() {
 		loaded = true;
