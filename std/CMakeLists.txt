@@ -31,6 +31,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Dbimg_sequence.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Daudio_buffer.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dfile.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Dmatrix.cpp
 		# Renderables
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring.cpp
