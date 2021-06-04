@@ -61,7 +61,7 @@ torasu::ResultSegment* Rstring_map::renderSegment(torasu::ResultSegmentSettings*
 torasu::ElementMap Rstring_map::getElements() {
 	torasu::ElementMap elemMap;
 
-	for (auto mapping : map) {
+	for (auto& mapping : map) {
 		elemMap[mapping.first] = mapping.second.get();
 	}
 
