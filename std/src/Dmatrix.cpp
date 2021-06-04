@@ -1,6 +1,7 @@
 #include "../include/torasu/std/Dmatrix.hpp"
 
 #include <string>
+#include <cmath>
 
 #include <torasu/json.hpp>
 
@@ -24,6 +25,13 @@ Dmatrix::Dmatrix(std::initializer_list<torasu::tstd::Dnum> numbers, size_t heigh
 	initBuffer(numbers.size(), height, &numbers);
 }
 
+Dmatrix::Dmatrix(size_t size) {
+	initBuffer(size*size, size);
+	for (size_t i = 0; i < size; i++) {
+		(*nums)[i*(size+1)] = 1;
+	}
+}
+
 Dmatrix::Dmatrix(const Dmatrix& original)
 	: height(original.getHeight()),
 	  width(original.getWidth()),
@@ -43,6 +51,25 @@ size_t Dmatrix::getWidth() const {
 
 size_t Dmatrix::getHeight() const {
 	return height;
+}
+
+Dmatrix& Dmatrix::operator=(const Dmatrix& other) {
+	size_t srcWidth = other.getWidth();
+
+	size_t copyWidth = std::min(srcWidth, width);
+	size_t copyHeight = std::min(other.getHeight(), height);
+	torasu::tstd::Dnum* destPtr = getNums();
+	torasu::tstd::Dnum* srcPtr = other.getNums();
+
+	for (size_t y = 0; y < copyHeight; y++) {
+		for (size_t x = 0; x < copyWidth; x++) {
+			destPtr[x] = srcPtr[x];
+		}
+		destPtr += width;
+		srcPtr += srcWidth;
+	}
+
+	return *this;
 }
 
 std::string Dmatrix::getIdent() const {

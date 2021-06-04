@@ -32,6 +32,12 @@ public:
 	 * @param  height: Height of matrix (0 to take size of numbers as height / create vertical vector)
 	 */
 	explicit Dmatrix(std::initializer_list<torasu::tstd::Dnum> numbers, size_t height = 0);
+	/**
+	 * @brief  Create identity-matrix
+	 * @param  size: Size of matrix (size x size)
+	 */
+	explicit Dmatrix(size_t size = 0);
+
 	explicit Dmatrix(const Dmatrix& original);
 
 	virtual ~Dmatrix();
@@ -39,6 +45,8 @@ public:
 	torasu::tstd::Dnum* getNums() const;
 	size_t getWidth() const;
 	size_t getHeight() const;
+
+	Dmatrix& operator=(const Dmatrix&);
 
 	std::string getIdent() const override;
 	Dmatrix* clone() const override;
