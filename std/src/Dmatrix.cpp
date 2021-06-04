@@ -13,29 +13,35 @@ void Dmatrix::initBuffer(size_t size, size_t height, std::initializer_list<toras
 	else this->nums = new std::vector<torasu::tstd::Dnum>(width*height);
 }
 
-Dmatrix::Dmatrix(std::string jsonStripped) : DataPackable(jsonStripped) {}
-Dmatrix::Dmatrix(torasu::json jsonParsed) : DataPackable(jsonParsed) {}
+Dmatrix::Dmatrix(std::string jsonStripped) : DataPackable(jsonStripped) {
+	ensureLoaded();
+}
+Dmatrix::Dmatrix(torasu::json jsonParsed) : DataPackable(jsonParsed) {
+	ensureLoaded();
+}
 
 Dmatrix::Dmatrix(std::initializer_list<torasu::tstd::Dnum> numbers, size_t height) {
 	initBuffer(numbers.size(), height, &numbers);
 }
 
+Dmatrix::Dmatrix(const Dmatrix& original)
+	: height(original.getHeight()),
+	  width(original.getWidth()),
+	  nums(new std::vector<torasu::tstd::Dnum>(original.getNums(), original.getNums()+(width*height))) {}
+
 Dmatrix::~Dmatrix() {
 	if (nums) delete nums;
 }
 
-torasu::tstd::Dnum* Dmatrix::getNums() {
-	ensureLoaded();
+torasu::tstd::Dnum* Dmatrix::getNums() const {
 	return nums->data();
 }
 
-size_t Dmatrix::getWidth() {
-	ensureLoaded();
+size_t Dmatrix::getWidth() const {
 	return width;
 }
 
-size_t Dmatrix::getHeight() {
-	ensureLoaded();
+size_t Dmatrix::getHeight() const {
 	return height;
 }
 

@@ -32,12 +32,13 @@ public:
 	 * @param  height: Height of matrix (0 to take size of numbers as height / create vertical vector)
 	 */
 	explicit Dmatrix(std::initializer_list<torasu::tstd::Dnum> numbers, size_t height = 0);
+	explicit Dmatrix(const Dmatrix& original);
 
 	virtual ~Dmatrix();
 
-	torasu::tstd::Dnum* getNums();
-	size_t getWidth();
-	size_t getHeight();
+	torasu::tstd::Dnum* getNums() const;
+	size_t getWidth() const;
+	size_t getHeight() const;
 
 	std::string getIdent() const override;
 	Dmatrix* clone() const override;
