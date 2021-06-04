@@ -3,37 +3,109 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
+#include <torasu/render_tools.hpp>
 #include <torasu/std/pipeline_names.hpp>
 
 namespace torasu::tstd {
 
-Rmatrix::Rmatrix(std::initializer_list<torasu::tstd::Dnum> numbers, size_t height)
-	: SimpleRenderable("STD::RMATRIX", true, false), valdr(new Dmatrix(numbers, height)) {}
+Rmatrix::Rmatrix(std::initializer_list<torasu::tstd::NumSlot> numbers, size_t height)
+	: SimpleRenderable("STD::RMATRIX", true, true), height(height) {
 
-Rmatrix::Rmatrix(Dmatrix val)
-	: SimpleRenderable("STD::RMATRIX", true, false), valdr(new Dmatrix(val)) {}
+	size_t i = 0;
+	for (torasu::tstd::NumSlot num : numbers) {
+		vals[i++] = num;
+	}
 
-Rmatrix::~Rmatrix() {
-	delete valdr;
 }
 
+Rmatrix::~Rmatrix() {}
+
 DataResource* Rmatrix::getData() {
-	return valdr;
+	return &height;
 }
 
 void Rmatrix::setData(DataResource* data) {
-	if (Dmatrix* matrix = dynamic_cast<Dmatrix*>(data)) {
-		delete valdr;
-		valdr = matrix;
+	if (torasu::tstd::Dnum* num = dynamic_cast<torasu::tstd::Dnum*>(data)) {
+		height = *num;
 	} else {
-		throw std::invalid_argument("The data-type \"Dmatrix\" is only allowed");
+		throw std::invalid_argument("The data-type \"Dnum\" is only allowed");
 	}
+}
+
+torasu::ElementMap Rmatrix::getElements() {
+	torasu::ElementMap elements;
+
+	for (auto& elem : vals) {
+		elements["n" + std::to_string(elem.first)] = elem.second.get();
+	}
+
+	return elements;
+}
+
+void Rmatrix::setElement(std::string key, Element* elem) {
+
+	if (key.length() >= 2 && key.substr(0, 1) == "n") {
+
+		std::string numStr = key.substr(1);
+
+		size_t index;
+		try {
+			index = std::stoul(numStr);
+		} catch (std::invalid_argument& ex) {
+			throw torasu::tools::makeExceptSlotDoesntExist(key);
+		}
+
+		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
+			vals[index] = rnd;
+		} else {
+			throw torasu::tools::makeExceptSlotOnlyRenderables(key);
+		}
+	}
+	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 
 ResultSegment* Rmatrix::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
 
 	if (resSettings->getPipeline() == TORASU_STD_PL_VEC) {
-		return new ResultSegment(ResultSegmentStatus_OK, valdr, false, new RenderContextMask());
+
+		torasu::tools::RenderHelper rh(ri);
+
+		tools::RenderInstructionBuilder rib;
+		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
+
+		std::map<size_t, torasu::ExecutionInterface::ResultPair*> resultMap;
+		std::vector<torasu::ExecutionInterface::ResultPair> pairVec(vals.size());
+
+		torasu::ExecutionInterface::ResultPair* rpPtr = pairVec.data();
+
+		for (auto& slot : vals) {
+			torasu::Renderable* rnd = slot.second.get();
+			auto id = rib.enqueueRender(rnd, &rh);
+			(*rpPtr) = {id, nullptr};
+			resultMap[slot.first] = rpPtr;
+			rpPtr++;
+		}
+
+		rpPtr = pairVec.data();
+		rh.ei->fetchRenderResults(rpPtr, vals.size());
+
+		size_t highestNum = resultMap.rbegin()->first;
+
+		size_t height = static_cast<size_t>(this->height.getNum());
+		size_t width = highestNum/height + 1;
+
+		torasu::tstd::Dmatrix matrix(width, height);
+		torasu::tstd::Dnum* numArr = matrix.getNums();
+
+		for (auto result : resultMap) {
+			RenderResult* rr = result.second->result;
+			auto val = resHandle.getFrom(rr, &rh);
+			if (!val) continue;
+			numArr[result.first] = *val.getResult();
+			delete rr;
+		}
+
+		return rh.buildResult(new torasu::tstd::Dmatrix(matrix));
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());
 	}
