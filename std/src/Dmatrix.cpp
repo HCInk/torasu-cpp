@@ -32,6 +32,10 @@ Dmatrix::Dmatrix(size_t size) {
 	}
 }
 
+Dmatrix::Dmatrix(size_t width, size_t height) {
+	initBuffer(width*height, height);
+}
+
 Dmatrix::Dmatrix(const Dmatrix& original)
 	: height(original.getHeight()),
 	  width(original.getWidth()),
@@ -95,6 +99,100 @@ torasu::json Dmatrix::makeJson() {
 	json["d"] = dataArr;
 	json["h"] = height;
 	return json;
+}
+
+Dmatrix Dmatrix::multiplyByFactor(Dnum num) const {
+	Dmatrix mulMatrix(width, height);
+	Dnum* destNums = mulMatrix.getNums();
+	for (size_t i = 0; i < nums->size(); i++) {
+		destNums[i] = (*nums)[i].getNum() * num.getNum();
+	}
+	return mulMatrix;
+}
+
+Dmatrix Dmatrix::multiplyByMatrix(Dmatrix other) const {
+	if (width != other.getHeight())
+		throw std::invalid_argument("Can't multiply matrices, where the width of A is different to the height of B!");
+	Dmatrix mulMatrix(other.getWidth(), height);
+	Dnum* aNums = this->getNums();
+	Dnum* bNums = other.getNums();
+	Dnum* destNums = mulMatrix.getNums();
+	for (size_t y = 0; y < mulMatrix.getHeight(); y++) {
+		for (size_t x = 0; x < mulMatrix.getWidth(); x++) {
+			double total = 0;
+			for (size_t i = 0; i < width; i++) {
+				total += aNums[i + y*width].getNum() * bNums[x + i*other.getWidth()].getNum();
+			}
+			(*destNums) = total;
+			destNums++;
+		}
+	}
+	return mulMatrix;
+}
+
+
+Dmatrix Dmatrix::transpose() const {
+	Dmatrix transposedMatrix(height, width);
+	Dnum* destNums = transposedMatrix.getNums();
+	for (size_t y=0; y< height; y++) {
+		for (size_t x=0; x< width; x++) {
+			destNums[y*height+x] = (*nums)[x*height+y];
+		}
+	}
+	return transposedMatrix;
+}
+
+double Dmatrix::determinant() const {
+	if (width != height) throw std::invalid_argument("matrix needs to be square.");
+	if (width == 1) {
+		return (*nums)[0].getNum();
+	}
+	if (width==2) {
+		return ((*nums)[0].getNum() * (*nums)[3].getNum()) -
+			   ( (*nums)[1].getNum() * (*nums)[2].getNum() );
+	}
+	double sum = 0.0;
+	for (size_t i=0; i < width; i++) {
+		sum += (i%2 == 0 ? 1.0 : -1.0) * (*nums)[i*width].getNum() * excludeRowAndCol(0, i).determinant();
+	}
+	return sum;
+}
+
+Dmatrix Dmatrix::excludeRowAndCol(uint32_t ex_col, uint32_t ex_row) const {
+	Dmatrix excludedMatrix(
+		(ex_col >= 0 && ex_col <= width) ? width-1 : width,
+		(ex_row >= 0 && ex_row <= height) ? height-1 : height
+	);
+
+	Dnum* dest = excludedMatrix.getNums();
+
+	for (size_t row = 0; row < height; row++) {
+		if (row == ex_row) continue;
+		for (size_t col = 0; col < height; col++) {
+			if (col == ex_col) continue;
+			(*dest) = (*nums)[row*width+col];
+			dest++;
+		}
+	}
+
+	return excludedMatrix;
+}
+
+Dmatrix Dmatrix::cofactor() const {
+	Dmatrix cofactorMatrix(width, height);
+	Dnum* destNums = cofactorMatrix.getNums();
+	for (size_t y = 0; y < height; y++) {
+		for (size_t x = 0; x < width ; x++) {
+			destNums[y*height+x] =
+				(x%2 == 0 ? 1.0 : -1.0) * (y%2 == 0 ? 1.0 : -1.0) *
+				excludeRowAndCol(x,y).determinant();
+		}
+	}
+	return cofactorMatrix;
+}
+
+Dmatrix Dmatrix::inverse() const {
+	return cofactor().transpose().multiplyByFactor(1.0/determinant());
 }
 
 Dmatrix* Dmatrix::clone() const {

@@ -36,9 +36,15 @@ public:
 	 * @brief  Create identity-matrix
 	 * @param  size: Size of matrix (size x size)
 	 */
-	explicit Dmatrix(size_t size = 0);
+	explicit Dmatrix(size_t size);
+	/**
+	 * @brief  Create zeroed-matrix
+	 * @param  width: Width of matrix
+	 * @param  height: Height of matrix
+	 */
+	explicit Dmatrix(size_t width, size_t height);
 
-	explicit Dmatrix(const Dmatrix& original);
+	Dmatrix(const Dmatrix& original);
 
 	virtual ~Dmatrix();
 
@@ -47,6 +53,14 @@ public:
 	size_t getHeight() const;
 
 	Dmatrix& operator=(const Dmatrix&);
+
+	Dmatrix multiplyByFactor(Dnum num) const;
+	Dmatrix multiplyByMatrix(Dmatrix num) const;
+	Dmatrix transpose() const;
+	double determinant() const;
+	Dmatrix excludeRowAndCol(uint32_t col, uint32_t row) const;
+	Dmatrix cofactor() const;
+	Dmatrix inverse() const;
 
 	std::string getIdent() const override;
 	Dmatrix* clone() const override;
