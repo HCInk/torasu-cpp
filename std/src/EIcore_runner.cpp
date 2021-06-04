@@ -1318,7 +1318,7 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 			torasu::tools::log_checked(li, torasu::INFO, "Ready-State contains has no mask! This may lead to very reduced performance, since it can't be cached");
 
 		// TODO Benchmark the result to calculate a non-dummy calcTime
-		return state->finish((double) obj->bench.benchCalcSpent / (1000*1000));
+		return state->finish(static_cast<double>(obj->bench.benchCalcSpent) / (1000*1000));
 	}
 
 	return nullptr;
