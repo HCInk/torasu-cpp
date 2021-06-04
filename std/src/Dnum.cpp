@@ -9,11 +9,11 @@ using json = torasu::json;
 
 namespace torasu::tstd {
 
-Dnum::Dnum(string jsonStripped) : DataPackable(jsonStripped) {}
-Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
-
 Dnum::Dnum() : num(0) {}
 Dnum::Dnum(double num) : num(num) {}
+
+Dnum::Dnum(string jsonStripped) : DataPackable(jsonStripped) {}
+Dnum::Dnum(json jsonParsed) : DataPackable(jsonParsed) {}
 
 void Dnum::operator=(Dnum value) {
 	setUpdate();
