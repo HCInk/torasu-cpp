@@ -34,6 +34,7 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Dmatrix.cpp
 		# Renderables
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnum.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rmatrix.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Radd.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rsubtract.cpp

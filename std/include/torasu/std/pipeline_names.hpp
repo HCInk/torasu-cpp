@@ -8,6 +8,12 @@
 #define TORASU_STD_PL_NUM "STD::PNUM"
 
 /**
+ * Vector-pipeline
+ * Default-type: Dmatrix
+ */
+#define TORASU_STD_PL_VEC "STD::PVEC"
+
+/**
  * Visual-pipeline
  * Default-type: Dbimg
  */

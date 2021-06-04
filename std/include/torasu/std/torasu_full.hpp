@@ -72,6 +72,8 @@
 #include <torasu/std/Rfloor_mod.hpp>
 #include <torasu/std/Rsin.hpp>
 
+#include <torasu/std/Rmatrix.hpp>
+
 #include <torasu/std/Rstring.hpp>
 #include <torasu/std/Rstring_concat.hpp>
 #include <torasu/std/Rstring_map.hpp>
