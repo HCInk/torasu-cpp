@@ -70,12 +70,11 @@ private:
 	torasu::tools::ManagedRenderableSlot defRnd;
 	Dmix_pipelines_conf conf;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes);
 	~Rmix_pipelines();
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

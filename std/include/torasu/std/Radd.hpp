@@ -20,12 +20,11 @@ private:
 	tools::ManagedSlot<NumSlot> a;
 	tools::ManagedSlot<NumSlot> b;
 
-protected:
-	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
-
 public:
 	Radd(NumSlot a, NumSlot b);
 	~Radd();
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

@@ -60,8 +60,8 @@ Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, 
 
 Rjson_prop::~Rjson_prop() {}
 
-torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM || pipeline == TORASU_STD_PL_MAP) {
 
 		tools::RenderHelper rh(ri);
@@ -70,14 +70,12 @@ torasu::ResultSegment* Rjson_prop::renderSegment(torasu::ResultSegmentSettings* 
 		// Load input/parameters
 		//
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dfile>(TORASU_STD_PL_FILE, nullptr);
+		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, nullptr);
+		auto renderId = rh.enqueueRender(jsonRnd, &fileSetting);
 
-		auto renderId = rib.enqueueRender(jsonRnd, &rh);
+		std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
 
-		std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
-
-		auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
+		auto fetchedRes = rh.evalResult<torasu::tstd::Dfile>(rndRes.get());
 
 
 		if (!fetchedRes) {

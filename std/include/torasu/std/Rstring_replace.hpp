@@ -17,12 +17,11 @@ private:
 	tools::ManagedSlot<StringSlot> beforeRnd;
 	tools::ManagedSlot<StringSlot> afterRnd;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rstring_replace(StringSlot src, StringSlot before, StringSlot after);
 	~Rstring_replace();
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

@@ -17,12 +17,11 @@ private:
 	std::unique_ptr<torasu::tstd::Dstring_pair> config;
 	torasu::tools::ManagedRenderableSlot jsonRnd;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional=false);
 	~Rjson_prop();
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

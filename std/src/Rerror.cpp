@@ -13,22 +13,20 @@ Rerror::Rerror(torasu::tstd::StringSlot msg)
 Rerror::~Rerror() {}
 
 
-torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
-	auto li = ri->getLogInstruction();
+torasu::ResultSegment* Rerror::render(torasu::RenderInstruction* ri) {
 	bool hasMsg = false;
 	LogId msgTag;
 
+	tools::RenderHelper rh(ri);
+	auto li = rh.li;
 	if (li.level <= ERROR) {
-		auto* ei = ri->getExecutionInterface();
-		torasu::tools::RenderInstructionBuilder rib;
-		auto strHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings rs(TORASU_STD_PL_STRING, nullptr);
+		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(msgRnd.get(), &rs));
 
-		std::unique_ptr<torasu::RenderResult> rr(rib.runRender(msgRnd.get(), ri->getRenderContext(), ei, li));
-
-		auto msgRes = strHandle.getFrom(rr.get());
+		auto msgRes = rh.evalResult<torasu::tstd::Dstring>(rr.get());
 
 		torasu::LogEntry* logEntry;
-		if (msgRes.getResult() != nullptr) {
+		if (msgRes) {
 			auto* dstr = msgRes.getResult();
 			logEntry = new torasu::LogMessage(ERROR, dstr->getString());
 		} else {
@@ -39,16 +37,8 @@ torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
 		hasMsg = true;
 	}
 
-	auto* results = new std::map<std::string, ResultSegment*>();
-	for (const auto& setting : *ri->getResultSettings()) {
-		(*results)[setting->getKey()] =
-			new ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR,
-		hasMsg ? new torasu::LogInfoRef(new std::vector<std::vector<LogId>>({{msgTag}})) : nullptr);
-	}
-
-	return new torasu::RenderResult(torasu::ResultStatus_PARTIAL_ERROR, results);
-
-
+	return new ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR,
+	hasMsg ? new torasu::LogInfoRef(new std::vector<std::vector<LogId>>({{msgTag}})) : nullptr);
 }
 
 torasu::ElementMap Rerror::getElements() {

@@ -30,28 +30,34 @@ Rstring_replace::Rstring_replace(StringSlot src, StringSlot before, StringSlot a
 
 Rstring_replace::~Rstring_replace() {}
 
-torasu::ResultSegment* Rstring_replace::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING) {
 
 		tools::RenderHelper rh(ri);
 
 		// Sub-renderings
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings resultSettings(TORASU_STD_PL_STRING, nullptr);
 
-		auto renderIdSrc = rib.enqueueRender(srcRnd, &rh);
-		auto renderIdBefore = rib.enqueueRender(beforeRnd, &rh);
-		auto renderIdAfter = rib.enqueueRender(afterRnd, &rh);
+		auto renderIdSrc = rh.enqueueRender(srcRnd, &resultSettings);
+		auto renderIdBefore = rh.enqueueRender(beforeRnd, &resultSettings);
+		auto renderIdAfter = rh.enqueueRender(afterRnd, &resultSettings);
 
-		std::unique_ptr<torasu::RenderResult> rrSrc(rh.fetchRenderResult(renderIdSrc));
-		std::unique_ptr<torasu::RenderResult> rrBefore(rh.fetchRenderResult(renderIdBefore));
-		std::unique_ptr<torasu::RenderResult> rrAfter(rh.fetchRenderResult(renderIdAfter));
+		// XXX Maybe find a better way then this for multi-fetches
+		torasu::ExecutionInterface::ResultPair results[] = {
+			{renderIdSrc},
+			{renderIdBefore},
+			{renderIdAfter}
+		};
+		rh.fetchRenderResults(results, sizeof(results)/sizeof(torasu::ExecutionInterface::ResultPair));
+		std::unique_ptr<torasu::ResultSegment> rrSrc(results[0].result);
+		std::unique_ptr<torasu::ResultSegment> rrBefore(results[1].result);
+		std::unique_ptr<torasu::ResultSegment> rrAfter(results[2].result);
 
-		auto fetchedSrc = segHandle.getFrom(rrSrc.get(), &rh);
-		auto fetchedBefore = segHandle.getFrom(rrBefore.get(), &rh);
-		auto fetchedAfter = segHandle.getFrom(rrAfter.get(), &rh);
+		auto fetchedSrc = rh.evalResult<torasu::tstd::Dstring>(rrSrc.get());
+		auto fetchedBefore = rh.evalResult<torasu::tstd::Dstring>(rrBefore.get());
+		auto fetchedAfter = rh.evalResult<torasu::tstd::Dstring>(rrAfter.get());
 
 		// Evaluation
 

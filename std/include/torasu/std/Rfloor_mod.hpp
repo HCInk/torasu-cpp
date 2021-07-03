@@ -16,12 +16,11 @@ private:
 	tools::ManagedSlot<NumSlot> valRnd;
 	tools::ManagedSlot<NumSlot> facRnd;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rfloor_mod(NumSlot val, NumSlot fac);
 	~Rfloor_mod();
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

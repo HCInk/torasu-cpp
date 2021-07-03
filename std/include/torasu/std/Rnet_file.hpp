@@ -19,12 +19,11 @@ private:
 	tools::ManagedSlot<StringSlot> urlRnd;
 	tools::ManagedSlot<StringSlot> headersRnd;
 
-protected:
-	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
-
 public:
 	explicit Rnet_file(StringSlot url, StringSlot headers = StringSlot());
 	~Rnet_file();
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

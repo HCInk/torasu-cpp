@@ -20,12 +20,11 @@ private:
 	tools::ManagedRenderableSlot mainRnd;
 	tools::ManagedRenderableSlot valueRnd;
 
-protected:
-	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
-
 public:
 	Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline);
 	~Rmod_rctx();
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

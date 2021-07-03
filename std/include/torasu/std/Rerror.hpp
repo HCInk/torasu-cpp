@@ -23,7 +23,7 @@ public:
 	explicit Rerror(torasu::tstd::StringSlot msg);
 	~Rerror();
 
-	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

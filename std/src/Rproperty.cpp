@@ -15,8 +15,8 @@ Rproperty::Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty
 
 Rproperty::~Rproperty() {}
 
-torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	if (resSettings->getPipeline() == servedPipeline) {
+torasu::ResultSegment* Rproperty::render(torasu::RenderInstruction* ri) {
+	if (ri->getResultSettings()->getPipeline() == servedPipeline) {
 		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc.get(), { fromProperty }, ri->getExecutionInterface(), ri->getLogInstruction(), ri->getRenderContext());
 		auto& holder = (*rp)[fromProperty];
 		bool owns = holder.owns();

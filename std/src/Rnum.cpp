@@ -34,9 +34,9 @@ void Rnum::setData(DataResource* data) {
 	}
 }
 
-ResultSegment* Rnum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rnum::render(RenderInstruction* ri) {
 
-	if (resSettings->getPipeline().compare(pipeline) == 0) {
+	if (pipeline == ri->getResultSettings()->getPipeline()) {
 		return new ResultSegment(ResultSegmentStatus_OK, valdr, false, new RenderContextMask());
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());

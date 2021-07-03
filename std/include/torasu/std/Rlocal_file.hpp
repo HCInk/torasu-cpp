@@ -11,19 +11,16 @@ namespace torasu::tstd {
 
 class Rlocal_file : public tools::SimpleRenderable {
 private:
-	std::string pipeline = std::string(TORASU_STD_PL_FILE);
-
 	std::string path;
-
-protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
 	explicit Rlocal_file(std::string path);
 	virtual ~Rlocal_file();
 
-	virtual DataResource* getData();
-	virtual void setData(DataResource* data);
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+
+	torasu::DataResource* getData() override;
+	void setData(torasu::DataResource* data) override;
 };
 
 } // namespace torasu::tstd

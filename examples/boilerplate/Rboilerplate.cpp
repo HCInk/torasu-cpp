@@ -19,24 +19,18 @@ Rboilerplate::~Rboilerplate() {
 	delete data;
 }
 
-torasu::ResultSegment* Rboilerplate::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rboilerplate::render(torasu::RenderInstruction* ri) {
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_NUM) {
+		tools::RenderHelper rh(ri);
 
-		auto* ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto* rctx = ri->getRenderContext();
+		torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
 
-		// Sub-renderings
+		auto renderId = rh.enqueueRender(exampleRnd, &rs);
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr);
+		std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
 
-		auto renderId = rib.enqueueRender(exampleRnd, rctx, ei, li);
-
-		std::unique_ptr<torasu::RenderResult> rndRes(ei->fetchRenderResult(renderId));
-
-		auto fetchedRes = segHandle.getFrom(rndRes.get());
+		auto fetchedRes = rh.evalResult<tstd::Dnum>(rndRes.get());
 
 		double num = fetchedRes.getResult() != nullptr ? fetchedRes.getResult()->getNum() : 0;
 

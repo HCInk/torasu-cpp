@@ -16,8 +16,8 @@ Rstring::~Rstring() {
 	delete str;
 }
 
-torasu::ResultSegment* Rstring::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rstring::render(torasu::RenderInstruction* ri) {
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING) {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, str, false, new RenderContextMask());
 	} else {

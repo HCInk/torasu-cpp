@@ -22,12 +22,12 @@ public:
 
 private:
 	std::map<std::string, torasu::tools::ManagedSlot<torasu::tstd::StringSlot>> map;
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	explicit Rstring_map(std::initializer_list<MapPair> mapping);
 	~Rstring_map();
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

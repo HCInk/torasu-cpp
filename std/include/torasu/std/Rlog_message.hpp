@@ -22,7 +22,7 @@ public:
 	Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src);
 	~Rlog_message();
 
-	RenderResult* render(RenderInstruction* ri) override;
+	torasu::ResultSegment* render(RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

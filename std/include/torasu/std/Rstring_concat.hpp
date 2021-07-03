@@ -20,8 +20,6 @@ public:
 private:
 	torasu::tools::ManagedRenderableSlot listRnd;
 	torasu::tools::ManagedRenderableSlot genRnd;
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	/**
@@ -32,6 +30,8 @@ public:
 	 */
 	explicit Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools::RenderableSlot gen);
 	~Rstring_concat();
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

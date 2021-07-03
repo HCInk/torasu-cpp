@@ -19,40 +19,40 @@ Rstring_map::Rstring_map(std::initializer_list<MapPair> mapping)
 
 Rstring_map::~Rstring_map() {}
 
-torasu::ResultSegment* Rstring_map::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rstring_map::render(torasu::RenderInstruction* ri) {
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_MAP) {
-		auto* ei = ri->getExecutionInterface();
-		auto* rctx = ri->getRenderContext();
-		auto li = ri->getLogInstruction();
-
-		torasu::tools::RenderInstructionBuilder rib;
-		auto handle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
-
+		torasu::tools::RenderHelper rh(ri);
 		size_t resCount = map.size();
 		std::vector<std::string> keyArr(resCount);
 		std::vector<torasu::ExecutionInterface::ResultPair> rpArr(resCount);
 
+		ResultSettings rs(TORASU_STD_PL_STRING, nullptr);
+
 		size_t i = 0;
 		for (auto& entry : map) {
 			keyArr[i] = entry.first;
-			size_t renderId = rib.enqueueRender(entry.second.get(), rctx, ei, li);
+			size_t renderId = rh.enqueueRender(entry.second, &rs);
 			rpArr[i] = {renderId};
 			i++;
 		}
 
-		ei->fetchRenderResults(rpArr.data(), resCount);
+		rh.fetchRenderResults(rpArr.data(), resCount);
 
 		auto* result = new torasu::tstd::Dstring_map();
 
 		for (size_t i = 0; i < resCount; i++) {
-			std::unique_ptr<RenderResult> rr(rpArr[i].result);
-			auto* str = handle.getFrom(rr.get()).getResult();
-			// TODO Handle exceptions
-			result->set(keyArr[i], str->getString());
+			std::unique_ptr<torasu::ResultSegment> rr(rpArr[i].result);
+			auto strRes = rh.evalResult<torasu::tstd::Dstring>(rr.get());
+			if (strRes) {
+				result->set(keyArr[i], strRes.getResult()->getString());
+			} else {
+				rh.noteSubError(strRes,
+								"Failed to render entry for key \"" + keyArr[i] + "\", entry will not be included.");
+			}
 		}
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, result, true);
+		return rh.buildResult(result);
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}

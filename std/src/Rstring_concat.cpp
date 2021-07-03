@@ -17,63 +17,62 @@ Rstring_concat::Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools
 
 Rstring_concat::~Rstring_concat() {}
 
-torasu::ResultSegment* Rstring_concat::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rstring_concat::render(torasu::RenderInstruction* ri) {
+	tools::RenderHelper rh(ri);
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING) {
-		auto* ei = ri->getExecutionInterface();
-		auto* rctx = ri->getRenderContext();
-		auto li = ri->getLogInstruction();
 
-		torasu::tools::RenderInstructionBuilder mapRib;
-		auto mapHandle = mapRib.addSegmentWithHandle<torasu::tstd::Dstring_map>(TORASU_STD_PL_MAP, nullptr);
-		torasu::tools::RenderInstructionBuilder strRib;
-		auto strHandle = strRib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings stringType(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings mapType(TORASU_STD_PL_MAP, nullptr);
 
-		std::unique_ptr<torasu::RenderResult> mapRes(mapRib.runRender(listRnd.get(), rctx, ei, li));
+		std::unique_ptr<torasu::ResultSegment> mapRes(rh.runRender(listRnd, &mapType));
 
-		torasu::tstd::Dstring_map* map = mapHandle.getFrom(mapRes.get()).getResult();
-		if (map == nullptr) {
-			if (li.level <= torasu::LogLevel::ERROR)
-				li.logger->log(torasu::LogLevel::ERROR, "Failed to generate string, since list could not be retrieved.");
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK_WARN, new torasu::tstd::Dstring(""), true);
+		auto castedMap = rh.evalResult<tstd::Dstring_map>(mapRes.get());
+		if (!castedMap) {
+			if (rh.mayLog(torasu::WARN))
+				rh.lrib.logCause(torasu::LogLevel::WARN, "Failed to generate string, since list could not be retrieved.", castedMap.takeInfoTag());
+			return rh.buildResult(new tstd::Dstring(""), torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 		std::vector<std::unique_ptr<torasu::RenderContext>> contexts;
 		std::vector<std::unique_ptr<torasu::tstd::Dstring>> params;
 		std::vector<torasu::ExecutionInterface::ResultPair> rpList;
 
+		auto* map = castedMap.getResult();
+
 		for (size_t i = 0;; i++) {
 			const std::string* value = map->get(std::to_string(i));
 			if (value == nullptr) break;
-			auto* modRctx = new auto(*rctx);
+			auto* modRctx = new auto(*rh.rctx);
 			auto* valData = new torasu::tstd::Dstring(*value);
 			contexts.emplace_back() = std::unique_ptr<torasu::RenderContext>(modRctx);
 			params.emplace_back() = std::unique_ptr<torasu::tstd::Dstring>(valData);
 			(*modRctx)[RCTX_KEY_VALUE] = valData;
 
-			auto rid = strRib.enqueueRender(genRnd, modRctx, ei, li);
+			auto rid = rh.enqueueRender(genRnd, &stringType, modRctx);
 
 			rpList.push_back({rid});
 		}
 
-		ei->fetchRenderResults(rpList.data(), rpList.size());
+		rh.ei->fetchRenderResults(rpList.data(), rpList.size());
 
 		std::string resStr;
 
 		for (size_t i = 0; i < rpList.size(); i++) {
 			auto render = rpList[i];
-			std::unique_ptr<torasu::RenderResult> rr(render.result);
-			auto res = strHandle.getFrom(rr.get());
+			std::unique_ptr<torasu::ResultSegment> rr(render.result);
+			auto res = rh.evalResult<tstd::Dstring>(rr.get());
 
 			torasu::tstd::Dstring* str = res.getResult();
 
-			if (str != nullptr) {
+			if (res) {
 				resStr += str->getString();
 			} else {
-				if (li.level <= torasu::LogLevel::ERROR)
-					li.logger->log(torasu::LogLevel::ERROR,
-								   "Concat-generator returned no result for entry #" + std::to_string(i) +
-								   " - Given param: \"" + params[i]->getString() + "\"");
+				if (rh.mayLog(torasu::LogLevel::WARN))
+					rh.lrib.logCause(torasu::LogLevel::WARN,
+									 "Concat-generator returned no result for entry #" + std::to_string(i) +
+									 " - Given param: \"" + params[i]->getString() + "\"",
+									 res.takeInfoTag());
 			}
 		}
 
@@ -81,7 +80,7 @@ torasu::ResultSegment* Rstring_concat::renderSegment(torasu::ResultSegmentSettin
 		params.clear();
 
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dstring(resStr), true);
+		return rh.buildResult(new torasu::tstd::Dstring(resStr));
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}

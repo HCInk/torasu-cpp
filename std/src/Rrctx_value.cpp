@@ -7,8 +7,8 @@ Rrctx_value::Rrctx_value(std::string valueKey, std::string pipelineName)
 
 Rrctx_value::~Rrctx_value() {}
 
-torasu::ResultSegment* Rrctx_value::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	if (resSettings->getPipeline() == mapping.getB()) {
+torasu::ResultSegment* Rrctx_value::render(torasu::RenderInstruction* ri) {
+	if (ri->getResultSettings()->getPipeline() == mapping.getB()) {
 
 		auto* rctx = ri->getRenderContext();
 

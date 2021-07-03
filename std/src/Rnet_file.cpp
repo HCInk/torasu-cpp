@@ -45,27 +45,25 @@ size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* 
 	return size*nmemb;
 }
 
-ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
-	if (resSettings->getPipeline().compare(pipeline) == 0) {
+	if (pipeline == ri->getResultSettings()->getPipeline()) {
 
 		// Getting url
 
 		tools::RenderHelper rh(ri);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_STRING, nullptr);
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
-
-		auto renderId = rib.enqueueRender(urlRnd, &rh);
-		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, &rh) : 0;
+		auto renderId = rh.enqueueRender(urlRnd, &resSetting);
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rh.enqueueRender(headersRnd, &resSetting) : 0;
 
 		std::string url;
 		{
-			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
+			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
+			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
-			if (fetchedRes.getResult() == nullptr) {
+			if (!fetchedRes) {
 				rh.lrib.logCause(LogLevel::WARN, "Error fetching url!", fetchedRes.takeInfoTag());
 				return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
 			}
@@ -75,11 +73,11 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		std::string headers = "";
 		if (headersRnd.get() != nullptr) {
-			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderIdHeaders));
+			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderIdHeaders));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
+			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
-			if (fetchedRes.getResult() != nullptr) {
+			if (fetchedRes) {
 				headers = fetchedRes.getResult()->getString();
 			} else {
 				if (rh.mayLog(WARN)) {

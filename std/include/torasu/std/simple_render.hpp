@@ -16,34 +16,25 @@
 namespace torasu::tstd {
 
 template<class T> struct SimpleResult {
-	std::shared_ptr<RenderResult> rr;
-	torasu::ResultStatus rStat;
+	std::shared_ptr<ResultSegment> rr;
+	torasu::ResultSegmentStatus rStat;
 	torasu::tools::CastedRenderSegmentResult<T> rs;
-	torasu::ResultSegmentStatus segStat;
 	T* result;
 
 	bool check() {
 		return result != nullptr &&
-			   rStat == torasu::ResultStatus::ResultStatus_OK &&
-			   segStat == torasu::ResultSegmentStatus::ResultSegmentStatus_OK;
+			   rStat == torasu::ResultSegmentStatus::ResultSegmentStatus_OK;
 	}
 
 	std::string getInfo() {
 		std::stringstream ss;
 		ss << "RSTAT=" <<  std::to_string(rStat) << ", "
-		   "SEGSTAT=" <<  std::to_string(segStat) << ", "
 		   "RES=" << result;
 		return ss.str();
 	}
 };
 
 template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, RenderContext* rctx = nullptr, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {
-
-	// Creating instruction
-
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<T>(pl, format);
 
 	// Create interface (If not given)
 
@@ -63,24 +54,26 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 		rctx = defaultRctx.get();
 	}
 
-	std::unique_ptr<torasu::tstd::LIcore_logger> logger;
+	std::unique_ptr<torasu::tstd::LIcore_logger> ownLogger;
 	LogInstruction logInstr(nullptr);
 	if (li == nullptr) {
-		logger = std::unique_ptr<torasu::tstd::LIcore_logger>(new torasu::tstd::LIcore_logger());
-		logInstr.logger = logger.get();
+		ownLogger = std::unique_ptr<torasu::tstd::LIcore_logger>(new torasu::tstd::LIcore_logger());
+		logInstr.logger = ownLogger.get();
 	} else {
 		logInstr = LogInstruction(*li);
 	}
 
-	RenderResult* rr = rib.runRender(tree, rctx, ei, logInstr);
-
-	// Close refs to logger if logger has been created here
-	if (logger) rr->closeRefs();
+	torasu::ResultSettings rs(pl.c_str(), format);
+	ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, logInstr, 0));
 
 	// Finding results
+	torasu::tools::LogInfoRefBuilder lrib(logInstr);
+	torasu::tools::CastedRenderSegmentResult<T> found(rr, &lrib);
 
-	torasu::tools::CastedRenderSegmentResult<T> found = handle.getFrom(rr);
-	return {std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getStatus(), found.getResult()};
+	// Close refs to logger if logger has been created here
+	if (ownLogger) rr->closeRefs();
+
+	return {std::shared_ptr<ResultSegment>(rr), rr->getStatus(), found, found.getResult()};
 }
 
 template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, RenderContext* rctx = nullptr, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {

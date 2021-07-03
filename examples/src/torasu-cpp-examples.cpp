@@ -101,19 +101,17 @@ void simpleRenderExample1() {
 
 	// Creating instruction
 
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
 
 	// Running render based on instruction
 
 	RenderContext rctx;
 
-	RenderResult* rr = rib.runRender(&tree, &rctx, ei, li);
+	ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0));
 
 	// Finding results
 
-	auto result = handle.getFrom(rr);
+	torasu::tools::CastedRenderSegmentResult<torasu::tstd::Dnum> result(rr);
 	cout << "DPNum Value: " << result.getResult()->getNum() << endl;
 
 	// Cleaning

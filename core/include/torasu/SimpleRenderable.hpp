@@ -62,25 +62,6 @@ public:
 				 torasu::ElementMap elements) override;
 };
 
-/**
- * Renderable which calls for every segment in the ResultSettings renderSegment(),
- * which then has to process the given segement and return the matching ResultSegment.
- * Those ResultSegment will then be packed into the RenderResult together with others automatically by this class.
- *
- * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
- */
-class IndividualizedSegnentRenderable : public virtual Renderable {
-protected:
-	IndividualizedSegnentRenderable();
-	// Implement to handle the processing of render-segments
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
-
-public:
-	virtual ~IndividualizedSegnentRenderable();
-	RenderResult* render(RenderInstruction* ri) override;
-};
-
-
 class NoneReadyState : public ReadyState {
 private:
 	std::vector<std::string>* operations;
@@ -109,14 +90,14 @@ public:
 };
 
 /**
- * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
+ * Class that combines the NamedIdentElement, SimpleDataElement, ReadylessElement
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
 class SimpleRenderable : public NamedIdentElement,
 	public SimpleDataElement,
-	public IndividualizedSegnentRenderable,
-	public ReadylessElement {
+	public ReadylessElement,
+	public Renderable {
 
 protected:
 	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements);

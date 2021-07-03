@@ -22,67 +22,64 @@ Rmultiply::~Rmultiply() {
 
 }
 
-ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rmultiply::render(RenderInstruction* ri) {
 
 	torasu::tools::RenderHelper rh(ri);
-	auto& lirb = rh.lrib;
+	auto& lrib = rh.lrib;
 
-	const auto selPipleine = resSettings->getPipeline();
+	const char* selPipleine = ri->getResultSettings()->getPipeline();
 
-	if (selPipleine == TORASU_STD_PL_NUM) {
+	if (strcmp(selPipleine, TORASU_STD_PL_NUM) == 0) {
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
+		std::unique_ptr<ResultSegment> resA(rh.fetchRenderResult(rendA));
+		std::unique_ptr<ResultSegment> resB(rh.fetchRenderResult(rendB));
 
-		auto rendA = rib.enqueueRender(a, &rh);
-		auto rendB = rib.enqueueRender(b, &rh);
-
-		std::unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
-		std::unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
-
-		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA.get(), &rh);
-		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB.get(), &rh);
+		auto a = rh.evalResult<Dnum>(resA.get());
+		auto b = rh.evalResult<Dnum>(resB.get());
 
 		if (a && b) {
-			Dnum* mulRes = new Dnum(a.getResult()->getNum() * b.getResult()->getNum());
-			return rh.buildResult(mulRes);
+			double mulRes = a.getResult()->getNum() * b.getResult()->getNum();
+			return rh.buildResult(new Dnum(mulRes));
 		} else {
 			if (rh.mayLog(WARN)) {
-				torasu::tools::LogInfoRefBuilder errorCauses(lirb.linstr);
+				torasu::tools::LogInfoRefBuilder errorCauses(lrib.linstr);
 				if (!a)
 					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
 				if (!b)
 					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
 
-				lirb.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
+				lrib.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
 			}
 
 			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (selPipleine == TORASU_STD_PL_VIS) {
+	} else if (strcmp(selPipleine, TORASU_STD_PL_VIS) == 0) {
 		Dbimg_FORMAT* fmt;
-		auto fmtSettings = resSettings->getResultFormatSettings();
-		if ( !( fmtSettings != nullptr
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) )) {
-			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+		{
+			auto* fmtSettings = ri->getResultSettings()->getFromat();
+			if ( fmtSettings != nullptr || (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
+				return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+			}
 		}
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(TORASU_STD_PL_VIS, fmt);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
 
-		auto rendA = rib.enqueueRender(a, &rh);
-		auto rendB = rib.enqueueRender(b, &rh);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		std::unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
-		std::unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
-		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA.get(), &rh);
-		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB.get(), &rh);
+		auto a = rh.evalResult<Dbimg>(resA);
+		auto b = rh.evalResult<Dbimg>(resB);
 
 
 		if (a && b) {
@@ -121,13 +118,13 @@ ResultSegment* Rmultiply::renderSegment(ResultSegmentSettings* resSettings, Rend
 		} else {
 
 			if (rh.mayLog(WARN)) {
-				torasu::tools::LogInfoRefBuilder errorCauses(lirb.linstr);
+				torasu::tools::LogInfoRefBuilder errorCauses(lrib.linstr);
 				if (!a)
 					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
 				if (!b)
 					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
 
-				lirb.logCause(WARN, "Sub render failed to provide operands, returning empty image", errorCauses);
+				lrib.logCause(WARN, "Sub render failed to provide operands, returning empty image", errorCauses);
 
 			}
 

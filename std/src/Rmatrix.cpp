@@ -64,14 +64,13 @@ void Rmatrix::setElement(std::string key, Element* elem) {
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 
-ResultSegment* Rmatrix::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rmatrix::render(RenderInstruction* ri) {
 
-	if (resSettings->getPipeline() == TORASU_STD_PL_VEC) {
+	if (strcmp(ri->getResultSettings()->getPipeline(), TORASU_STD_PL_VEC) == 0) {
 
 		torasu::tools::RenderHelper rh(ri);
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
+		ResultSettings numSetting(TORASU_STD_PL_NUM, nullptr);
 
 		std::map<size_t, torasu::ExecutionInterface::ResultPair*> resultMap;
 		std::vector<torasu::ExecutionInterface::ResultPair> pairVec(vals.size());
@@ -80,7 +79,7 @@ ResultSegment* Rmatrix::renderSegment(ResultSegmentSettings* resSettings, Render
 
 		for (auto& slot : vals) {
 			torasu::Renderable* rnd = slot.second.get();
-			auto id = rib.enqueueRender(rnd, &rh);
+			auto id = rh.enqueueRender(rnd, &numSetting);
 			(*rpPtr) = {id, nullptr};
 			resultMap[slot.first] = rpPtr;
 			rpPtr++;
@@ -98,8 +97,8 @@ ResultSegment* Rmatrix::renderSegment(ResultSegmentSettings* resSettings, Render
 		torasu::tstd::Dnum* numArr = matrix.getNums();
 
 		for (auto result : resultMap) {
-			RenderResult* rr = result.second->result;
-			auto val = resHandle.getFrom(rr, &rh);
+			ResultSegment* rr = result.second->result;
+			auto val = rh.evalResult<torasu::tstd::Dnum>(rr);
 			if (!val) continue;
 			numArr[result.first] = *val.getResult();
 			delete rr;

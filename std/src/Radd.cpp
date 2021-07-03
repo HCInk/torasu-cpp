@@ -19,79 +19,65 @@ Radd::~Radd() {
 
 }
 
-ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Radd::render(RenderInstruction* ri) {
 
-	if (numPipeline.compare(resSettings->getPipeline()) == 0) {
+	tools::RenderHelper rh(ri);
+	if (numPipeline == ri->getResultSettings()->getPipeline()) {
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(numPipeline, NULL);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
+		std::unique_ptr<ResultSegment> resA(rh.fetchRenderResult(rendA));
+		std::unique_ptr<ResultSegment> resB(rh.fetchRenderResult(rendB));
 
-		auto rendA = rib.enqueueRender(a.get(), rctx, ei, li);
-		auto rendB = rib.enqueueRender(b.get(), rctx, ei, li);
+		auto a = rh.evalResult<Dnum>(resA.get());
+		auto b = rh.evalResult<Dnum>(resB.get());
 
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
-
-		// Calculating Result from Results
-
-		std::optional<double> calcResult;
-
-		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB);
-
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
-			calcResult = a.getResult()->getNum() + b.getResult()->getNum();
-		}
-
-		// Free sub-results
-
-		delete resA;
-		delete resB;
-
-		// Saving Result
-
-		if (calcResult.has_value()) {
-			Dnum* mulRes = new Dnum(calcResult.value());
-			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
+		if (a && b) {
+			double calcResult = a.getResult()->getNum() + b.getResult()->getNum();
+			return rh.buildResult(new Dnum(calcResult));
 		} else {
-			Dnum* errRes = new Dnum(0);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			if (rh.mayLog(WARN)) {
+				torasu::tools::LogInfoRefBuilder errorCauses(rh.lrib.linstr);
+				if (!a)
+					errorCauses.logCause(WARN, "Operand A failed to render", a.takeInfoTag());
+				if (!b)
+					errorCauses.logCause(WARN, "Operand B failed to render", b.takeInfoTag());
+
+				rh.lrib.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
+			}
+
+			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {
+	} else if (visPipeline == ri->getResultSettings()->getPipeline()) {
 		Dbimg_FORMAT* fmt;
-		if ( !( resSettings->getResultFormatSettings() != NULL
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings())) )) {
-			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+		{
+			auto* fmtSettings = ri->getResultSettings()->getFromat();
+			if ( fmtSettings != nullptr || (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
+				return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+			}
 		}
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, fmt);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a.get(), rctx, ei, li);
-		auto rendB = rib.enqueueRender(b.get(), rctx, ei, li);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
-		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB);
+		auto a = rh.evalResult<Dbimg>(resA);
+		auto b = rh.evalResult<Dbimg>(resB);
 
 		Dbimg* result = NULL;
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 
 			result = new Dbimg(*fmt);
 
@@ -140,11 +126,10 @@ ResultSegment* Radd::renderSegment(ResultSegmentSettings* resSettings, RenderIns
 		delete resA;
 		delete resB;
 
-		if (result != NULL) {
-			return new ResultSegment(ResultSegmentStatus_OK, result, true);
+		if (result != nullptr) {
+			return rh.buildResult(result);
 		} else {
-			Dbimg* errRes = new Dbimg(*fmt);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return rh.buildResult(new Dbimg(*fmt), ResultSegmentStatus_OK_WARN);
 		}
 
 	} else {

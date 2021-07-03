@@ -20,40 +20,22 @@ Rsin::~Rsin() {
 
 }
 
-ResultSegment* Rsin::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rsin::render(RenderInstruction* ri) {
+	tools::RenderHelper rh(ri);
+	if (strcmp(ri->getResultSettings()->getPipeline(), TORASU_STD_PL_NUM) == 0) {
 
-	if (resSettings->getPipeline() == TORASU_STD_PL_NUM) {
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(valRnd, &resSetting));
+		auto val = rh.evalResult<tstd::Dnum>(rr.get());
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(TORASU_STD_PL_NUM, NULL);
-
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
-
-		auto rid = rib.enqueueRender(valRnd, rctx, ei, li);
-
-		std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rid));
-
-		// Calculating Result from Results
-
-		std::optional<double> calcResult;
-
-		tools::CastedRenderSegmentResult<Dnum> val = resHandle.getFrom(rr.get());
-
-		if (val.getResult()!=nullptr) {
-			calcResult = sin(val.getResult()->getNum() * M_PI / 180);
-		}
-
-		// Saving Result
-
-		if (calcResult.has_value()) {
-			Dnum* mulRes = new Dnum(calcResult.value());
-			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
+		if (val) {
+			double calcResult = sin(val.getResult()->getNum() * M_PI / 180);
+			return rh.buildResult(new tstd::Dnum(calcResult));
 		} else {
-			Dnum* errRes = new Dnum(0);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			if (rh.mayLog(WARN)) {
+				rh.lrib.logCause(WARN, "Failed to render parameter of sinus, returning 0", val.takeInfoTag());
+			}
+			return rh.buildResult(new tstd::Dnum(0), torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 	} else {

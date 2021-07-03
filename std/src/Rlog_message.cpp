@@ -16,7 +16,7 @@ Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::
 
 Rlog_message::~Rlog_message() {}
 
-RenderResult* Rlog_message::render(RenderInstruction* ri) {
+ResultSegment* Rlog_message::render(RenderInstruction* ri) {
 
 	auto li = ri->getLogInstruction();
 
@@ -28,7 +28,7 @@ RenderResult* Rlog_message::render(RenderInstruction* ri) {
 
 	auto rid = ei->enqueueRender(srcRnd.get(), ri->getRenderContext(), ri->getResultSettings(), li, 0);
 
-	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
+	torasu::ResultSegment* rr = ei->fetchRenderResult(rid);
 
 	return rr;
 

@@ -1,5 +1,7 @@
 #include "../include/torasu/std/Rmix_pipelines.hpp"
 
+#include <torasu/render_tools.hpp>
+
 namespace torasu::tstd {
 
 //
@@ -140,8 +142,9 @@ Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializ
 
 Rmix_pipelines::~Rmix_pipelines() {}
 
-torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+torasu::ResultSegment* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
+	torasu::tools::RenderHelper rh(ri);
+	std::string pipeline = ri->getResultSettings()->getPipeline();
 
 	auto found = conf.mappingsByPl.find(pipeline);
 
@@ -165,17 +168,7 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 		}
 	}
 
-	auto* ei = ri->getExecutionInterface();
-	auto rid = ei->enqueueRender(rnd, ri->getRenderContext(), ri->getResultSettings(), ri->getLogInstruction(), 0);
-
-	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(rid));
-
-	// XXX Proper ejection
-	auto* results = rr.get()->getResults();
-	torasu::ResultSegment* ejectedSeg = results->begin()->second;
-	results->erase(results->begin());
-
-	return ejectedSeg;
+	return rh.runRender(rnd, ri->getResultSettings());
 }
 
 #define DEFUALT_KEY "def"
