@@ -38,6 +38,7 @@ public:
 	torasu::tools::LogInfoRefBuilder lrib;
 
 	explicit RenderHelper(RenderInstruction* ri);
+	explicit RenderHelper(ReadyInstruction* ri);
 	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx);
 	~RenderHelper();
 
