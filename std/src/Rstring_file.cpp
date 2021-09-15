@@ -26,11 +26,11 @@ torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
 
 		auto res = rh.evalResult<tstd::Dstring>(rr.get());
 
-		if (res) {
+		if (!res) {
 			if (rh.mayLog(torasu::WARN))
 				rh.lrib.logCause(torasu::WARN, "Failed to provide source for string-file.", res.takeInfoTag());
 
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+			return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
 		}
 
 		const auto& str = res.getResult()->getString();
