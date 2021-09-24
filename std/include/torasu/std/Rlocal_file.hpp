@@ -16,6 +16,7 @@ private:
 public:
 	explicit Rlocal_file(std::string path);
 	virtual ~Rlocal_file();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

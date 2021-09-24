@@ -101,7 +101,7 @@ LogEntry Dlog_entry::getEntry() {
 	return *entry;
 }
 
-std::string Dlog_entry::getIdent() const {
+Identifier Dlog_entry::getType() const {
 	return "T::DLOG_ENTRY";
 }
 

@@ -72,7 +72,7 @@ public:
 			if (loaded) {
 				parsedJson = makeJson();
 				if (parsedJson.value().is_object()) {
-					parsedJson.value()["ident"] = getIdent();
+					parsedJson.value()["ident"] = getType().str;
 				}
 			} else {
 				parse();
@@ -96,7 +96,7 @@ public:
 	explicit DPUniversal(std::string jsonStripped);
 	explicit DPUniversal(torasu::json jsonParsed);
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	DPUniversal* clone() const override;
 };
 

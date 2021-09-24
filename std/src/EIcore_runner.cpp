@@ -945,7 +945,7 @@ void EIcore_runner_object::treestat(LogInstruction li, bool lock) {
 
 		lockStack.emplace(currObj->subTasksLock);
 
-		std::string name = currObj->rnd != nullptr ? currObj->rnd->getType() : "(NULL)";
+		std::string name = currObj->rnd != nullptr ? currObj->rnd->getType().str : "(NULL)";
 		std::string stateStr;
 		switch(currObj->status) {
 		case torasu::tstd::EIcore_runner_object_status::RUNNING: {
@@ -1021,7 +1021,7 @@ void EIcore_runner_object_logger::log(LogEntry* entry) {
 		if (!registered) {
 			ownLogId = logger->fetchSubId();
 			auto* regEntry =
-				new LogGroupStart(obj->rnd->getType());
+				new LogGroupStart(obj->rnd->getType().str);
 			regEntry->groupStack.push_back(ownLogId);
 			logger->log(regEntry);
 			registered = true;
@@ -1238,7 +1238,7 @@ EIcore_runner_elemhandler::ReadyStateHandle::~ReadyStateHandle() {
 	lrs->unregUse();
 }
 
-EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const char* operation, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
+EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(torasu::Identifier operation, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
 	std::unique_lock listLck(readyStatesLock);
 
 	// Look for existing state in list
@@ -1267,8 +1267,8 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 		std::unique_lock<std::mutex>* listLock;
 		EIcore_runner_elemhandler* elemHandler;
 	public:
-		ReadyHandler(const char* operation, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
-			: ReadyInstruction(std::vector<std::string>({std::string(operation)}), rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
+		ReadyHandler(Identifier operation, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
+			: ReadyInstruction(std::vector<Identifier>({operation}), rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
 
 		void setState(ReadyState* state) override {
 			if (state != nullptr) {

@@ -21,6 +21,7 @@ public:
 	 */
 	explicit Rstring_file(torasu::tools::RenderableSlot src);
 	~Rstring_file();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

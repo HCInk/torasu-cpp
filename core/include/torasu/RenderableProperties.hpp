@@ -1,6 +1,7 @@
 #ifndef CORE_INCLUDE_TORASU_RENDERABLEPROPERTIES_HPP_
 #define CORE_INCLUDE_TORASU_RENDERABLEPROPERTIES_HPP_
 
+#include <cstring>
 #include <string>
 #include <map>
 
@@ -14,9 +15,11 @@ namespace torasu {
 
 typedef std::map<std::string, DataResourceHolder> RenderableProperties;
 
-inline bool isPipelineKeyPropertyKey(const std::string& pipelineKey) {
-	return pipelineKey.length() > TORASU_PROPERTY_PREFIX_LEN &&
-		   pipelineKey.substr(0, TORASU_PROPERTY_PREFIX_LEN).find(TORASU_PROPERTY_PREFIX, 0) == 0;
+inline bool isPipelineKeyPropertyKey(torasu::Identifier pipelineKey) {
+	for (size_t i = 0; i < TORASU_PROPERTY_PREFIX_LEN; i++) {
+		if (pipelineKey.str[i] != TORASU_PROPERTY_PREFIX[i]) return false;
+	}
+	return true;
 }
 
 } // namespace torasu

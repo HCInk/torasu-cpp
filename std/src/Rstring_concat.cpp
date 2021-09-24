@@ -12,15 +12,18 @@ namespace torasu::tstd {
 const char* Rstring_concat::RCTX_KEY_VALUE = "STD::STR_CONCAT_PARAM";
 
 Rstring_concat::Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools::RenderableSlot gen)
-	: SimpleRenderable("STD::RSTR_CONCAT", false, true), listRnd(list), genRnd(gen) {
+	: SimpleRenderable(false, true), listRnd(list), genRnd(gen) {
 }
 
 Rstring_concat::~Rstring_concat() {}
 
+Identifier Rstring_concat::getType() {
+	return "STD::RSTR_CONCAT";
+}
+
 torasu::ResultSegment* Rstring_concat::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
-	std::string pipeline = ri->getResultSettings()->getPipeline();
-	if (pipeline == TORASU_STD_PL_STRING) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 
 		torasu::ResultSettings stringType(TORASU_STD_PL_STRING, nullptr);
 		torasu::ResultSettings mapType(TORASU_STD_PL_MAP, nullptr);

@@ -11,10 +11,7 @@
 
 namespace torasu::tstd {
 
-class Rmod_rctx : public torasu::Renderable,
-	public torasu::tools::NamedIdentElement,
-	public torasu::tools::SimpleDataElement,
-	public torasu::tools::ReadylessElement {
+class Rmod_rctx : public torasu::tools::SimpleRenderable {
 private:
 	Dstring_pair data;
 	tools::ManagedRenderableSlot mainRnd;
@@ -23,6 +20,7 @@ private:
 public:
 	Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline);
 	~Rmod_rctx();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

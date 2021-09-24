@@ -25,7 +25,7 @@ torasu::json Dmix_pipelines_conf::makeJson() {
 	return json;
 }
 
-std::string Dmix_pipelines_conf::getIdent() const {
+torasu::Identifier Dmix_pipelines_conf::getType() const {
 	return "STD::DMIX_PIPELINES_CONF";
 }
 
@@ -124,7 +124,7 @@ Dmix_pipelines_conf::~Dmix_pipelines_conf() {
 //
 
 Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes)
-	: SimpleRenderable("STD::RMIX_PIPELINES", true, true), defRnd(def) {
+	: SimpleRenderable(true, true), defRnd(def) {
 
 	std::vector<Dmix_pipelines_conf::PipelineMappingUnmanaged> entries;
 	size_t id = 0;
@@ -142,11 +142,15 @@ Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializ
 
 Rmix_pipelines::~Rmix_pipelines() {}
 
+Identifier Rmix_pipelines::getType() {
+	return "STD::RMIX_PIPELINES";
+}
+
 torasu::ResultSegment* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
-	std::string pipeline = ri->getResultSettings()->getPipeline();
+	auto pipeline = ri->getResultSettings()->getPipeline();
 
-	auto found = conf.mappingsByPl.find(pipeline);
+	auto found = conf.mappingsByPl.find(pipeline.str);
 
 	Renderable* rnd;
 

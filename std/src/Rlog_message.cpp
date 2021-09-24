@@ -3,18 +3,20 @@
 namespace torasu::tstd {
 
 Rlog_message::Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src)
-	: NamedIdentElement("STD::RLOG_MESSAGE"),
-	  SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  message(message),
 	  srcRnd(src) {}
 
 Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src)
-	: NamedIdentElement("STD::RLOG_MESSAGE"),
-	  SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  message(level, message),
 	  srcRnd(src) {}
 
 Rlog_message::~Rlog_message() {}
+
+Identifier Rlog_message::getType() {
+	return "STD::RLOG_MESSAGE";
+}
 
 ResultSegment* Rlog_message::render(RenderInstruction* ri) {
 

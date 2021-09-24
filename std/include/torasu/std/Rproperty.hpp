@@ -18,6 +18,7 @@ private:
 public:
 	Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline);
 	~Rproperty();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

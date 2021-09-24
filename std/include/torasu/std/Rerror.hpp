@@ -12,16 +12,14 @@
 
 namespace torasu::tstd {
 
-class Rerror : public torasu::tools::NamedIdentElement,
-	public torasu::tools::SimpleDataElement,
-	public torasu::tools::ReadylessElement,
-	public torasu::Renderable {
+class Rerror : public torasu::tools::SimpleRenderable {
 private:
 	torasu::tools::ManagedSlot<torasu::tstd::StringSlot> msgRnd;
 
 public:
 	explicit Rerror(torasu::tstd::StringSlot msg);
 	~Rerror();
+	torasu::Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

@@ -18,6 +18,7 @@ private:
 public:
 	explicit Rstring(std::string str);
 	~Rstring();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

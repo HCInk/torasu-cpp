@@ -6,7 +6,7 @@
 namespace torasu::tstd {
 
 Rfallback::Rfallback(std::vector<torasu::tools::RenderableSlot> slots)
-	: SimpleRenderable("STD::RFALLBACK", false, true) {
+	: SimpleRenderable(false, true) {
 
 	int i = 0;
 	for (auto& slot : slots) {
@@ -17,6 +17,10 @@ Rfallback::Rfallback(std::vector<torasu::tools::RenderableSlot> slots)
 }
 
 Rfallback::~Rfallback() {}
+
+Identifier Rfallback::getType() {
+	return "STD::RFALLBACK";
+}
 
 ResultSegment* Rfallback::render(RenderInstruction* ri) {
 

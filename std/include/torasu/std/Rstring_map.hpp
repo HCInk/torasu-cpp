@@ -26,6 +26,7 @@ private:
 public:
 	explicit Rstring_map(std::initializer_list<MapPair> mapping);
 	~Rstring_map();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

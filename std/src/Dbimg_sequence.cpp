@@ -30,7 +30,7 @@ std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& Dbimg_sequence::
 	return frames;
 }
 
-std::string Dbimg_sequence::getIdent() const {
+torasu::Identifier Dbimg_sequence::getType() const {
 	return "STD::DBIMG_SEQUENCE";
 }
 

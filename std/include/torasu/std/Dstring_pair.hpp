@@ -24,7 +24,7 @@ public:
 	Dstring_pair(std::string a, std::string b);
 	~Dstring_pair();
 
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dstring_pair* clone() const override;
 
 	std::string getA();

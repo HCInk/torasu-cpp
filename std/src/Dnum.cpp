@@ -32,8 +32,8 @@ double Dnum::getNum() {
 	return num;
 }
 
-std::string Dnum::getIdent() const {
-	return ident;
+torasu::Identifier Dnum::getType() const {
+	return "STD::DNUM";
 }
 
 void Dnum::load() {

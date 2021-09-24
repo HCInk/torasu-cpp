@@ -16,10 +16,12 @@ using namespace std;
 namespace torasu::tstd {
 
 Rmultiply::Rmultiply(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RMULTIPLY"), false, true), a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
-Rmultiply::~Rmultiply() {
+Rmultiply::~Rmultiply() {}
 
+Identifier Rmultiply::getType() {
+	return "STD::RMULTIPLY";
 }
 
 ResultSegment* Rmultiply::render(RenderInstruction* ri) {
@@ -27,9 +29,9 @@ ResultSegment* Rmultiply::render(RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 	auto& lrib = rh.lrib;
 
-	const char* selPipleine = ri->getResultSettings()->getPipeline();
+	auto selPipleine = ri->getResultSettings()->getPipeline();
 
-	if (strcmp(selPipleine, TORASU_STD_PL_NUM) == 0) {
+	if (selPipleine == TORASU_STD_PL_NUM) {
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
@@ -57,7 +59,7 @@ ResultSegment* Rmultiply::render(RenderInstruction* ri) {
 			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (strcmp(selPipleine, TORASU_STD_PL_VIS) == 0) {
+	} else if (selPipleine == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		{
 			auto* fmtSettings = ri->getResultSettings()->getFromat();

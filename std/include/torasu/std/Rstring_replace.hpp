@@ -20,6 +20,7 @@ private:
 public:
 	Rstring_replace(StringSlot src, StringSlot before, StringSlot after);
 	~Rstring_replace();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

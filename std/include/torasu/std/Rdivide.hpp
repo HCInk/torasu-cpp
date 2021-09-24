@@ -15,7 +15,6 @@ namespace torasu::tstd {
 
 class Rdivide : public tools::SimpleRenderable {
 private:
-	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
 	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
 
 	tools::ManagedSlot<NumSlot> a;
@@ -24,6 +23,7 @@ private:
 public:
 	Rdivide(NumSlot a, NumSlot b);
 	~Rdivide();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

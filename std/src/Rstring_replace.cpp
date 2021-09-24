@@ -24,15 +24,18 @@ inline void findAndReplaceAll(std::string* data, const std::string& toSearch, co
 namespace torasu::tstd {
 
 Rstring_replace::Rstring_replace(StringSlot src, StringSlot before, StringSlot after)
-	: SimpleRenderable("STD::RSTRING_REPLACE", false, true),
+	: SimpleRenderable(false, true),
 	  srcRnd(src), beforeRnd(before), afterRnd(after) {}
 
 
 Rstring_replace::~Rstring_replace() {}
 
+Identifier Rstring_replace::getType() {
+	return "STD::RSTRING_REPLACE";
+}
+
 torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
-	if (pipeline == TORASU_STD_PL_STRING) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 
 		tools::RenderHelper rh(ri);
 

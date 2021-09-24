@@ -4,15 +4,6 @@
 
 namespace torasu::tools {
 
-NamedIdentElement::NamedIdentElement(std::string typeIdent)
-	: typeIdent(typeIdent) {}
-
-NamedIdentElement::~NamedIdentElement() {}
-
-std::string NamedIdentElement::getType() {
-	return typeIdent;
-}
-
 SimpleDataElement::SimpleDataElement(bool acceptData, bool acceptElements)
 	: acceptData(acceptData), acceptElements(acceptElements) {}
 
@@ -77,18 +68,18 @@ void SimpleDataElement::setData(DataResource* data,
 
 }
 
-NoneReadyState::NoneReadyState(const std::vector<std::string>& operations)
-	: operations(new std::vector<std::string>(operations)), rctxm(new RenderContextMask()) {}
+NoneReadyState::NoneReadyState(const std::vector<Identifier>& operations)
+	: operations(new std::vector<Identifier>(operations)), rctxm(new RenderContextMask()) {}
 
 NoneReadyState::NoneReadyState(const NoneReadyState& orig)
-	: operations(new std::vector<std::string>(*orig.operations)), rctxm(new RenderContextMask()) {}
+	: operations(new std::vector<Identifier>(*orig.operations)), rctxm(new RenderContextMask()) {}
 
 NoneReadyState::~NoneReadyState() {
 	delete operations;
 	delete rctxm;
 }
 
-const std::vector<std::string>* NoneReadyState::getOperations() const {
+const std::vector<Identifier>* NoneReadyState::getOperations() const {
 	return operations;
 }
 
@@ -111,9 +102,8 @@ void ReadylessElement::ready(ReadyInstruction* ri) {
 	ri->setState(nullptr);
 }
 
-SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
-	: NamedIdentElement(typeIdent),
-	  SimpleDataElement(acceptData, acceptElements) {}
+SimpleRenderable::SimpleRenderable(bool acceptData, bool acceptElements)
+	: SimpleDataElement(acceptData, acceptElements) {}
 
 SimpleRenderable::~SimpleRenderable() {}
 

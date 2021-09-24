@@ -30,6 +30,7 @@ public:
 	 */
 	explicit Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools::RenderableSlot gen);
 	~Rstring_concat();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

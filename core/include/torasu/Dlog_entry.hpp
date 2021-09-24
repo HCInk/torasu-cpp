@@ -19,7 +19,7 @@ public:
 	~Dlog_entry();
 	LogEntry getEntry();
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	void load() override;
 	torasu::json makeJson() override;
 

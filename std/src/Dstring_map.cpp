@@ -52,7 +52,7 @@ torasu::json Dstring_map::makeJson() {
 	return json;
 }
 
-std::string Dstring_map::getIdent() const {
+torasu::Identifier Dstring_map::getType() const {
 	return "STD::STR_MAP";
 }
 

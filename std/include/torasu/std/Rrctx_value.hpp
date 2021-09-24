@@ -17,6 +17,7 @@ private:
 public:
 	Rrctx_value(std::string valueKey, std::string pipelineName);
 	~Rrctx_value();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

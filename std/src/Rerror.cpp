@@ -8,10 +8,13 @@
 namespace torasu::tstd {
 
 Rerror::Rerror(torasu::tstd::StringSlot msg)
-	: NamedIdentElement("STD::RERROR"), SimpleDataElement(false, true), msgRnd(msg) {}
+	: SimpleRenderable(false, true), msgRnd(msg) {}
 
 Rerror::~Rerror() {}
 
+torasu::Identifier Rerror::getType() {
+	return "STD::RERROR";
+}
 
 torasu::ResultSegment* Rerror::render(torasu::RenderInstruction* ri) {
 	bool hasMsg = false;

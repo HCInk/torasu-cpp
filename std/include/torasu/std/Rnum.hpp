@@ -14,14 +14,13 @@ namespace torasu::tstd {
 
 class Rnum : public tools::SimpleRenderable {
 private:
-	std::string pipeline = std::string(TORASU_STD_PL_NUM);
-
 	DataResource* valdr;
 
 public:
 	explicit Rnum(double val);
 	explicit Rnum(Dnum val);
 	~Rnum();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

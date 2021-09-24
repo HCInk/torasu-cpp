@@ -14,17 +14,18 @@ using namespace std;
 namespace torasu::tstd {
 
 Rdivide::Rdivide(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RDIVIDE"), false, true),
-	  a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
-Rdivide::~Rdivide() {
+Rdivide::~Rdivide() {}
 
+Identifier Rdivide::getType() {
+	return "STD::RDIVIDE";
 }
 
 ResultSegment* Rdivide::render(RenderInstruction* ri) {
 
 	tools::RenderHelper rh(ri);
-	if (numPipeline == ri->getResultSettings()->getPipeline()) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
@@ -59,7 +60,7 @@ ResultSegment* Rdivide::render(RenderInstruction* ri) {
 			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
 		}
 
-	} else if (visPipeline == ri->getResultSettings()->getPipeline()) {
+	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		if ( !( ri->getResultSettings()->getFromat() != nullptr
 				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(ri->getResultSettings()->getFromat())) )) {

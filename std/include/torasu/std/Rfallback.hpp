@@ -18,6 +18,7 @@ private:
 public:
 	explicit Rfallback(std::vector<torasu::tools::RenderableSlot> slots);
 	~Rfallback();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

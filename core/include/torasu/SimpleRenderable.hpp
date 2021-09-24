@@ -11,27 +11,6 @@
 namespace torasu::tools {
 
 /**
- * Element that lets you declare a fixed type-ident
- * that will constantly be provided over Element#getType()
- *
- * @brief  Element with a fixed type-ident
- */
-class NamedIdentElement : public virtual Element {
-
-private:
-	std::string typeIdent;
-
-protected:
-	explicit NamedIdentElement(std::string typeIdent);
-
-public:
-	virtual ~NamedIdentElement();
-
-	// Auto-managed
-	std::string getType() override;
-};
-
-/**
  * Element that lets you remaps all methods of an Element
  * for setting Data / Elements to setData() and setElement().
  * It also provides sensible defaults/fallbacks for those.
@@ -64,13 +43,13 @@ public:
 
 class NoneReadyState : public ReadyState {
 private:
-	std::vector<std::string>* operations;
+	std::vector<Identifier>* operations;
 	RenderContextMask* rctxm;
 public:
-	explicit NoneReadyState(const std::vector<std::string>& operations);
+	explicit NoneReadyState(const std::vector<Identifier>& operations);
 	NoneReadyState(const NoneReadyState& orig);
 	~NoneReadyState();
-	const std::vector<std::string>* getOperations() const override;
+	const std::vector<Identifier>* getOperations() const override;
 	const RenderContextMask* getContextMask() const override;
 	size_t size() const override;
 	NoneReadyState* clone() const override;
@@ -94,13 +73,12 @@ public:
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
-class SimpleRenderable : public NamedIdentElement,
-	public SimpleDataElement,
+class SimpleRenderable : public SimpleDataElement,
 	public ReadylessElement,
 	public Renderable {
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements);
+	explicit SimpleRenderable(bool acceptData, bool acceptElements);
 
 public:
 	virtual ~SimpleRenderable();

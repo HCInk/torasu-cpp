@@ -14,15 +14,13 @@ namespace torasu::tstd {
 
 class Rsubtract : public tools::SimpleRenderable {
 private:
-	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
-	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
-
 	tools::ManagedSlot<NumSlot> a;
 	tools::ManagedSlot<NumSlot> b;
 
 public:
 	Rsubtract(NumSlot a, NumSlot b);
 	~Rsubtract();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

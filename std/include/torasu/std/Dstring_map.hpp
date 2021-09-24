@@ -29,7 +29,7 @@ public:
 	void set(const std::string& key, const std::string& value);
 	void erase(const std::string& key);
 
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dstring_map* clone() const override;
 
 };

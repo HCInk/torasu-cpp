@@ -13,16 +13,17 @@ using namespace std;
 
 namespace torasu::tstd {
 
-Rsin::Rsin(NumSlot val)
-	: SimpleRenderable(std::string("STD::RSIN"), false, true), valRnd(val) {}
+Rsin::Rsin(NumSlot val) : SimpleRenderable(false, true), valRnd(val) {}
 
-Rsin::~Rsin() {
+Rsin::~Rsin() {}
 
+Identifier Rsin::getType() {
+	return "STD::RSIN";
 }
 
 ResultSegment* Rsin::render(RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
-	if (strcmp(ri->getResultSettings()->getPipeline(), TORASU_STD_PL_NUM) == 0) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(valRnd, &resSetting));

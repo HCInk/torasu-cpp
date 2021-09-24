@@ -27,6 +27,7 @@ public:
 	 */
 	explicit Rmatrix(std::initializer_list<torasu::tstd::NumSlot> numbers, size_t height = 0);
 	virtual ~Rmatrix();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

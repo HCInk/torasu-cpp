@@ -20,6 +20,7 @@ private:
 public:
 	Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional=false);
 	~Rjson_prop();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

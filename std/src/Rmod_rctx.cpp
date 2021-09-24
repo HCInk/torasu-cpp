@@ -9,10 +9,14 @@ namespace torasu::tstd {
 //
 
 Rmod_rctx::Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline)
-	: NamedIdentElement("STD::RMOD_RCTX"), SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  data(rctxKey, valuePipeline), mainRnd(main), valueRnd(value) {}
 
 Rmod_rctx::~Rmod_rctx() {}
+
+Identifier Rmod_rctx::getType() {
+	return "STD::RMOD_RCTX";
+}
 
 torasu::ResultSegment* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);

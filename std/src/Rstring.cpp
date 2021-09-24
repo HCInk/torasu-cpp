@@ -8,7 +8,7 @@ namespace torasu::tstd {
 
 
 Rstring::Rstring(std::string str)
-	: SimpleRenderable("STD::RSTRING", true, false),
+	: SimpleRenderable(true, false),
 	  str(new torasu::tstd::Dstring(str)) {}
 
 
@@ -16,9 +16,12 @@ Rstring::~Rstring() {
 	delete str;
 }
 
+Identifier Rstring::getType() {
+	return "STD::RSTRING";
+}
+
 torasu::ResultSegment* Rstring::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
-	if (pipeline == TORASU_STD_PL_STRING) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, str, false, new RenderContextMask());
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());

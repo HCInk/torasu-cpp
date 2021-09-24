@@ -13,16 +13,20 @@ using namespace std;
 namespace torasu::tstd {
 
 Radd::Radd(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RADD"), false, true), a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
 Radd::~Radd() {
 
 }
 
+Identifier Radd::getType() {
+	return "STD::RADD";
+}
+
 ResultSegment* Radd::render(RenderInstruction* ri) {
 
 	tools::RenderHelper rh(ri);
-	if (numPipeline == ri->getResultSettings()->getPipeline()) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
@@ -51,7 +55,7 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (visPipeline == ri->getResultSettings()->getPipeline()) {
+	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		{
 			auto* fmtSettings = ri->getResultSettings()->getFromat();

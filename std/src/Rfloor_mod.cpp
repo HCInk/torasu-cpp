@@ -10,15 +10,18 @@
 namespace torasu::tstd {
 
 Rfloor_mod::Rfloor_mod(NumSlot val, NumSlot fac)
-	: SimpleRenderable("STD::RFLOOR_MOD", false, true),
-	  valRnd(val), facRnd(fac) {}
+	: SimpleRenderable(false, true), valRnd(val), facRnd(fac) {}
 
 
 Rfloor_mod::~Rfloor_mod() {}
 
+Identifier Rfloor_mod::getType() {
+	return "STD::RFLOOR_MOD";
+}
+
 torasu::ResultSegment* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
-	if (strcmp(TORASU_STD_PL_NUM, ri->getResultSettings()->getPipeline()) == 0) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 

@@ -21,6 +21,7 @@ protected:
 public:
 	Rboilerplate(Dboilerplate* data, Renderable* exampleRnd);
 	~Rboilerplate();
+	Identifier getType() override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

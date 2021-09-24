@@ -14,7 +14,7 @@ Dstring_pair::Dstring_pair(std::string a, std::string b)
 
 Dstring_pair::~Dstring_pair() {}
 
-std::string Dstring_pair::getIdent() const {
+torasu::Identifier Dstring_pair::getType() const {
 	return "STD::DSTRING_PAIR";
 }
 

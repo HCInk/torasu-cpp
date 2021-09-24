@@ -14,8 +14,6 @@ namespace torasu::tstd {
 
 class Dfile : public DataResource {
 private:
-	std::string ident = std::string("STD::DFILE");
-
 	uint8_t* data;
 	uint64_t size;
 
@@ -24,7 +22,7 @@ public:
 	~Dfile();
 	Dfile(const Dfile&);
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	DataDump* dumpResource() override;
 	Dfile* clone() const override;
 

@@ -11,16 +11,19 @@
 namespace torasu::texample {
 
 Rboilerplate::Rboilerplate(Dboilerplate* data, Renderable* exampleRnd)
-	: SimpleRenderable("EXAMPLE::RBOILERPLATE", true, true),
-	  data(data), exampleRnd(exampleRnd) {}
+	: SimpleRenderable(true, true), data(data), exampleRnd(exampleRnd) {}
 
 
 Rboilerplate::~Rboilerplate() {
 	delete data;
 }
 
+Identifier Rboilerplate::getType() {
+	return "EXAMPLE::RBOILERPLATE";
+}
+
 torasu::ResultSegment* Rboilerplate::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
+	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_NUM) {
 		tools::RenderHelper rh(ri);
 

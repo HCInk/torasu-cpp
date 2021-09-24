@@ -14,15 +14,13 @@ namespace torasu::tstd {
 
 class Radd : public tools::SimpleRenderable {
 private:
-	const std::string numPipeline = std::string(TORASU_STD_PL_NUM);
-	const std::string visPipeline = std::string(TORASU_STD_PL_VIS);
-
 	tools::ManagedSlot<NumSlot> a;
 	tools::ManagedSlot<NumSlot> b;
 
 public:
 	Radd(NumSlot a, NumSlot b);
 	~Radd();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

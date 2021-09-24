@@ -53,15 +53,19 @@ inline std::string jsonToStr(const torasu::json& json) {
 namespace torasu::tstd {
 
 Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional)
-	: SimpleRenderable("STD::RJSON_PROP", true, true),
+	: SimpleRenderable(true, true),
 	  config(new torasu::tstd::Dstring_pair(path, optional ? "opt" : "def")),
 	  jsonRnd(jsonRnd) {}
 
 
 Rjson_prop::~Rjson_prop() {}
 
+Identifier Rjson_prop::getType() {
+	return "STD::RJSON_PROP";
+}
+
 torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
+	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM || pipeline == TORASU_STD_PL_MAP) {
 
 		tools::RenderHelper rh(ri);

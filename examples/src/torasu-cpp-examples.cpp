@@ -61,7 +61,7 @@ void simpleDpTest() {
 
 	DPUniversal dpu(dpJson);
 
-	std::cout << "ident: \"" << dpu.getIdent() << "\"" << std::endl;
+	std::cout << "ident: \"" << std::string(dpu.getType().str) << "\"" << std::endl;
 
 	DataDump* dump = dpu.dumpResource();
 

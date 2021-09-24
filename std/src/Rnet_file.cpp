@@ -32,10 +32,14 @@ inline std::vector<std::string> split(std::string base, std::string delimiter) {
 namespace torasu::tstd {
 
 Rnet_file::Rnet_file(StringSlot url, StringSlot headers)
-	: SimpleRenderable("STD::RNET_FILE", false, true),
+	: SimpleRenderable(false, true),
 	  urlRnd(url),  headersRnd(headers) {}
 
 Rnet_file::~Rnet_file() {}
+
+Identifier Rnet_file::getType() {
+	return "STD::RNET_FILE";
+}
 
 size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* s) {
 	size_t new_len = size*nmemb;
@@ -47,7 +51,7 @@ size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* 
 
 ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
-	if (pipeline == ri->getResultSettings()->getPipeline()) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_FILE) {
 
 		// Getting url
 

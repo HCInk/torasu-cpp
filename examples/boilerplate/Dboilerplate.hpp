@@ -24,7 +24,7 @@ public:
 	Dboilerplate(std::string str, double num);
 	~Dboilerplate();
 
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dboilerplate* clone() const override;
 
 	std::string getStr();

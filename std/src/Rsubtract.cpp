@@ -14,17 +14,19 @@ using namespace std;
 namespace torasu::tstd {
 
 Rsubtract::Rsubtract(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true), a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
-Rsubtract::~Rsubtract() {
+Rsubtract::~Rsubtract() {}
 
+Identifier Rsubtract::getType() {
+	return "STD::RSUBTRACT";
 }
 
 ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 	auto* resSettings = ri->getResultSettings();
-	const char* pipeline = resSettings->getPipeline();
-	if (numPipeline.compare(pipeline) == 0) {
+	auto pipeline = resSettings->getPipeline();
+	if (pipeline == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
 		auto rendA = rh.enqueueRender(a, &rs);
@@ -59,7 +61,7 @@ ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 			return rh.buildResult(errRes, ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (visPipeline.compare(pipeline) == 0) {
+	} else if (pipeline == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		if ( !( resSettings->getFromat() != NULL
 				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getFromat())) )) {

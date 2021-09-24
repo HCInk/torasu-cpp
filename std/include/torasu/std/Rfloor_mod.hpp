@@ -19,6 +19,7 @@ private:
 public:
 	Rfloor_mod(NumSlot val, NumSlot fac);
 	~Rfloor_mod();
+	Identifier getType() override;
 
 	ResultSegment* render(RenderInstruction* ri) override;
 

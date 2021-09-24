@@ -9,7 +9,7 @@
 namespace torasu::tstd {
 
 Rmatrix::Rmatrix(std::initializer_list<torasu::tstd::NumSlot> numbers, size_t height)
-	: SimpleRenderable("STD::RMATRIX", true, true), height(height) {
+	: SimpleRenderable(true, true), height(height) {
 
 	size_t i = 0;
 	for (torasu::tstd::NumSlot num : numbers) {
@@ -19,6 +19,10 @@ Rmatrix::Rmatrix(std::initializer_list<torasu::tstd::NumSlot> numbers, size_t he
 }
 
 Rmatrix::~Rmatrix() {}
+
+Identifier Rmatrix::getType() {
+	return "STD::RMATRIX";
+}
 
 DataResource* Rmatrix::getData() {
 	return &height;
@@ -66,7 +70,7 @@ void Rmatrix::setElement(std::string key, Element* elem) {
 
 ResultSegment* Rmatrix::render(RenderInstruction* ri) {
 
-	if (strcmp(ri->getResultSettings()->getPipeline(), TORASU_STD_PL_VEC) == 0) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VEC) {
 
 		torasu::tools::RenderHelper rh(ri);
 

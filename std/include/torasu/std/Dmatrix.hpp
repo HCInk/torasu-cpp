@@ -62,7 +62,7 @@ public:
 	Dmatrix cofactor() const;
 	Dmatrix inverse() const;
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	Dmatrix* clone() const override;
 };
 

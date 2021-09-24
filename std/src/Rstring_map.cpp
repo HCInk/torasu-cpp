@@ -11,7 +11,7 @@ namespace torasu::tstd {
 
 
 Rstring_map::Rstring_map(std::initializer_list<MapPair> mapping)
-	: SimpleRenderable("STD::RSTR_MAP", false, true) {
+	: SimpleRenderable(false, true) {
 	for (auto entry : mapping) {
 		map[entry.key] = entry.slot;
 	}
@@ -19,9 +19,12 @@ Rstring_map::Rstring_map(std::initializer_list<MapPair> mapping)
 
 Rstring_map::~Rstring_map() {}
 
+Identifier Rstring_map::getType() {
+	return "STD::RSTR_MAP";
+}
+
 torasu::ResultSegment* Rstring_map::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
-	if (pipeline == TORASU_STD_PL_MAP) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_MAP) {
 		torasu::tools::RenderHelper rh(ri);
 		size_t resCount = map.size();
 		std::vector<std::string> keyArr(resCount);

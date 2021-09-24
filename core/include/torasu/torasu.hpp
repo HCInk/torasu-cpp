@@ -8,6 +8,7 @@
 #define CORE_INCLUDE_TORASU_TORASU_HPP_
 
 #include <string>
+#include <cstring>
 #include <map>
 #include <set>
 #include <vector>
@@ -34,6 +35,7 @@ namespace torasu {
 typedef std::function<void(void)> Callback;
 
 // DATA
+class Identifier;
 class DataDump;
 class DataResource;
 class DataResourceMask;
@@ -82,6 +84,36 @@ class ReadyState;
 //
 // DATA
 //
+
+struct Identifier {
+	const char* str;
+
+	/* implicit */ inline Identifier(const char* str) : str(str) {}
+
+	inline bool operator==(const char* other) {
+		return strcmp(str, other) == 0;
+	}
+
+	inline bool operator==(Identifier other) {
+		return strcmp(str, other.str) == 0;
+	}
+};
+
+static inline std::string operator+(std::string left, Identifier right) {
+	return left + right.str;
+}
+
+static inline std::string operator+(Identifier left, std::string right) {
+	return left.str + right;
+}
+
+static inline std::string operator+(const char* left, Identifier right) {
+	return std::string(left) + right.str;
+}
+
+static inline std::string operator+(Identifier left, const char* right) {
+	return left.str + std::string(right);
+}
 
 union DDDataPointer {
 	unsigned char* b;
@@ -137,14 +169,14 @@ public:
 	DataResource() {}
 	virtual ~DataResource() {}
 
-	virtual std::string getIdent() const = 0;
+	virtual Identifier getType() const = 0;
 	virtual DataDump* dumpResource() = 0;
 	virtual DataResource* clone() const = 0;
 
 	virtual CompareResult compare(const DataResource* other) const {
 		if (this == other) return EQUAL;
 
-		if (this->getIdent() == other->getIdent()) {
+		if (this->getType() == other->getType()) {
 			return (other > this) ? GREATER : LESS;
 		} else {
 			return TYPE_ERR;
@@ -191,7 +223,7 @@ public:
 	DataResourceMaskUnknown() {}
 	~DataResourceMaskUnknown() {}
 
-	std::string getIdent() const override {
+	Identifier getType() const override {
 		return "T::DRMU";
 	}
 
@@ -225,7 +257,7 @@ public:
 		delete dr;
 	}
 
-	std::string getIdent() const override {
+	Identifier getType() const override {
 		return "T::DRMS";
 	}
 
@@ -724,7 +756,7 @@ public:
 
 	virtual void ready(ReadyInstruction* ri) = 0;
 
-	virtual std::string getType() = 0;
+	virtual Identifier getType() = 0;
 	virtual DataResource* getData() = 0;
 	virtual ElementMap getElements() = 0;
 
@@ -784,15 +816,15 @@ public:
 
 class ResultSettings {
 private:
-	const char* pipeline;
+	Identifier pipeline;
 	ResultFormatSettings* format;
 public:
-	inline ResultSettings(const char* pipeline, ResultFormatSettings* format)
+	inline ResultSettings(Identifier pipeline, ResultFormatSettings* format)
 		: pipeline(pipeline), format(format) {}
 
 	~ResultSettings() {}
 
-	inline const char* getPipeline() const {
+	inline Identifier getPipeline() const {
 		return pipeline;
 	}
 
@@ -811,8 +843,8 @@ public:
 		: ident(TORASU_FORMAT_PREFIX + dataType) {}
 	virtual ~ResultFormatSettings() {}
 
-	std::string getIdent() const override {
-		return ident;
+	Identifier getType() const override {
+		return ident.c_str();
 	}
 
 	virtual std::set<std::string> const getTags() {
@@ -1178,7 +1210,7 @@ public:
 class ReadyInstruction {
 public:
 	/** @brief  The operations/segemnts to be made ready */
-	const std::vector<std::string> ops;
+	const std::vector<Identifier> ops;
 	/** @brief  The target-RenderContext to be made ready towards */
 	/* TODO make const */ RenderContext* const rctx;
 	/** @brief  The ExecutionInterface to be used run executions required to made ready */
@@ -1197,7 +1229,7 @@ public:
 	 */
 	virtual void setState(ReadyState* state) = 0;
 
-	ReadyInstruction(std::vector<std::string> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
+	ReadyInstruction(std::vector<Identifier> ops, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li)
 		: ops(ops), rctx(rctx), ei(ei), li(li) {}
 	virtual ~ReadyInstruction() {}
 
@@ -1214,7 +1246,7 @@ public:
 
 	/** @brief The operations this state is valid for
 	 * (Pointer is valid as long the object won't be modified/freed) */
-	virtual const std::vector<std::string>* getOperations() const = 0;
+	virtual const std::vector<Identifier>* getOperations() const = 0;
 
 	/** @brief The mask of RenderContexts this state is valid for
 	 * (Pointer is valid as long the object won't be modified/freed) */

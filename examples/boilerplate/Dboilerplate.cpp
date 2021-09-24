@@ -12,7 +12,7 @@ Dboilerplate::Dboilerplate(std::string str, double num)
 
 Dboilerplate::~Dboilerplate() {}
 
-std::string Dboilerplate::getIdent() const {
+torasu::Identifier Dboilerplate::getType() const {
 	return "EXAMPLE::DBOILERPLATE";
 }
 

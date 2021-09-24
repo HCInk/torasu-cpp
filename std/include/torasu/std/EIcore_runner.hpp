@@ -352,7 +352,7 @@ public:
 		friend LoadedReadyState;
 	};
 
-	ReadyStateHandle* ready(const char* operation, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li);
+	ReadyStateHandle* ready(torasu::Identifier operation, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li);
 
 	void lock(uint64_t lockId);
 	void unlock(uint64_t lockId);

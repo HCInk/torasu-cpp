@@ -20,6 +20,7 @@ private:
 public:
 	Rmultiply(NumSlot a, NumSlot b);
 	~Rmultiply() override;
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 

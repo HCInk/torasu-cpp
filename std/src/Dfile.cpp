@@ -25,8 +25,8 @@ Dfile::Dfile(const Dfile& original)
 	std::copy(original.data, original.data+size, data);
 }
 
-std::string Dfile::getIdent() const {
-	return ident;
+Identifier Dfile::getType() const {
+	return "STD::DFILE";
 }
 
 DataDump* Dfile::dumpResource() {

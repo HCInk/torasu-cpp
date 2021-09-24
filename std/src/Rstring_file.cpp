@@ -11,13 +11,16 @@
 namespace torasu::tstd {
 
 Rstring_file::Rstring_file(torasu::tools::RenderableSlot src)
-	: SimpleRenderable("STD::RSTR_FILE", false, true), srcRnd(src) {
-}
+	: SimpleRenderable(false, true), srcRnd(src) {}
 
 Rstring_file::~Rstring_file() {}
 
+Identifier Rstring_file::getType() {
+	return "STD::RSTR_FILE";
+}
+
 torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
-	std::string pipeline = ri->getResultSettings()->getPipeline();
+	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_FILE) {
 		tools::RenderHelper rh(ri);
 

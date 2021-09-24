@@ -18,6 +18,7 @@ private:
 public:
 	explicit Rsin(NumSlot val);
 	~Rsin();
+	Identifier getType() override;
 
 	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
