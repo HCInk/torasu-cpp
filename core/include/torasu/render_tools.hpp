@@ -32,6 +32,7 @@ public:
 	ExecutionInterface* const ei;
 	LogInstruction li;
 	RenderContext* const rctx;
+	ResultSettings* const rs = nullptr;
 private:
 	RenderContextMask* resMask;
 public:
@@ -39,7 +40,7 @@ public:
 
 	explicit RenderHelper(RenderInstruction* ri);
 	explicit RenderHelper(ReadyInstruction* ri);
-	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx);
+	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx, ResultSettings* rs = nullptr);
 	~RenderHelper();
 
 	/** @brief  Will collect another rctx-mask into the result-mask
@@ -108,6 +109,52 @@ public:
 			lrib.logCause(torasu::WARN, message, res.takeInfoTag());
 		}
 	}
+
+	//
+	// ResultSettings-specific tools
+	//
+
+	/**
+	 * @brief  Check if given pipeline matches the requested pipeline
+	 * @note   Only use when ResultSettings are provided
+	 * @param  match: The pipeline to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool matchPipeline(torasu::Identifier match) const {
+		return rs->getPipeline() == match;
+	}
+
+	/**
+	 * @brief  Check if given pipeline is a property
+	 * @note   Only use when ResultSettings are provided
+	 * @param  match: The property (without property-prefix) to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool isProperty() const {
+		return torasu::isPipelineKeyPropertyKey(rs->getPipeline());
+	}
+
+	/**
+	 * @brief  Check if given pipeline matches the requested property
+	 * @note   Only use when ResultSettings are provided and isProperty() returns true
+	 * @param  match: The property (without property-prefix) to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool matchProperty(torasu::Identifier match) const {
+		return match == (rs->getPipeline().str+TORASU_PROPERTY_PREFIX_LEN);
+	}
+
+	/**
+	 * @brief  Get/cast provided format
+	 * @note   Only use when ResultSettings are provided
+	 * @retval The casted format, if cast was successful / nullptr, If no format has been provided or the format is not matching
+	 */
+	template<class T> inline const T* getFormat() const {
+		const auto* fmt = rs->getFromat();
+		if (fmt == nullptr) return nullptr;
+		return dynamic_cast<T*>(fmt);
+	}
+
 };
 
 
