@@ -18,7 +18,7 @@ public:
 	virtual ~Rlocal_file();
 	Identifier getType() override;
 
-	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

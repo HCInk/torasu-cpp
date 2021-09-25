@@ -22,7 +22,7 @@ Identifier Rboilerplate::getType() {
 	return "EXAMPLE::RBOILERPLATE";
 }
 
-torasu::ResultSegment* Rboilerplate::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rboilerplate::render(torasu::RenderInstruction* ri) {
 	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_NUM) {
 		tools::RenderHelper rh(ri);
@@ -31,7 +31,7 @@ torasu::ResultSegment* Rboilerplate::render(torasu::RenderInstruction* ri) {
 
 		auto renderId = rh.enqueueRender(exampleRnd, &rs);
 
-		std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
+		std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
 
 		auto fetchedRes = rh.evalResult<tstd::Dnum>(rndRes.get());
 
@@ -43,9 +43,9 @@ torasu::ResultSegment* Rboilerplate::render(torasu::RenderInstruction* ri) {
 
 		auto* result = new torasu::tstd::Dnum(num);
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, result, true);
+		return new torasu::RenderResult(torasu::RenderResultStatus_OK, result, true);
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

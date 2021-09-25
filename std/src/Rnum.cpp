@@ -38,12 +38,12 @@ void Rnum::setData(DataResource* data) {
 	}
 }
 
-ResultSegment* Rnum::render(RenderInstruction* ri) {
+RenderResult* Rnum::render(RenderInstruction* ri) {
 
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
-		return new ResultSegment(ResultSegmentStatus_OK, valdr, false, new RenderContextMask());
+		return new RenderResult(RenderResultStatus_OK, valdr, false, new RenderContextMask());
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT, new RenderContextMask());
 	}
 
 }

@@ -107,7 +107,7 @@ void simpleRenderExample1() {
 
 	RenderContext rctx;
 
-	ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0));
+	RenderResult* rr = ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0));
 
 	// Finding results
 

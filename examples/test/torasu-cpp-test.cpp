@@ -49,19 +49,19 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(&rnum, &rctx, &rs, li, 0));
+		RenderResult* rr = ei->fetchRenderResult(ei->enqueueRender(&rnum, &rctx, &rs, li, 0));
 
 		// Finding results
 
-		CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+		CHECK( rr->getStatus() == RenderResultStatus::RenderResultStatus_OK );
 		
-		if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+		if (rr->getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 				
 			tools::CastedRenderSegmentResult<tstd::Dnum> result(rr);
 
-			CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+			CHECK( result.getStatus() == RenderResultStatus::RenderResultStatus_OK );
 			
-			if (result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+			if (result.getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 				CHECK( result.getResult()->getNum() == 1.1 );
 			}
 			
@@ -98,19 +98,19 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0)));
+		std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0)));
 
 		// Finding results
 
-		CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+		CHECK( rr->getStatus() == RenderResultStatus::RenderResultStatus_OK );
 		
-		if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+		if (rr->getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 				
 			tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
-			CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+			CHECK( result.getStatus() == RenderResultStatus::RenderResultStatus_OK );
 			
-			if (result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+			if (result.getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 				CHECK( result.getResult()->getNum() == 11.1 );
 			}
 			
@@ -153,20 +153,20 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 		
 
 		for (size_t rn = 0; rn < perBurst; rn++) {
-			std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(rids[rn]));
+			std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rids[rn]));
 
 
 			// Finding results
 
-			CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+			CHECK( rr->getStatus() == RenderResultStatus::RenderResultStatus_OK );
 			
-			if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+			if (rr->getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 					
 				tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
-				CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+				CHECK( result.getStatus() == RenderResultStatus::RenderResultStatus_OK );
 				
-				if (result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+				if (result.getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 					CHECK( result.getResult()->getNum() == 11.1 );
 				}
 				
@@ -208,19 +208,19 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 			
 
 			for (size_t rn = 0; rn < perBurst; rn++) {
-				std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(rids[rn]));
+				std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rids[rn]));
 
 				// Finding results
 
-				CHECK( rr->getStatus() == torasu::ResultSegmentStatus_OK );
+				CHECK( rr->getStatus() == torasu::RenderResultStatus_OK );
 				
-				if (rr->getStatus() == torasu::ResultSegmentStatus_OK) {
+				if (rr->getStatus() == torasu::RenderResultStatus_OK) {
 						
 					tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
-					CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
+					CHECK( result.getStatus() == RenderResultStatus::RenderResultStatus_OK );
 					
-					if (result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
+					if (result.getStatus() == RenderResultStatus::RenderResultStatus_OK) {
 						CHECK( result.getResult()->getNum() == 11.1 );
 					}
 					
@@ -447,7 +447,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == RenderResultStatus::RenderResultStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 10);
 
@@ -464,7 +464,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == RenderResultStatus::RenderResultStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 3);
 
@@ -480,7 +480,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
+		CHECK(srr.rStat == RenderResultStatus::RenderResultStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 10);
 

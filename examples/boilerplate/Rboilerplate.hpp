@@ -16,7 +16,7 @@ private:
 	Renderable* exampleRnd;
 
 protected:
-	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 public:
 	Rboilerplate(Dboilerplate* data, Renderable* exampleRnd);

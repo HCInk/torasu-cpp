@@ -16,14 +16,14 @@
 namespace torasu::tstd {
 
 template<class T> struct SimpleResult {
-	std::shared_ptr<ResultSegment> rr;
-	torasu::ResultSegmentStatus rStat;
+	std::shared_ptr<RenderResult> rr;
+	torasu::RenderResultStatus rStat;
 	torasu::tools::CastedRenderSegmentResult<T> rs;
 	T* result;
 
 	bool check() {
 		return result != nullptr &&
-			   rStat == torasu::ResultSegmentStatus::ResultSegmentStatus_OK;
+			   rStat == torasu::RenderResultStatus::RenderResultStatus_OK;
 	}
 
 	std::string getInfo() {
@@ -64,7 +64,7 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 	}
 
 	torasu::ResultSettings rs(pl.c_str(), format);
-	ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, logInstr, 0));
+	RenderResult* rr = ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, logInstr, 0));
 
 	// Finding results
 	torasu::tools::LogInfoRefBuilder lrib(logInstr);
@@ -73,7 +73,7 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 	// Close refs to logger if logger has been created here
 	if (ownLogger) rr->closeRefs();
 
-	return {std::shared_ptr<ResultSegment>(rr), rr->getStatus(), found, found.getResult()};
+	return {std::shared_ptr<RenderResult>(rr), rr->getStatus(), found, found.getResult()};
 }
 
 template<class T> SimpleResult<T> simpleRenderChecked(Renderable* tree, std::string pl, torasu::ResultFormatSettings* format, RenderContext* rctx = nullptr, LogInstruction* li = nullptr, ExecutionInterface* ei = nullptr) {

@@ -23,7 +23,7 @@ Identifier Rstring_map::getType() {
 	return "STD::RSTR_MAP";
 }
 
-torasu::ResultSegment* Rstring_map::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rstring_map::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_MAP) {
 		torasu::tools::RenderHelper rh(ri);
 		size_t resCount = map.size();
@@ -45,7 +45,7 @@ torasu::ResultSegment* Rstring_map::render(torasu::RenderInstruction* ri) {
 		auto* result = new torasu::tstd::Dstring_map();
 
 		for (size_t i = 0; i < resCount; i++) {
-			std::unique_ptr<torasu::ResultSegment> rr(rpArr[i].result);
+			std::unique_ptr<torasu::RenderResult> rr(rpArr[i].result);
 			auto strRes = rh.evalResult<torasu::tstd::Dstring>(rr.get());
 			if (strRes) {
 				result->set(keyArr[i], strRes.getResult()->getString());
@@ -57,7 +57,7 @@ torasu::ResultSegment* Rstring_map::render(torasu::RenderInstruction* ri) {
 
 		return rh.buildResult(result);
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

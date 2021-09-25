@@ -29,7 +29,7 @@ public:
 	virtual ~Rmatrix();
 	Identifier getType() override;
 
-	ResultSegment* render(RenderInstruction* ri) override;
+	RenderResult* render(RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

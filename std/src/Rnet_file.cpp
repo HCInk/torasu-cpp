@@ -49,7 +49,7 @@ size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* 
 	return size*nmemb;
 }
 
-ResultSegment* Rnet_file::render(RenderInstruction* ri) {
+RenderResult* Rnet_file::render(RenderInstruction* ri) {
 
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_FILE) {
 
@@ -63,13 +63,13 @@ ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
 		std::string url;
 		{
-			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
+			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
 
 			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
 			if (!fetchedRes) {
 				rh.lrib.logCause(LogLevel::WARN, "Error fetching url!", fetchedRes.takeInfoTag());
-				return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+				return rh.buildResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 			}
 
 			url = fetchedRes.getResult()->getString();
@@ -77,7 +77,7 @@ ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
 		std::string headers = "";
 		if (headersRnd.get() != nullptr) {
-			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderIdHeaders));
+			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderIdHeaders));
 
 			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
@@ -134,7 +134,7 @@ ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
 		return rh.buildResult(file);
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

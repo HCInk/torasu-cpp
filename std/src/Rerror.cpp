@@ -16,7 +16,7 @@ torasu::Identifier Rerror::getType() {
 	return "STD::RERROR";
 }
 
-torasu::ResultSegment* Rerror::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
 	bool hasMsg = false;
 	LogId msgTag;
 
@@ -24,7 +24,7 @@ torasu::ResultSegment* Rerror::render(torasu::RenderInstruction* ri) {
 	auto li = rh.li;
 	if (li.level <= ERROR) {
 		torasu::ResultSettings rs(TORASU_STD_PL_STRING, nullptr);
-		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(msgRnd.get(), &rs));
+		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(msgRnd.get(), &rs));
 
 		auto msgRes = rh.evalResult<torasu::tstd::Dstring>(rr.get());
 
@@ -40,7 +40,7 @@ torasu::ResultSegment* Rerror::render(torasu::RenderInstruction* ri) {
 		hasMsg = true;
 	}
 
-	return new ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR,
+	return new RenderResult(torasu::RenderResultStatus_INTERNAL_ERROR,
 	hasMsg ? new torasu::LogInfoRef(new std::vector<std::vector<LogId>>({{msgTag}})) : nullptr);
 }
 

@@ -34,7 +34,7 @@ Identifier Rstring_replace::getType() {
 	return "STD::RSTRING_REPLACE";
 }
 
-torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rstring_replace::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 
 		tools::RenderHelper rh(ri);
@@ -54,9 +54,9 @@ torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
 			{renderIdAfter}
 		};
 		rh.fetchRenderResults(results, sizeof(results)/sizeof(torasu::ExecutionInterface::ResultPair));
-		std::unique_ptr<torasu::ResultSegment> rrSrc(results[0].result);
-		std::unique_ptr<torasu::ResultSegment> rrBefore(results[1].result);
-		std::unique_ptr<torasu::ResultSegment> rrAfter(results[2].result);
+		std::unique_ptr<torasu::RenderResult> rrSrc(results[0].result);
+		std::unique_ptr<torasu::RenderResult> rrBefore(results[1].result);
+		std::unique_ptr<torasu::RenderResult> rrAfter(results[2].result);
 
 		auto fetchedSrc = rh.evalResult<torasu::tstd::Dstring>(rrSrc.get());
 		auto fetchedBefore = rh.evalResult<torasu::tstd::Dstring>(rrBefore.get());
@@ -68,7 +68,7 @@ torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
 			if (rh.mayLog(torasu::WARN)) {
 				rh.lrib.logCause(torasu::WARN, "Source for replacement cant be provided!", fetchedSrc.takeInfoTag());
 			}
-			rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+			rh.buildResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 		}
 
 		std::string srcStr = fetchedSrc.getResult()->getString();
@@ -86,7 +86,7 @@ torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
 				rh.lrib.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
 			}
 
-			return rh.buildResult(new torasu::tstd::Dstring(srcStr), torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new torasu::tstd::Dstring(srcStr), torasu::RenderResultStatus_OK_WARN);
 		}
 
 		std::string beforeStr = fetchedBefore.getResult()->getString();
@@ -98,7 +98,7 @@ torasu::ResultSegment* Rstring_replace::render(torasu::RenderInstruction* ri) {
 
 		return rh.buildResult(new torasu::tstd::Dstring(srcStr));
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

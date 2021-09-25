@@ -11,7 +11,7 @@ Identifier Rrctx_value::getType() {
 	return "STD::RRCTX_VALUE";
 }
 
-torasu::ResultSegment* Rrctx_value::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rrctx_value::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline().str == mapping.getB()) {
 
 		auto* rctx = ri->getRenderContext();
@@ -24,13 +24,13 @@ torasu::ResultSegment* Rrctx_value::render(torasu::RenderInstruction* ri) {
 		(*resultMask->maskMap)[rctxKey] = new DataResourceMask::DataResourceMaskSingle(foundData != nullptr ? foundData->clone() : nullptr);
 
 		if (found != rctx->end() && foundData != nullptr) {
-			return new ResultSegment(ResultSegmentStatus_OK, foundData->clone(), true, resultMask);
+			return new RenderResult(RenderResultStatus_OK, foundData->clone(), true, resultMask);
 		} else {
-			return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, resultMask);
+			return new RenderResult(RenderResultStatus_INVALID_SEGMENT, resultMask);
 		}
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

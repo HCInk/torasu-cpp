@@ -18,7 +18,7 @@ Identifier Rlog_message::getType() {
 	return "STD::RLOG_MESSAGE";
 }
 
-ResultSegment* Rlog_message::render(RenderInstruction* ri) {
+RenderResult* Rlog_message::render(RenderInstruction* ri) {
 
 	auto li = ri->getLogInstruction();
 
@@ -30,7 +30,7 @@ ResultSegment* Rlog_message::render(RenderInstruction* ri) {
 
 	auto rid = ei->enqueueRender(srcRnd.get(), ri->getRenderContext(), ri->getResultSettings(), li, 0);
 
-	torasu::ResultSegment* rr = ei->fetchRenderResult(rid);
+	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
 
 	return rr;
 

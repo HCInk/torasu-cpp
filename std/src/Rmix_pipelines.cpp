@@ -146,7 +146,7 @@ Identifier Rmix_pipelines::getType() {
 	return "STD::RMIX_PIPELINES";
 }
 
-torasu::ResultSegment* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 	auto pipeline = ri->getResultSettings()->getPipeline();
 
@@ -168,7 +168,7 @@ torasu::ResultSegment* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
 		if (defRnd.get() != nullptr) {
 			rnd = defRnd.get();
 		} else {
-			return new torasu::ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+			return new torasu::RenderResult(RenderResultStatus_INVALID_SEGMENT);
 		}
 	}
 

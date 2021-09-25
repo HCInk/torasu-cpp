@@ -196,7 +196,7 @@ private:
 
 	// Own results (locked by "resultLock")
 	std::mutex resultLock;
-	ResultSegment* volatile result = nullptr;
+	RenderResult* volatile result = nullptr;
 	std::condition_variable* resultCv = nullptr;
 	std::chrono::_V2::system_clock::time_point* resultCreation = nullptr;
 
@@ -215,8 +215,8 @@ protected:
 	EIcore_runner_object(EIcore_runner* runner, int64_t renderId, LogInstruction li, const std::vector<int64_t>*);
 	void init();
 
-	ResultSegment* run(std::function<void()>* outCleanupFunction);
-	ResultSegment* fetchOwnRenderResult();
+	RenderResult* run(std::function<void()>* outCleanupFunction);
+	RenderResult* fetchOwnRenderResult();
 
 	void setRenderContext(RenderContext* rctx);
 	void setResultSettings(ResultSettings* rs);

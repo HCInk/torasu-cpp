@@ -22,7 +22,7 @@ public:
 	~Radd();
 	Identifier getType() override;
 
-	ResultSegment* render(RenderInstruction* ri) override;
+	RenderResult* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

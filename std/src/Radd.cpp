@@ -23,7 +23,7 @@ Identifier Radd::getType() {
 	return "STD::RADD";
 }
 
-ResultSegment* Radd::render(RenderInstruction* ri) {
+RenderResult* Radd::render(RenderInstruction* ri) {
 
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
@@ -32,8 +32,8 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		std::unique_ptr<ResultSegment> resA(rh.fetchRenderResult(rendA));
-		std::unique_ptr<ResultSegment> resB(rh.fetchRenderResult(rendB));
+		std::unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
+		std::unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
 
 		auto a = rh.evalResult<Dnum>(resA.get());
 		auto b = rh.evalResult<Dnum>(resB.get());
@@ -52,7 +52,7 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 				rh.lrib.logCause(WARN, "Sub render failed to provide operands, returning 0", errorCauses);
 			}
 
-			return rh.buildResult(new Dnum(0), ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new Dnum(0), RenderResultStatus_OK_WARN);
 		}
 
 	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
@@ -60,7 +60,7 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 		{
 			auto* fmtSettings = ri->getResultSettings()->getFromat();
 			if ( fmtSettings != nullptr || (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
-				return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+				return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 			}
 		}
 
@@ -71,8 +71,8 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		ResultSegment* resA = rh.fetchRenderResult(rendA);
-		ResultSegment* resB = rh.fetchRenderResult(rendB);
+		RenderResult* resA = rh.fetchRenderResult(rendA);
+		RenderResult* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
@@ -133,11 +133,11 @@ ResultSegment* Radd::render(RenderInstruction* ri) {
 		if (result != nullptr) {
 			return rh.buildResult(result);
 		} else {
-			return rh.buildResult(new Dbimg(*fmt), ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new Dbimg(*fmt), RenderResultStatus_OK_WARN);
 		}
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 
 }

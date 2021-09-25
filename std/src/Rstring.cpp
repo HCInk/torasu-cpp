@@ -20,11 +20,11 @@ Identifier Rstring::getType() {
 	return "STD::RSTRING";
 }
 
-torasu::ResultSegment* Rstring::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rstring::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, str, false, new RenderContextMask());
+		return new torasu::RenderResult(torasu::RenderResultStatus_OK, str, false, new RenderContextMask());
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT, new RenderContextMask());
 	}
 }
 

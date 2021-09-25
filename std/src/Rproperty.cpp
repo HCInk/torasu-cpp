@@ -19,7 +19,7 @@ Identifier Rproperty::getType() {
 	return "STD::RPROPERTY";
 }
 
-torasu::ResultSegment* Rproperty::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rproperty::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline().str == servedPipeline) {
 		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc.get(), { fromProperty }, ri->getExecutionInterface(), ri->getLogInstruction(), ri->getRenderContext());
 		auto& holder = (*rp)[fromProperty];
@@ -27,12 +27,12 @@ torasu::ResultSegment* Rproperty::render(torasu::RenderInstruction* ri) {
 		torasu::DataResource* value = owns ? holder.eject() : holder.get();
 		delete rp;
 		if (value == nullptr) {
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+			return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 		}
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, value, owns);
+		return new torasu::RenderResult(torasu::RenderResultStatus_OK, value, owns);
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

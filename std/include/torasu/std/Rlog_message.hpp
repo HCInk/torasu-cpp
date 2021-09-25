@@ -20,7 +20,7 @@ public:
 	~Rlog_message();
 	Identifier getType() override;
 
-	torasu::ResultSegment* render(RenderInstruction* ri) override;
+	torasu::RenderResult* render(RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

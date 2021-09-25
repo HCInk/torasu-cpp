@@ -20,7 +20,7 @@ public:
 	~Rsin();
 	Identifier getType() override;
 
-	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

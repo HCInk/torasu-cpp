@@ -21,12 +21,12 @@ Identifier Rsin::getType() {
 	return "STD::RSIN";
 }
 
-ResultSegment* Rsin::render(RenderInstruction* ri) {
+RenderResult* Rsin::render(RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
-		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(valRnd, &resSetting));
+		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(valRnd, &resSetting));
 		auto val = rh.evalResult<tstd::Dnum>(rr.get());
 
 		if (val) {
@@ -36,11 +36,11 @@ ResultSegment* Rsin::render(RenderInstruction* ri) {
 			if (rh.mayLog(WARN)) {
 				rh.lrib.logCause(WARN, "Failed to render parameter of sinus, returning 0", val.takeInfoTag());
 			}
-			return rh.buildResult(new tstd::Dnum(0), torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new tstd::Dnum(0), torasu::RenderResultStatus_OK_WARN);
 		}
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 
 }

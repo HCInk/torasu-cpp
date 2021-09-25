@@ -21,20 +21,20 @@ Identifier Rstring_concat::getType() {
 	return "STD::RSTR_CONCAT";
 }
 
-torasu::ResultSegment* Rstring_concat::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rstring_concat::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 
 		torasu::ResultSettings stringType(TORASU_STD_PL_STRING, nullptr);
 		torasu::ResultSettings mapType(TORASU_STD_PL_MAP, nullptr);
 
-		std::unique_ptr<torasu::ResultSegment> mapRes(rh.runRender(listRnd, &mapType));
+		std::unique_ptr<torasu::RenderResult> mapRes(rh.runRender(listRnd, &mapType));
 
 		auto castedMap = rh.evalResult<tstd::Dstring_map>(mapRes.get());
 		if (!castedMap) {
 			if (rh.mayLog(torasu::WARN))
 				rh.lrib.logCause(torasu::LogLevel::WARN, "Failed to generate string, since list could not be retrieved.", castedMap.takeInfoTag());
-			return rh.buildResult(new tstd::Dstring(""), torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new tstd::Dstring(""), torasu::RenderResultStatus_OK_WARN);
 		}
 
 		std::vector<std::unique_ptr<torasu::RenderContext>> contexts;
@@ -63,7 +63,7 @@ torasu::ResultSegment* Rstring_concat::render(torasu::RenderInstruction* ri) {
 
 		for (size_t i = 0; i < rpList.size(); i++) {
 			auto render = rpList[i];
-			std::unique_ptr<torasu::ResultSegment> rr(render.result);
+			std::unique_ptr<torasu::RenderResult> rr(render.result);
 			auto res = rh.evalResult<tstd::Dstring>(rr.get());
 
 			torasu::tstd::Dstring* str = res.getResult();
@@ -85,7 +85,7 @@ torasu::ResultSegment* Rstring_concat::render(torasu::RenderInstruction* ri) {
 
 		return rh.buildResult(new torasu::tstd::Dstring(resStr));
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

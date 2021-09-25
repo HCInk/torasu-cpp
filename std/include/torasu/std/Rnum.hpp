@@ -22,7 +22,7 @@ public:
 	~Rnum();
 	Identifier getType() override;
 
-	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

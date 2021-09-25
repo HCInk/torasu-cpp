@@ -18,12 +18,12 @@ Identifier Rmod_rctx::getType() {
 	return "STD::RMOD_RCTX";
 }
 
-torasu::ResultSegment* Rmod_rctx::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 
 	const std::string pipeline(data.getB());
 	ResultSettings sourceSettings(pipeline.c_str(), nullptr);
-	std::unique_ptr<torasu::ResultSegment> valrr(rh.runRender(valueRnd.get(), &sourceSettings));
+	std::unique_ptr<torasu::RenderResult> valrr(rh.runRender(valueRnd.get(), &sourceSettings));
 	auto valueResult = rh.evalResult<torasu::DataResource>(valrr.get(), false);
 
 	RenderContext newRctx(*rh.rctx);
@@ -41,10 +41,10 @@ torasu::ResultSegment* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 		rh.lrib.hasError = true;
 	}
 
-	std::unique_ptr<torasu::ResultSegment> resrr(rh.runRender(mainRnd.get(), ri->getResultSettings(), &newRctx));
+	std::unique_ptr<torasu::RenderResult> resrr(rh.runRender(mainRnd.get(), ri->getResultSettings(), &newRctx));
 	auto mainResult = rh.evalResult<torasu::DataResource>(resrr.get(), false);
 
-	torasu::ResultSegmentStatus status = mainResult.getStatus();
+	torasu::RenderResultStatus status = mainResult.getStatus();
 	std::unique_ptr<torasu::DataResource> payload(resrr->ejectOrClone());
 	const RenderContextMask* payloadMask = mainResult.getResultMask();
 	const RenderContextMask* valMask = valueResult.getResultMask();

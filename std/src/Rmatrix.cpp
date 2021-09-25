@@ -68,7 +68,7 @@ void Rmatrix::setElement(std::string key, Element* elem) {
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
 
-ResultSegment* Rmatrix::render(RenderInstruction* ri) {
+RenderResult* Rmatrix::render(RenderInstruction* ri) {
 
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VEC) {
 
@@ -101,7 +101,7 @@ ResultSegment* Rmatrix::render(RenderInstruction* ri) {
 		torasu::tstd::Dnum* numArr = matrix.getNums();
 
 		for (auto result : resultMap) {
-			ResultSegment* rr = result.second->result;
+			RenderResult* rr = result.second->result;
 			auto val = rh.evalResult<torasu::tstd::Dnum>(rr);
 			if (!val) continue;
 			numArr[result.first] = *val.getResult();
@@ -110,7 +110,7 @@ ResultSegment* Rmatrix::render(RenderInstruction* ri) {
 
 		return rh.buildResult(new torasu::tstd::Dmatrix(matrix));
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT, new RenderContextMask());
 	}
 
 }

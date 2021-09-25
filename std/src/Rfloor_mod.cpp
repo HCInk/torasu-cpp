@@ -19,7 +19,7 @@ Identifier Rfloor_mod::getType() {
 	return "STD::RFLOOR_MOD";
 }
 
-torasu::ResultSegment* Rfloor_mod::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
@@ -28,18 +28,18 @@ torasu::ResultSegment* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 		auto valRid = rh.enqueueRender(valRnd, &resSetting);
 		auto facRid = rh.enqueueRender(facRnd, &resSetting);
 
-		std::unique_ptr<torasu::ResultSegment> valRes(rh.fetchRenderResult(valRid));
-		std::unique_ptr<torasu::ResultSegment> facRes(rh.fetchRenderResult(facRid));
+		std::unique_ptr<torasu::RenderResult> valRes(rh.fetchRenderResult(valRid));
+		std::unique_ptr<torasu::RenderResult> facRes(rh.fetchRenderResult(facRid));
 
 		auto* fetchedVal = rh.evalResult<torasu::tstd::Dnum>(valRes.get()).getResult();
 		auto* fetchedFac = rh.evalResult<torasu::tstd::Dnum>(facRes.get()).getResult();
 
 		if (fetchedVal == nullptr) {
-			return rh.buildResult(new torasu::tstd::Dnum(0), torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new torasu::tstd::Dnum(0), torasu::RenderResultStatus_OK_WARN);
 		}
 
 		if (fetchedFac == nullptr) {
-			return rh.buildResult(new torasu::tstd::Dnum(*fetchedVal), torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new torasu::tstd::Dnum(*fetchedVal), torasu::RenderResultStatus_OK_WARN);
 		}
 
 		double val = fetchedVal->getNum();
@@ -49,7 +49,7 @@ torasu::ResultSegment* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 
 		return rh.buildResult(new torasu::tstd::Dnum(res));
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

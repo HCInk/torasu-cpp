@@ -64,7 +64,7 @@ Identifier Rjson_prop::getType() {
 	return "STD::RJSON_PROP";
 }
 
-torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rjson_prop::render(torasu::RenderInstruction* ri) {
 	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_STRING || pipeline == TORASU_STD_PL_NUM || pipeline == TORASU_STD_PL_MAP) {
 
@@ -77,14 +77,14 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, nullptr);
 		auto renderId = rh.enqueueRender(jsonRnd, &fileSetting);
 
-		std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
+		std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
 
 		auto fetchedRes = rh.evalResult<torasu::tstd::Dfile>(rndRes.get());
 
 
 		if (!fetchedRes) {
 			rh.lrib.logCause(ERROR, "Failed to get source-json!", fetchedRes.takeInfoTag());
-			return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+			return rh.buildResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 		}
 
 		torasu::tstd::Dfile* srcJson = fetchedRes.getResult();
@@ -119,7 +119,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 					json = json[index];
 				} catch (const std::invalid_argument& ex) {
 					if (optional) { // Return invalid-segment if set to optional
-						return rh.buildResult(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+						return rh.buildResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 					} else {
 						std::string pathDesc = i == 0 ? "Root" : "\"" + combine(path, 0, i-1, ".") + "\"";
 						throw std::runtime_error(pathDesc + " is an array, but the index \"" + path[i] + "\" provided in the path, can't be parsed as a number: " + ex.what());
@@ -127,7 +127,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 				}
 			} else {
 				if (optional) { // Return invalid-segment if set to optional
-					return rh.buildResult(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+					return rh.buildResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 				} else {
 					std::string pathDesc = i == 0 ? "Root" : "\"" + combine(path, 0, i-1, ".") + "\"";
 					throw std::runtime_error(pathDesc + " is not an object/array! - Dump at path: \n" + json.dump());
@@ -142,7 +142,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 
 		if (json.is_null()) {
 			if (optional) { // Return invalid-segment if set to optional
-				return rh.buildResult(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+				return rh.buildResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 			} else {
 				throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" does not exist!");
 			}
@@ -155,7 +155,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 				return rh.buildResult(new torasu::tstd::Dstring(json.dump()));
 			} else {
 				if (optional) { // Return invalid-segment if set to optional
-					return rh.buildResult(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+					return rh.buildResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 				} else {
 					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a string/number! - Dump at path: \n" + json.dump());
 				}
@@ -163,7 +163,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 		} else if (pipeline == TORASU_STD_PL_NUM) {
 			if (!json.is_number()) {
 				if (optional) { // Return invalid-segment if set to optional
-					return rh.buildResult(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+					return rh.buildResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 				} else {
 					throw std::runtime_error("\"" + combine(path, 0, path.size()-1, ".") + "\" is not a number! - Dump at path: \n" + json.dump());
 				}
@@ -192,7 +192,7 @@ torasu::ResultSegment* Rjson_prop::render(torasu::RenderInstruction* ri) {
 		}
 
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

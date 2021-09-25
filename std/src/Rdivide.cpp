@@ -22,7 +22,7 @@ Identifier Rdivide::getType() {
 	return "STD::RDIVIDE";
 }
 
-ResultSegment* Rdivide::render(RenderInstruction* ri) {
+RenderResult* Rdivide::render(RenderInstruction* ri) {
 
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
@@ -31,8 +31,8 @@ ResultSegment* Rdivide::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		ResultSegment* resA = rh.fetchRenderResult(rendA);
-		ResultSegment* resB = rh.fetchRenderResult(rendB);
+		RenderResult* resA = rh.fetchRenderResult(rendA);
+		RenderResult* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
@@ -54,17 +54,17 @@ ResultSegment* Rdivide::render(RenderInstruction* ri) {
 
 		if (calcResult.has_value()) {
 			Dnum* mulRes = new Dnum(calcResult.value());
-			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
+			return new RenderResult(RenderResultStatus_OK, mulRes, true);
 		} else {
 			Dnum* errRes = new Dnum(0);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return new RenderResult(RenderResultStatus_OK_WARN, errRes, true);
 		}
 
 	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		if ( !( ri->getResultSettings()->getFromat() != nullptr
 				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(ri->getResultSettings()->getFromat())) )) {
-			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+			return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 		}
 
 		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
@@ -74,8 +74,8 @@ ResultSegment* Rdivide::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		ResultSegment* resA = rh.fetchRenderResult(rendA);
-		ResultSegment* resB = rh.fetchRenderResult(rendB);
+		RenderResult* resA = rh.fetchRenderResult(rendA);
+		RenderResult* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
@@ -123,11 +123,11 @@ ResultSegment* Rdivide::render(RenderInstruction* ri) {
 		if (result != nullptr) {
 			return rh.buildResult(result);
 		} else {
-			return rh.buildResult(new Dbimg(*fmt), ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(new Dbimg(*fmt), RenderResultStatus_OK_WARN);
 		}
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 
 }

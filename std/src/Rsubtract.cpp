@@ -22,7 +22,7 @@ Identifier Rsubtract::getType() {
 	return "STD::RSUBTRACT";
 }
 
-ResultSegment* Rsubtract::render(RenderInstruction* ri) {
+RenderResult* Rsubtract::render(RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 	auto* resSettings = ri->getResultSettings();
 	auto pipeline = resSettings->getPipeline();
@@ -32,8 +32,8 @@ ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a, &rs);
 		auto rendB = rh.enqueueRender(b, &rs);
 
-		ResultSegment* resA = rh.fetchRenderResult(rendA);
-		ResultSegment* resB = rh.fetchRenderResult(rendB);
+		RenderResult* resA = rh.fetchRenderResult(rendA);
+		RenderResult* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
@@ -58,14 +58,14 @@ ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 			return rh.buildResult(mulRes);
 		} else {
 			Dnum* errRes = new Dnum(0);
-			return rh.buildResult(errRes, ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(errRes, RenderResultStatus_OK_WARN);
 		}
 
 	} else if (pipeline == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
 		if ( !( resSettings->getFromat() != NULL
 				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getFromat())) )) {
-			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
+			return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 		}
 
 		torasu::ResultSettings rs(TORASU_STD_PL_VIS, fmt);
@@ -73,8 +73,8 @@ ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a, &rs);
 		auto rendB = rh.enqueueRender(b, &rs);
 
-		ResultSegment* resA = rh.fetchRenderResult(rendA);
-		ResultSegment* resB = rh.fetchRenderResult(rendB);
+		RenderResult* resA = rh.fetchRenderResult(rendA);
+		RenderResult* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
@@ -134,11 +134,11 @@ ResultSegment* Rsubtract::render(RenderInstruction* ri) {
 			return rh.buildResult(result);
 		} else {
 			Dbimg* errRes = new Dbimg(*fmt);
-			return rh.buildResult(errRes, torasu::ResultSegmentStatus_OK_WARN);
+			return rh.buildResult(errRes, torasu::RenderResultStatus_OK_WARN);
 		}
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 
 }

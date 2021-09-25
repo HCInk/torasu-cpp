@@ -20,7 +20,7 @@ public:
 	~Rfallback();
 	Identifier getType() override;
 
-	ResultSegment* render(RenderInstruction* ri) override;
+	RenderResult* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements();
 	void setElement(std::string key, torasu::Element* elem);

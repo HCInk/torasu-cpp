@@ -54,13 +54,13 @@ public:
 	/** @brief  Builds a result without a payload (uses internal tools to enrich the result with the requested data)
 	 * @param  status: The status of the result
 	 * @retval The genrated segment (managed by caller) */
-	ResultSegment* buildResult(ResultSegmentStatus status);
+	RenderResult* buildResult(RenderResultStatus status);
 
 	/** @brief  Builds a result with a payload (uses internal tools to enrich the result with the requested data)
 	 * @param  dr: The payload of the result
 	 * @param  status: The status of the result (if OK and warnings/erros have been collected in lrib, will be set to OK_WARN)
 	 * @retval The genrated segment (managed by caller) */
-	ResultSegment* buildResult(DataResource* dr, ResultSegmentStatus status = ResultSegmentStatus_OK);
+	RenderResult* buildResult(DataResource* dr, RenderResultStatus status = RenderResultStatus_OK);
 
 	/** @brief Checks if logs with the given log-level may be logged */
 	inline bool mayLog(torasu::LogLevel level) const {
@@ -80,7 +80,7 @@ public:
 	}
 
 	/** @brief Fetch render result from ExecutionIntrface */
-	inline torasu::ResultSegment* fetchRenderResult(uint64_t rid) {
+	inline torasu::RenderResult* fetchRenderResult(uint64_t rid) {
 		return ei->fetchRenderResult(rid);
 	}
 
@@ -89,15 +89,15 @@ public:
 		ei->fetchRenderResults(requests, requestCount);
 	}
 
-	inline torasu::ResultSegment* runRender(torasu::Renderable* rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+	inline torasu::RenderResult* runRender(torasu::Renderable* rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
 		return fetchRenderResult(enqueueRender(rend, rs, rctx, prio));
 	}
 
-	inline torasu::ResultSegment* runRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+	inline torasu::RenderResult* runRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
 		return runRender(rend.get(), rs, rctx, prio);
 	}
 
-	template<class T> inline CastedRenderSegmentResult<T> evalResult(torasu::ResultSegment* rr, bool doCollectMask = true) {
+	template<class T> inline CastedRenderSegmentResult<T> evalResult(torasu::RenderResult* rr, bool doCollectMask = true) {
 		auto result = CastedRenderSegmentResult<T>(rr, &lrib);
 		if (doCollectMask) collectMask(result.getResultMask());
 		return result;
@@ -161,16 +161,16 @@ public:
 template<class T> class CastedRenderSegmentResult {
 private:
 	T* result;
-	ResultSegmentStatus status;
-	ResultSegment* rs;
+	RenderResultStatus status;
+	RenderResult* rs;
 	torasu::LogId infoTag = LogId_MAX;
 	torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr;
 public:
 
-	explicit CastedRenderSegmentResult(ResultSegmentStatus status, LogId infoTag = LogId_MAX, tools::LogInfoRefBuilder* infoBuilder = nullptr)
+	explicit CastedRenderSegmentResult(RenderResultStatus status, LogId infoTag = LogId_MAX, tools::LogInfoRefBuilder* infoBuilder = nullptr)
 		: result(nullptr), status(status), rs(nullptr), infoTag(infoTag), infoBuilder(infoBuilder)  {}
 
-	explicit CastedRenderSegmentResult(ResultSegment* rs, tools::LogInfoRefBuilder* infoBuilder = nullptr)
+	explicit CastedRenderSegmentResult(RenderResult* rs, tools::LogInfoRefBuilder* infoBuilder = nullptr)
 		: status(rs->getStatus()), rs(rs), infoBuilder(infoBuilder)  {
 		DataResource* result = rs->getResult();
 		if (result == nullptr) {
@@ -192,12 +192,12 @@ public:
 			}
 		}
 
-		if (status == ResultSegmentStatus_OK) return;
+		if (status == RenderResultStatus_OK) return;
 
 		if (infoBuilder != nullptr) {
 			infoBuilder->hasError = true;
 			switch (status) {
-			case ResultSegmentStatus_OK_WARN:
+			case RenderResultStatus_OK_WARN:
 				infoTag = infoBuilder->logCause(WARN, "Sub-render is marked to contain errors", getRawInfoCopy() );
 				break;
 			default:
@@ -225,7 +225,7 @@ public:
 		return rs ? dynamic_cast<T*>(rs->ejectResult()) : nullptr;
 	}
 
-	inline ResultSegmentStatus getStatus() const {
+	inline RenderResultStatus getStatus() const {
 		return status;
 	}
 

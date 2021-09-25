@@ -19,13 +19,13 @@ Identifier Rstring_file::getType() {
 	return "STD::RSTR_FILE";
 }
 
-torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rstring_file::render(torasu::RenderInstruction* ri) {
 	auto pipeline = ri->getResultSettings()->getPipeline();
 	if (pipeline == TORASU_STD_PL_FILE) {
 		tools::RenderHelper rh(ri);
 
 		torasu::ResultSettings strSetting(TORASU_STD_PL_STRING, nullptr);
-		std::unique_ptr<ResultSegment> rr(rh.runRender(srcRnd, &strSetting));
+		std::unique_ptr<RenderResult> rr(rh.runRender(srcRnd, &strSetting));
 
 		auto res = rh.evalResult<tstd::Dstring>(rr.get());
 
@@ -33,7 +33,7 @@ torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
 			if (rh.mayLog(torasu::WARN))
 				rh.lrib.logCause(torasu::WARN, "Failed to provide source for string-file.", res.takeInfoTag());
 
-			return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+			return rh.buildResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 		}
 
 		const auto& str = res.getResult()->getString();
@@ -51,7 +51,7 @@ torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
 		tools::RenderHelper rh(ri);
 
 		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, nullptr);
-		std::unique_ptr<torasu::ResultSegment> rr(rh.runRender(srcRnd.get(), &fileSetting));
+		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(srcRnd.get(), &fileSetting));
 
 		auto res = rh.evalResult<tstd::Dfile>(rr.get());
 
@@ -59,14 +59,14 @@ torasu::ResultSegment* Rstring_file::render(torasu::RenderInstruction* ri) {
 			if (rh.mayLog(torasu::WARN))
 				rh.lrib.logCause(torasu::WARN, "Failed to provide source for file.", res.takeInfoTag());
 
-			return new torasu::ResultSegment(torasu::ResultSegmentStatus_INTERNAL_ERROR);
+			return new torasu::RenderResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 		}
 
 		std::string str(reinterpret_cast<char*>(res.getResult()->getFileData()), res.getResult()->getFileSize());
 
 		return rh.buildResult(new torasu::tstd::Dstring(str));
 	} else {
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
+		return new torasu::RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

@@ -23,7 +23,7 @@ Identifier Rlocal_file::getType() {
 	return "STD::RLOCAL_FILE";
 }
 
-torasu::ResultSegment* Rlocal_file::render(torasu::RenderInstruction* ri) {
+torasu::RenderResult* Rlocal_file::render(torasu::RenderInstruction* ri) {
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_FILE) {
 
 		ifstream ifs(path, ios::binary|ios::ate);
@@ -43,10 +43,10 @@ torasu::ResultSegment* Rlocal_file::render(torasu::RenderInstruction* ri) {
 		torasu::tools::log_checked(ri->getLogInstruction(), LogLevel::DEBUG,
 								   "Loaded local-file \"" + path + "\" (" + std::to_string(dfile->getFileSize()) + "byte)");
 
-		return new ResultSegment(ResultSegmentStatus_OK, dfile, true);
+		return new RenderResult(RenderResultStatus_OK, dfile, true);
 
 	} else {
-		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT);
+		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
 	}
 }
 

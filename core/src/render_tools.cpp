@@ -44,15 +44,15 @@ RenderContextMask* RenderHelper::takeResMask() {
 	return mask;
 }
 
-ResultSegment* RenderHelper::buildResult(ResultSegmentStatus status) {
-	return new ResultSegment(status, nullptr, false, takeResMask(), lrib.build());
+RenderResult* RenderHelper::buildResult(RenderResultStatus status) {
+	return new RenderResult(status, nullptr, false, takeResMask(), lrib.build());
 }
 
-ResultSegment* RenderHelper::buildResult(DataResource* dr, ResultSegmentStatus status) {
-	if (status == ResultSegmentStatus_OK && lrib.hasError)
-		status = ResultSegmentStatus_OK_WARN;
+RenderResult* RenderHelper::buildResult(DataResource* dr, RenderResultStatus status) {
+	if (status == RenderResultStatus_OK && lrib.hasError)
+		status = RenderResultStatus_OK_WARN;
 
-	return new ResultSegment(status, dr, true, takeResMask(), lrib.build());
+	return new RenderResult(status, dr, true, takeResMask(), lrib.build());
 }
 
 

@@ -339,7 +339,7 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 		//
 
 		std::function<void(void)> runCleanup;
-		ResultSegment* result = task->run(&runCleanup);
+		RenderResult* result = task->run(&runCleanup);
 
 		//
 		// Saving its result and removing task from queue
@@ -502,7 +502,7 @@ EIcore_runner_object::~EIcore_runner_object() {
 			for (auto* subTask : pendingSubTasks) {
 				int64_t rid = subTask->renderId;
 				if (log) li.logger->log(torasu::LogLevel::WARN, " Wating for uncompleted render of \"" + subTask->rnd->getType() + "\" (#" + std::to_string(rid) + ") to finish...");
-				ResultSegment* rr = fetchRenderResult(rid);
+				RenderResult* rr = fetchRenderResult(rid);
 				delete rr;
 			}
 
@@ -634,7 +634,7 @@ void EIcore_runner_object::Benchmarking::stop(bool final) {
 
 // EICoreRunnerObject: Execution Functions
 
-ResultSegment* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
+RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
 
 	torasu::tstd::EIcore_runner_elemhandler::ReadyStateHandle* rdyHandle;
 	rdyHandle = elemHandler->ready(rs->getPipeline(), rctx, this, li);
@@ -654,7 +654,7 @@ ResultSegment* EIcore_runner_object::run(std::function<void()>* outCleanupFuncti
 
 	RenderInstruction ri(rctx, rs, this, li, rdyHandle != nullptr ? rdyHandle->state : nullptr);
 
-	ResultSegment* res = rnd->render(&ri);
+	RenderResult* res = rnd->render(&ri);
 
 	*outCleanupFunction = [rdyHandle]() {
 		if (rdyHandle != nullptr) delete rdyHandle;
@@ -686,7 +686,7 @@ ResultSegment* EIcore_runner_object::run(std::function<void()>* outCleanupFuncti
 	return res;
 }
 
-ResultSegment* EIcore_runner_object::fetchOwnRenderResult() {
+RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 
 	// 0 = Not set to sleep yet, 1=Set to sleep, 2=cant be set to sleep
 	int suspendState = 0;
@@ -706,7 +706,7 @@ ResultSegment* EIcore_runner_object::fetchOwnRenderResult() {
 				auto unsuspendEnd = std::chrono::high_resolution_clock::now();
 				std::cout << "UNSUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(unsuspendEnd - unsuspendStart).count() << "ns" << std::endl;
 #endif
-				return const_cast<ResultSegment*>(result); // casting the volatile away
+				return const_cast<RenderResult*>(result); // casting the volatile away
 			}
 		}
 		if (suspendState == 0) {
@@ -779,7 +779,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 		if (lockSubTasks) subTasksLock.lock();
 
 		struct FetchSet {
-			ResultSegment** result;
+			RenderResult** result;
 			EIcore_runner_object* task;
 		};
 
