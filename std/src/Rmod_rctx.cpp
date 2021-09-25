@@ -9,70 +9,63 @@ namespace torasu::tstd {
 //
 
 Rmod_rctx::Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline)
-	: NamedIdentElement("STD::RMOD_RCTX"), SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  data(rctxKey, valuePipeline), mainRnd(main), valueRnd(value) {}
 
 Rmod_rctx::~Rmod_rctx() {}
 
-torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
+Identifier Rmod_rctx::getType() {
+	return "STD::RMOD_RCTX";
+}
 
-	auto* ei = ri->getExecutionInterface();
-	auto li = ri->getLogInstruction();
-	auto* cRctx = ri->getRenderContext();
+torasu::ResultSegment* Rmod_rctx::render(torasu::RenderInstruction* ri) {
+	torasu::tools::RenderHelper rh(ri);
 
-	torasu::tools::RenderInstructionBuilder valRib;
-	valRib.addSegment(data.getB(), "v", nullptr); // TODO Add format-support
+	const std::string pipeline(data.getB());
+	ResultSettings sourceSettings(pipeline.c_str(), nullptr);
+	std::unique_ptr<torasu::ResultSegment> valrr(rh.runRender(valueRnd.get(), &sourceSettings));
+	auto valueResult = rh.evalResult<torasu::DataResource>(valrr.get(), false);
 
-	std::unique_ptr<torasu::RenderResult> valrr(valRib.runRender(valueRnd.get(), cRctx, ei, li));
-
-	// Lifetime: Until valrr is destructed
-	auto* valrseg = (*valrr.get()->getResults())["v"];
-	torasu::DataResource* valueDr = valrseg->getResult();
-
-	RenderContext newRctx(*cRctx);
-
+	RenderContext newRctx(*rh.rctx);
 	std::string replacedValKey = data.getA();
 
-	newRctx[replacedValKey] = valueDr;
-
-	auto rid = ei->enqueueRender(mainRnd.get(), &newRctx, ri->getResultSettings(), ri->getLogInstruction(), 0);
-
-	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
-
-	auto* results = rr->getResults();
-
-	if (results != nullptr) {
-		for (auto res : *results) {
-
-			const RenderContextMask* payloadMask = res.second->getResultMask();
-			const RenderContextMask* valMask = valrseg->getResultMask();
-
-			if (valMask == nullptr) {
-				if (payloadMask != nullptr) {
-					delete payloadMask;
-					payloadMask = nullptr;
-					res.second->updateResultMask(nullptr);
-				}
-				continue;
-			}
-
-			// Both masks are valid
-
-			std::unique_ptr<RenderContextMask> filtered(payloadMask->filter({replacedValKey}));
-
-			RenderContextMask* merged = RenderContextMask::merge(*filtered, *valMask);
-
-			res.second->updateResultMask(merged);
-
-			filtered.reset();
-			delete payloadMask;
-
-			merged->resolveUnknownsFromRctx(cRctx);
-
+	if (valueResult) {
+		// Lifetime: Until valrr is destructed
+		newRctx[replacedValKey] = valueResult.getResult();
+	} else {
+		if (rh.mayLog(WARN)) {
+			rh.lrib.logCause(WARN,
+							 "Failed to render value to replace in render-context, will leave \"" + replacedValKey + "\" unchanged.",
+							 valueResult.takeInfoTag());
 		}
+		rh.lrib.hasError = true;
 	}
 
-	return rr;
+	std::unique_ptr<torasu::ResultSegment> resrr(rh.runRender(mainRnd.get(), ri->getResultSettings(), &newRctx));
+	auto mainResult = rh.evalResult<torasu::DataResource>(resrr.get(), false);
+
+	torasu::ResultSegmentStatus status = mainResult.getStatus();
+	std::unique_ptr<torasu::DataResource> payload(resrr->ejectOrClone());
+	const RenderContextMask* payloadMask = mainResult.getResultMask();
+	const RenderContextMask* valMask = valueResult.getResultMask();
+
+	if (payloadMask != nullptr && valMask != nullptr) {
+		// Both masks are valid
+
+		std::unique_ptr<RenderContextMask> filtered(payloadMask->filter({replacedValKey}));
+		std::unique_ptr<RenderContextMask> newMask(RenderContextMask::merge(*filtered, *valMask));
+		filtered.reset();
+
+		newMask->resolveUnknownsFromRctx(rh.rctx);
+
+		rh.collectMask(newMask.get());
+
+	} else {
+		rh.collectMask(nullptr); // say that masks can't be calculated
+	}
+
+
+	return rh.buildResult(payload.release(), status);
 }
 
 

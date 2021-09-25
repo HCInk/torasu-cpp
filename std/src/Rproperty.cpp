@@ -10,13 +10,17 @@ namespace torasu::tstd {
 //
 
 Rproperty::Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline)
-	: SimpleRenderable("STD::RPROPERTY", false, true),
+	: SimpleRenderable(false, true),
 	  propertySrc(propertySrc), fromProperty(fromProperty), servedPipeline(servedPipeline) {}
 
 Rproperty::~Rproperty() {}
 
-torasu::ResultSegment* Rproperty::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	if (resSettings->getPipeline() == servedPipeline) {
+Identifier Rproperty::getType() {
+	return "STD::RPROPERTY";
+}
+
+torasu::ResultSegment* Rproperty::render(torasu::RenderInstruction* ri) {
+	if (ri->getResultSettings()->getPipeline().str == servedPipeline) {
 		torasu::RenderableProperties* rp = torasu::tools::getProperties(propertySrc.get(), { fromProperty }, ri->getExecutionInterface(), ri->getLogInstruction(), ri->getRenderContext());
 		auto& holder = (*rp)[fromProperty];
 		bool owns = holder.owns();

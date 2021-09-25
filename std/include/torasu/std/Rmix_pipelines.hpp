@@ -53,7 +53,7 @@ protected:
 public:
 	~Dmix_pipelines_conf();
 
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dmix_pipelines_conf* clone() const override;
 
 	friend Rmix_pipelines;
@@ -70,12 +70,12 @@ private:
 	torasu::tools::ManagedRenderableSlot defRnd;
 	Dmix_pipelines_conf conf;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes);
 	~Rmix_pipelines();
+	Identifier getType() override;
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

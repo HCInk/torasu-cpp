@@ -4,15 +4,6 @@
 
 namespace torasu::tools {
 
-NamedIdentElement::NamedIdentElement(std::string typeIdent)
-	: typeIdent(typeIdent) {}
-
-NamedIdentElement::~NamedIdentElement() {}
-
-std::string NamedIdentElement::getType() {
-	return typeIdent;
-}
-
 SimpleDataElement::SimpleDataElement(bool acceptData, bool acceptElements)
 	: acceptData(acceptData), acceptElements(acceptElements) {}
 
@@ -77,74 +68,18 @@ void SimpleDataElement::setData(DataResource* data,
 
 }
 
-IndividualizedSegnentRenderable::IndividualizedSegnentRenderable() {}
-IndividualizedSegnentRenderable::~IndividualizedSegnentRenderable() {}
-
-RenderResult* IndividualizedSegnentRenderable::render(RenderInstruction* ri) {
-
-	auto rs = ri->getResultSettings();
-
-	std::map<std::string, ResultSegment*>* results = new std::map<std::string, ResultSegment*>();
-
-	bool hasError = false;
-	bool hasWarn = false;
-	for (ResultSegmentSettings* rss : *rs) {
-
-		ResultSegment* rseg = nullptr;
-
-		try {
-			rseg = renderSegment(rss, ri);
-		} catch (const std::exception& ex) {
-			LogInfoRefBuilder lirb(ri->getLogInstruction());
-			lirb.logCause(LogLevel::ERROR, std::string("IndividualizedSegnentRenderable error: ") + ex.what());
-			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR, lirb.build());
-			continue;
-		}
-
-		if (rseg != nullptr) {
-
-			ResultSegmentStatus status = rseg->getStatus();
-			if (status < 0) {
-				hasError = true;
-			} else if (status == ResultSegmentStatus_OK_WARN) {
-				hasWarn = true;
-			}
-
-			(*results)[rss->getKey()] = rseg;
-			continue;
-
-		} else {
-			(*results)[rss->getKey()] = new ResultSegment(ResultSegmentStatus_INTERNAL_ERROR);
-			continue;
-		}
-
-	}
-
-	ResultStatus summarizedStatus;
-
-	if (hasError) {
-		summarizedStatus = ResultStatus::ResultStatus_PARTIAL_ERROR;
-	} else if (hasWarn) {
-		summarizedStatus = ResultStatus::ResultStatus_OK_WARN;
-	} else {
-		summarizedStatus = ResultStatus::ResultStatus_OK;
-	}
-
-	return new RenderResult(summarizedStatus, results);
-}
-
-NoneReadyState::NoneReadyState(const std::vector<std::string>& operations)
-	: operations(new std::vector<std::string>(operations)), rctxm(new RenderContextMask()) {}
+NoneReadyState::NoneReadyState(const std::vector<Identifier>& operations)
+	: operations(new std::vector<Identifier>(operations)), rctxm(new RenderContextMask()) {}
 
 NoneReadyState::NoneReadyState(const NoneReadyState& orig)
-	: operations(new std::vector<std::string>(*orig.operations)), rctxm(new RenderContextMask()) {}
+	: operations(new std::vector<Identifier>(*orig.operations)), rctxm(new RenderContextMask()) {}
 
 NoneReadyState::~NoneReadyState() {
 	delete operations;
 	delete rctxm;
 }
 
-const std::vector<std::string>* NoneReadyState::getOperations() const {
+const std::vector<Identifier>* NoneReadyState::getOperations() const {
 	return operations;
 }
 
@@ -167,9 +102,8 @@ void ReadylessElement::ready(ReadyInstruction* ri) {
 	ri->setState(nullptr);
 }
 
-SimpleRenderable::SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements)
-	: NamedIdentElement(typeIdent),
-	  SimpleDataElement(acceptData, acceptElements) {}
+SimpleRenderable::SimpleRenderable(bool acceptData, bool acceptElements)
+	: SimpleDataElement(acceptData, acceptElements) {}
 
 SimpleRenderable::~SimpleRenderable() {}
 

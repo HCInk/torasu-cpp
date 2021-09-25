@@ -14,12 +14,12 @@ class Rrctx_value : public torasu::tools::SimpleRenderable {
 private:
 	Dstring_pair mapping; // A: valueKey B: pipelineName
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rrctx_value(std::string valueKey, std::string pipelineName);
 	~Rrctx_value();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

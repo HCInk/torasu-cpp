@@ -6,7 +6,7 @@
 namespace torasu::tstd {
 
 Rfallback::Rfallback(std::vector<torasu::tools::RenderableSlot> slots)
-	: SimpleRenderable("STD::RFALLBACK", false, true) {
+	: SimpleRenderable(false, true) {
 
 	int i = 0;
 	for (auto& slot : slots) {
@@ -18,7 +18,11 @@ Rfallback::Rfallback(std::vector<torasu::tools::RenderableSlot> slots)
 
 Rfallback::~Rfallback() {}
 
-ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+Identifier Rfallback::getType() {
+	return "STD::RFALLBACK";
+}
+
+ResultSegment* Rfallback::render(RenderInstruction* ri) {
 
 	tools::RenderHelper rh(ri);
 
@@ -39,27 +43,12 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 	size_t optNo = 0;
 	for (auto& slot : slots) {
 		optNo++;
-		torasu::ResultSettings rs = {resSettings};
-		auto rid = rh.ei->enqueueRender(slot.second.get(), ri->getRenderContext(), &rs, ri->getLogInstruction(), 0);
+		auto rid = rh.ei->enqueueRender(slot.second.get(), rh.rctx, ri->getResultSettings(), rh.li, 0);
 
-		std::unique_ptr<RenderResult> rr(rh.fetchRenderResult(rid));
+		std::unique_ptr<ResultSegment> rr(rh.fetchRenderResult(rid));
+		rh.collectMask(rr->getResultMask());
 
-		auto* res = rr->getResults();
-
-		auto foundResult = res->find(resSettings->getKey());
-
-		if (foundResult == res->end()) {
-			rh.lrib.hasError = true;
-			rh.collectMask(nullptr);
-			if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
-											   + " has not provided the requested result.");
-			if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
-			continue;
-		}
-
-		auto* rseg = foundResult->second;
-		ResultSegmentStatus status = rseg->getStatus();
-		rh.collectMask(rseg->getResultMask());
+		ResultSegmentStatus status = rr->getStatus();
 
 		if (status < 0) {
 			switch (status) {
@@ -68,14 +57,14 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 				// Planned use of fallback
 				if (logDetails) rh.lrib.logCause(torasu::DEBUG, "Option No. " + std::to_string(optNo)
 													 + " signalized that no result is present. Skipping. (As planned on no result-presence)",
-													 new auto(*rseg->getResultInfoRef()));
+													 new auto(*rr->getResultInfoRef()));
 				break;
 			case ResultSegmentStatus_INVALID_FORMAT:
 				// Error: Note invalid format
 				rh.lrib.hasError = true;
 				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
 												   + " encountered a format error, skipping to next fallback.",
-												   new auto(*rseg->getResultInfoRef()));
+												   new auto(*rr->getResultInfoRef()));
 				if (fallbackLevel < INVALID_FORMAT) fallbackLevel = INVALID_FORMAT;
 				break;
 			case ResultSegmentStatus_INTERNAL_ERROR:
@@ -83,7 +72,7 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 				rh.lrib.hasError = true;
 				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
 												   + " encountered an internal error, skipping to next fallback.",
-												   new auto(*rseg->getResultInfoRef()));
+												   new auto(*rr->getResultInfoRef()));
 				if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
 				break;
 			default:
@@ -91,7 +80,7 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 				rh.lrib.hasError = true;
 				if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
 												   + " encountered an unknown error-code (" + std::to_string(status) + "), skipping to next fallback.",
-												   new auto(*rseg->getResultInfoRef()));
+												   new auto(*rr->getResultInfoRef()));
 				if (fallbackLevel < INTERNAL_ERROR) fallbackLevel = INTERNAL_ERROR;
 				break;
 			}
@@ -100,18 +89,18 @@ ResultSegment* Rfallback::renderSegment(ResultSegmentSettings* resSettings, Rend
 			rh.lrib.hasError = true;
 			if (logWarns) rh.lrib.logCause(torasu::WARN, "Option No. " + std::to_string(optNo)
 											   + " signalized that it may contain errors. Still taking.",
-											   new auto(*rseg->getResultInfoRef()));
+											   new auto(*rr->getResultInfoRef()));
 		}
 
 		if (logDetails) rh.li.logger->log(torasu::DEBUG, "Selected Option No. " + std::to_string(optNo));
 
 		if (fallbackLevel != NO_SEGMENTS) rh.lrib.hasError = true;
 
-		if (rseg->canFreeResult()) {
-			return rh.buildResult(rseg->ejectResult());
+		if (rr->canFreeResult()) {
+			return rh.buildResult(rr->ejectResult());
 		} else {
 			return new ResultSegment(!rh.lrib.hasError ? torasu::ResultSegmentStatus_OK: torasu::ResultSegmentStatus_OK_WARN,
-									 rseg->getResult(), false, rh.takeResMask(), rh.lrib.build());
+									 rr->getResult(), false, rh.takeResMask(), rh.lrib.build());
 		}
 
 

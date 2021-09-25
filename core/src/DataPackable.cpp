@@ -85,8 +85,8 @@ DPUniversal::DPUniversal(json jsonParsed) : DataPackable(jsonParsed) {
 	init();
 }
 
-std::string DPUniversal::getIdent() const {
-	return ident;
+Identifier DPUniversal::getType() const {
+	return ident.c_str();
 }
 
 void DPUniversal::load() {

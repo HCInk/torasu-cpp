@@ -16,50 +16,44 @@
 namespace torasu::texample {
 
 void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx, LogInstruction li) {
-
-	// Creation of the instruction-builder (Defintion of segments)
-
-	torasu::tools::RenderInstructionBuilder rib;
-	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr /*TODO format here*/);
+	tools::LogInfoRefBuilder lrib(li);
 
 	// Enqueueing the render with generated instruction
-	auto rndId = rib.enqueueRender(tree, rctx, ei, li);
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+	auto rndId = ei->enqueueRender(tree, rctx, &rs, li, 0);
 
 	// Fetching the Render-Result
-	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(rndId));
-	auto rs = resHandle.getFrom(rr.get());
+	std::unique_ptr<torasu::ResultSegment> rr(ei->fetchRenderResult(rndId));
+	tools::CastedRenderSegmentResult<torasu::tstd::Dnum> result(rr.get(), &lrib);
 
 	// Evalulating the Result
 
-	torasu::tstd::Dnum* numData = rs.getResult();
-	if (rs.getResult() != nullptr) {
+	torasu::tstd::Dnum* numData = result.getResult();
+	if (result.getResult() != nullptr) {
 		double num = numData->getNum();
-		std::cout << "EXEC-RESULT: " << num << " - STATUS: " << rs.getStatus() << std::endl;
+		std::cout << "EXEC-RESULT: " << num << " - STATUS: " << result.getStatus() << std::endl;
 	} else {
-		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << rs.getStatus() << std::endl;
+		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << result.getStatus() << std::endl;
 	}
 
 }
 
 void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInterface* ei, torasu::RenderContext* rctx, LogInstruction li) {
-
-	// Creation of the instruction-builder (Defintion of segments)
-
-	torasu::tools::RenderInstructionBuilder rib;
-	auto resHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr /*TODO format here*/);
+	tools::LogInfoRefBuilder lrib(li);
 
 	// Rendering / Fetching the Render-Result
-	std::unique_ptr<torasu::RenderResult> rr(rib.runRender(tree, rctx, ei, li));
-	auto rs = resHandle.getFrom(rr.get());
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+	std::unique_ptr<torasu::ResultSegment> rr(ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, li, 0)));
+	tools::CastedRenderSegmentResult<torasu::tstd::Dnum> result(rr.get(), &lrib);
 
 	// Evalulating the Result
 
-	torasu::tstd::Dnum* numData = rs.getResult();
-	if (rs.getResult() != nullptr) {
+	torasu::tstd::Dnum* numData = result.getResult();
+	if (result.getResult() != nullptr) {
 		double num = numData->getNum();
-		std::cout << "EXEC-RESULT: " << num << " - STATUS: " << rs.getStatus() << std::endl;
+		std::cout << "EXEC-RESULT: " << num << " - STATUS: " << result.getStatus() << std::endl;
 	} else {
-		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << rs.getStatus() << std::endl;
+		std::cout << "EXEC-RESULT: NONE/ERROR - STATUS: " << result.getStatus() << std::endl;
 	}
 
 }

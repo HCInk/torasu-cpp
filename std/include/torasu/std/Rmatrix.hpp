@@ -2,6 +2,7 @@
 #define STD_INCLUDE_TORASU_STD_RMATRIX_HPP_
 
 #include <string>
+#include <map>
 #include <initializer_list>
 
 #include <torasu/torasu.hpp>
@@ -18,9 +19,6 @@ private:
 	Dnum height;
 	std::map<size_t, torasu::tools::ManagedSlot<torasu::tstd::NumSlot>> vals;
 
-protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
-
 public:
 	/**
 	 * @brief  Create Matrix-Renderable
@@ -29,6 +27,9 @@ public:
 	 */
 	explicit Rmatrix(std::initializer_list<torasu::tstd::NumSlot> numbers, size_t height = 0);
 	virtual ~Rmatrix();
+	Identifier getType() override;
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

@@ -39,8 +39,8 @@ torasu::DataResource::CompareResult Dstring::compare(const DataResource* other) 
 	}
 }
 
-std::string Dstring::getIdent() const {
-	return ident;
+torasu::Identifier Dstring::getType() const {
+	return "STD::DSTRING";
 }
 
 void Dstring::load() {

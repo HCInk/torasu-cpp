@@ -15,12 +15,12 @@ class Rfallback : public torasu::tools::SimpleRenderable {
 private:
 	std::map<size_t, torasu::tools::ManagedRenderableSlot> slots;
 
-protected:
-	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
-
 public:
 	explicit Rfallback(std::vector<torasu::tools::RenderableSlot> slots);
 	~Rfallback();
+	Identifier getType() override;
+
+	ResultSegment* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements();
 	void setElement(std::string key, torasu::Element* elem);

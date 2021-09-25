@@ -81,7 +81,7 @@ public:
 	Daudio_buffer_CHANNEL* getChannels() const;
 	size_t getChannelCount() const;
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	DataDump* dumpResource() override;
 	Daudio_buffer* clone() const override;
 

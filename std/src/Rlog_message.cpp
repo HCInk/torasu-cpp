@@ -3,20 +3,22 @@
 namespace torasu::tstd {
 
 Rlog_message::Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src)
-	: NamedIdentElement("STD::RLOG_MESSAGE"),
-	  SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  message(message),
 	  srcRnd(src) {}
 
 Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src)
-	: NamedIdentElement("STD::RLOG_MESSAGE"),
-	  SimpleDataElement(true, true),
+	: SimpleRenderable(true, true),
 	  message(level, message),
 	  srcRnd(src) {}
 
 Rlog_message::~Rlog_message() {}
 
-RenderResult* Rlog_message::render(RenderInstruction* ri) {
+Identifier Rlog_message::getType() {
+	return "STD::RLOG_MESSAGE";
+}
+
+ResultSegment* Rlog_message::render(RenderInstruction* ri) {
 
 	auto li = ri->getLogInstruction();
 
@@ -28,7 +30,7 @@ RenderResult* Rlog_message::render(RenderInstruction* ri) {
 
 	auto rid = ei->enqueueRender(srcRnd.get(), ri->getRenderContext(), ri->getResultSettings(), li, 0);
 
-	torasu::RenderResult* rr = ei->fetchRenderResult(rid);
+	torasu::ResultSegment* rr = ei->fetchRenderResult(rid);
 
 	return rr;
 

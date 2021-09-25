@@ -339,7 +339,7 @@ void EIcore_runner::run(EIcore_runner_thread* threadHandle, bool collapse) {
 		//
 
 		std::function<void(void)> runCleanup;
-		RenderResult* result = task->run(&runCleanup);
+		ResultSegment* result = task->run(&runCleanup);
 
 		//
 		// Saving its result and removing task from queue
@@ -502,7 +502,7 @@ EIcore_runner_object::~EIcore_runner_object() {
 			for (auto* subTask : pendingSubTasks) {
 				int64_t rid = subTask->renderId;
 				if (log) li.logger->log(torasu::LogLevel::WARN, " Wating for uncompleted render of \"" + subTask->rnd->getType() + "\" (#" + std::to_string(rid) + ") to finish...");
-				RenderResult* rr = fetchRenderResult(rid);
+				ResultSegment* rr = fetchRenderResult(rid);
 				delete rr;
 			}
 
@@ -634,17 +634,10 @@ void EIcore_runner_object::Benchmarking::stop(bool final) {
 
 // EICoreRunnerObject: Execution Functions
 
-RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
+ResultSegment* EIcore_runner_object::run(std::function<void()>* outCleanupFunction) {
 
 	torasu::tstd::EIcore_runner_elemhandler::ReadyStateHandle* rdyHandle;
-	{
-		std::vector<std::string> ops;
-		for (auto& rss : *rs) {
-			ops.push_back(rss->getPipeline());
-		}
-
-		rdyHandle = elemHandler->ready(ops, rctx, this, li);
-	}
+	rdyHandle = elemHandler->ready(rs->getPipeline(), rctx, this, li);
 
 	std::string addr;
 	{
@@ -661,7 +654,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 
 	RenderInstruction ri(rctx, rs, this, li, rdyHandle != nullptr ? rdyHandle->state : nullptr);
 
-	RenderResult* res = rnd->render(&ri);
+	ResultSegment* res = rnd->render(&ri);
 
 	*outCleanupFunction = [rdyHandle]() {
 		if (rdyHandle != nullptr) delete rdyHandle;
@@ -693,7 +686,7 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 	return res;
 }
 
-RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
+ResultSegment* EIcore_runner_object::fetchOwnRenderResult() {
 
 	// 0 = Not set to sleep yet, 1=Set to sleep, 2=cant be set to sleep
 	int suspendState = 0;
@@ -713,7 +706,7 @@ RenderResult* EIcore_runner_object::fetchOwnRenderResult() {
 				auto unsuspendEnd = std::chrono::high_resolution_clock::now();
 				std::cout << "UNSUSPEND " << std::chrono::duration_cast<std::chrono::nanoseconds>(unsuspendEnd - unsuspendStart).count() << "ns" << std::endl;
 #endif
-				return const_cast<RenderResult*>(result); // casting the volatile away
+				return const_cast<ResultSegment*>(result); // casting the volatile away
 			}
 		}
 		if (suspendState == 0) {
@@ -786,7 +779,7 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 		if (lockSubTasks) subTasksLock.lock();
 
 		struct FetchSet {
-			RenderResult** result;
+			ResultSegment** result;
 			EIcore_runner_object* task;
 		};
 
@@ -952,7 +945,7 @@ void EIcore_runner_object::treestat(LogInstruction li, bool lock) {
 
 		lockStack.emplace(currObj->subTasksLock);
 
-		std::string name = currObj->rnd != nullptr ? currObj->rnd->getType() : "(NULL)";
+		std::string name = currObj->rnd != nullptr ? currObj->rnd->getType().str : "(NULL)";
 		std::string stateStr;
 		switch(currObj->status) {
 		case torasu::tstd::EIcore_runner_object_status::RUNNING: {
@@ -1028,7 +1021,7 @@ void EIcore_runner_object_logger::log(LogEntry* entry) {
 		if (!registered) {
 			ownLogId = logger->fetchSubId();
 			auto* regEntry =
-				new LogGroupStart(obj->rnd->getType());
+				new LogGroupStart(obj->rnd->getType().str);
 			regEntry->groupStack.push_back(ownLogId);
 			logger->log(regEntry);
 			registered = true;
@@ -1245,36 +1238,23 @@ EIcore_runner_elemhandler::ReadyStateHandle::~ReadyStateHandle() {
 	lrs->unregUse();
 }
 
-EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(const std::vector<std::string>& ops, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
+EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(torasu::Identifier operation, torasu::RenderContext* const rctx, EIcore_runner_object* obj, LogInstruction li) {
 	std::unique_lock listLck(readyStatesLock);
 
 	// Look for existing state in list
 
 	for (auto* currentState : readyStates) {
-		// Multiop madness
-		bool hasMatchingOps = true;
-		for (auto searchedOp : ops) {
-			bool hasFound = false;
-			for (auto foundOp : *currentState->rdys->getOperations()) {
-				if (foundOp == searchedOp) {
-					hasFound = true;
-					break;
+		for (auto foundOp : *currentState->rdys->getOperations()) {
+			if (foundOp == operation) {
+				// Found macthing operation, use if rctx fits
+				auto checkResult = currentState->rdys->getContextMask()->check(rctx);
+				if (checkResult == torasu::DataResourceMask::MaskCompareResult::MCR_INSIDE) {
+					// Operation and Rctx fits, add usage
+					return currentState->newUse();
 				}
 			}
-			if (!hasFound) {
-				hasMatchingOps = false;
-				break;
-			}
 		}
 
-		if (!hasMatchingOps) break;
-
-		// Check mask
-
-		auto checkResult = currentState->rdys->getContextMask()->check(rctx);
-		if (checkResult == torasu::DataResourceMask::MaskCompareResult::MCR_INSIDE) {
-			return currentState->newUse();
-		}
 	}
 
 	// Create new ready-state
@@ -1287,8 +1267,8 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 		std::unique_lock<std::mutex>* listLock;
 		EIcore_runner_elemhandler* elemHandler;
 	public:
-		ReadyHandler(const std::vector<std::string>& ops, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
-			: ReadyInstruction(ops, rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
+		ReadyHandler(Identifier operation, RenderContext* rctx, EIcore_runner_object* obj, LogInstruction li, LoadedReadyState** stateOut, std::unique_lock<std::mutex>* listLock, EIcore_runner_elemhandler* elemHandler)
+			: ReadyInstruction(std::vector<Identifier>({operation}), rctx, obj, li), stateOut(stateOut), listLock(listLock), elemHandler(elemHandler) {}
 
 		void setState(ReadyState* state) override {
 			if (state != nullptr) {
@@ -1296,7 +1276,7 @@ EIcore_runner_elemhandler::ReadyStateHandle* EIcore_runner_elemhandler::ready(co
 			}
 			listLock->unlock();
 		}
-	} readyHandler(ops, rctx, obj, li, &state, &listLck, this);
+	} readyHandler(operation, rctx, obj, li, &state, &listLck, this);
 
 	bool previousDoBenchSetting = obj->recordBench;
 

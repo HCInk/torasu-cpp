@@ -10,40 +10,36 @@
 namespace torasu::tstd {
 
 Rfloor_mod::Rfloor_mod(NumSlot val, NumSlot fac)
-	: SimpleRenderable("STD::RFLOOR_MOD", false, true),
-	  valRnd(val), facRnd(fac) {}
+	: SimpleRenderable(false, true), valRnd(val), facRnd(fac) {}
 
 
 Rfloor_mod::~Rfloor_mod() {}
 
-torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
-	if (pipeline == TORASU_STD_PL_NUM) {
+Identifier Rfloor_mod::getType() {
+	return "STD::RFLOOR_MOD";
+}
 
-		auto* ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto* rctx = ri->getRenderContext();
+torasu::ResultSegment* Rfloor_mod::render(torasu::RenderInstruction* ri) {
+	tools::RenderHelper rh(ri);
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
-		// Sub-renderings
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dnum>(TORASU_STD_PL_NUM, nullptr);
+		auto valRid = rh.enqueueRender(valRnd, &resSetting);
+		auto facRid = rh.enqueueRender(facRnd, &resSetting);
 
-		auto valRid = rib.enqueueRender(valRnd, rctx, ei, li);
-		auto facRid = rib.enqueueRender(facRnd, rctx, ei, li);
+		std::unique_ptr<torasu::ResultSegment> valRes(rh.fetchRenderResult(valRid));
+		std::unique_ptr<torasu::ResultSegment> facRes(rh.fetchRenderResult(facRid));
 
-		std::unique_ptr<torasu::RenderResult> valRes(ei->fetchRenderResult(valRid));
-		std::unique_ptr<torasu::RenderResult> facRes(ei->fetchRenderResult(facRid));
-
-		auto* fetchedVal = segHandle.getFrom(valRes.get()).getResult();
-		auto* fetchedFac = segHandle.getFrom(facRes.get()).getResult();
+		auto* fetchedVal = rh.evalResult<torasu::tstd::Dnum>(valRes.get()).getResult();
+		auto* fetchedFac = rh.evalResult<torasu::tstd::Dnum>(facRes.get()).getResult();
 
 		if (fetchedVal == nullptr) {
-			return new torasu::ResultSegment(ResultSegmentStatus_OK_WARN, new torasu::tstd::Dnum(0), true);
+			return rh.buildResult(new torasu::tstd::Dnum(0), torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 		if (fetchedFac == nullptr) {
-			return new torasu::ResultSegment(ResultSegmentStatus_OK_WARN, new torasu::tstd::Dnum(*fetchedVal), true);
+			return rh.buildResult(new torasu::tstd::Dnum(*fetchedVal), torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 		double val = fetchedVal->getNum();
@@ -51,7 +47,7 @@ torasu::ResultSegment* Rfloor_mod::renderSegment(torasu::ResultSegmentSettings* 
 
 		double res = val - fac * floor(val/fac);
 
-		return new torasu::ResultSegment(torasu::ResultSegmentStatus_OK, new torasu::tstd::Dnum(res), true);
+		return rh.buildResult(new torasu::tstd::Dnum(res));
 	} else {
 		return new torasu::ResultSegment(torasu::ResultSegmentStatus_INVALID_SEGMENT);
 	}

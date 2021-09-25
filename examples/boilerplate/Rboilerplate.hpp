@@ -16,11 +16,12 @@ private:
 	Renderable* exampleRnd;
 
 protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 public:
 	Rboilerplate(Dboilerplate* data, Renderable* exampleRnd);
 	~Rboilerplate();
+	Identifier getType() override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <utility>
 #include <memory>
 #include <vector>
 #include <sstream>
@@ -31,13 +32,15 @@ public:
 	ExecutionInterface* const ei;
 	LogInstruction li;
 	RenderContext* const rctx;
+	ResultSettings* const rs = nullptr;
 private:
 	RenderContextMask* resMask;
 public:
 	torasu::tools::LogInfoRefBuilder lrib;
 
 	explicit RenderHelper(RenderInstruction* ri);
-	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx);
+	explicit RenderHelper(ReadyInstruction* ri);
+	RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx, ResultSettings* rs = nullptr);
 	~RenderHelper();
 
 	/** @brief  Will collect another rctx-mask into the result-mask
@@ -68,10 +71,90 @@ public:
 	// Passthru / Aliases
 	//
 
+	inline uint64_t enqueueRender(torasu::Renderable* rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+		return ei->enqueueRender(rend, rctx != nullptr ? rctx : this->rctx, rs, li, prio);
+	}
+
+	inline uint64_t enqueueRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+		return enqueueRender(rend.get(), rs, rctx, prio);
+	}
+
 	/** @brief Fetch render result from ExecutionIntrface */
-	inline torasu::RenderResult* fetchRenderResult(uint64_t rid) {
+	inline torasu::ResultSegment* fetchRenderResult(uint64_t rid) {
 		return ei->fetchRenderResult(rid);
 	}
+
+	/** @brief Fetch render results from ExecutionIntrface */
+	inline void fetchRenderResults(torasu::ExecutionInterface::ResultPair* requests, size_t requestCount) {
+		ei->fetchRenderResults(requests, requestCount);
+	}
+
+	inline torasu::ResultSegment* runRender(torasu::Renderable* rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+		return fetchRenderResult(enqueueRender(rend, rs, rctx, prio));
+	}
+
+	inline torasu::ResultSegment* runRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+		return runRender(rend.get(), rs, rctx, prio);
+	}
+
+	template<class T> inline CastedRenderSegmentResult<T> evalResult(torasu::ResultSegment* rr, bool doCollectMask = true) {
+		auto result = CastedRenderSegmentResult<T>(rr, &lrib);
+		if (doCollectMask) collectMask(result.getResultMask());
+		return result;
+	}
+
+	template<class T> inline void noteSubError(CastedRenderSegmentResult<T> res, std::string message) {
+		lrib.hasError = true;
+		if (mayLog(torasu::WARN)) {
+			lrib.logCause(torasu::WARN, message, res.takeInfoTag());
+		}
+	}
+
+	//
+	// ResultSettings-specific tools
+	//
+
+	/**
+	 * @brief  Check if given pipeline matches the requested pipeline
+	 * @note   Only use when ResultSettings are provided
+	 * @param  match: The pipeline to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool matchPipeline(torasu::Identifier match) const {
+		return rs->getPipeline() == match;
+	}
+
+	/**
+	 * @brief  Check if given pipeline is a property
+	 * @note   Only use when ResultSettings are provided
+	 * @param  match: The property (without property-prefix) to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool isProperty() const {
+		return torasu::isPipelineKeyPropertyKey(rs->getPipeline());
+	}
+
+	/**
+	 * @brief  Check if given pipeline matches the requested property
+	 * @note   Only use when ResultSettings are provided and isProperty() returns true
+	 * @param  match: The property (without property-prefix) to match
+	 * @retval true: match, false: no match
+	 */
+	inline bool matchProperty(torasu::Identifier match) const {
+		return match == (rs->getPipeline().str+TORASU_PROPERTY_PREFIX_LEN);
+	}
+
+	/**
+	 * @brief  Get/cast provided format
+	 * @note   Only use when ResultSettings are provided
+	 * @retval The casted format, if cast was successful / nullptr, If no format has been provided or the format is not matching
+	 */
+	template<class T> inline const T* getFormat() const {
+		const auto* fmt = rs->getFromat();
+		if (fmt == nullptr) return nullptr;
+		return dynamic_cast<T*>(fmt);
+	}
+
 };
 
 
@@ -165,118 +248,6 @@ public:
 	}
 };
 
-template<class T> inline CastedRenderSegmentResult<T> findResult(RenderResult* rr, const std::string& key, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {
-	std::map<std::string, ResultSegment*>* results = rr->getResults();
-	if (results == NULL) {
-		if (infoBuilder != nullptr) {
-			infoBuilder->hasError = true;
-			auto causeTag = infoBuilder->logCause(WARN, "Generated results are empty!");
-			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
-		} else {
-			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
-		}
-	}
-
-	std::map<std::string, ResultSegment*>::iterator found = results->find(key);
-	if (found != rr->getResults()->end()) {
-		return CastedRenderSegmentResult<T>(found->second, infoBuilder);
-	} else {
-		if (infoBuilder != nullptr) {
-			infoBuilder->hasError = true;
-			auto causeTag = infoBuilder->logCause(WARN, "Generated result not found under key \"" + key + "\"!");
-			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT, causeTag, infoBuilder);
-		} else {
-			return CastedRenderSegmentResult<T>(ResultSegmentStatus::ResultSegmentStatus_NON_EXISTENT);
-		}
-	}
-
-}
-
-template<class T> class RenderResultSegmentHandle {
-private:
-	std::string segKey;
-public:
-	explicit RenderResultSegmentHandle(std::string segKey) {
-		this->segKey = segKey;
-	}
-
-	~RenderResultSegmentHandle() {}
-
-	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::LogInfoRefBuilder* infoBuilder = nullptr) {
-		return findResult<T>(rr, segKey, infoBuilder);
-	}
-
-	inline CastedRenderSegmentResult<T> getFrom(RenderResult* rr, torasu::tools::RenderHelper* helper, bool collectMask = true) {
-		auto result = findResult<T>(rr, segKey, &helper->lrib);
-		if (collectMask) helper->collectMask(result.getResultMask());
-		return result;
-	}
-
-};
-
-class RenderInstructionBuilder {
-private:
-	ResultSettings* rs = NULL;
-	std::vector<ResultSegmentSettings*>* segments;
-
-	void buildResultSettings();
-
-	inline ResultSettings* getResultSetttings() {
-		if (rs != NULL) {
-			return rs;
-		} else {
-			buildResultSettings();
-			return rs;
-		}
-	}
-
-	int autoKeyIndex = 0;
-
-	inline std::string getUnusedKey() {
-		autoKeyIndex++;
-		return std::to_string(autoKeyIndex-1);
-	}
-
-public:
-	RenderInstructionBuilder();
-	~RenderInstructionBuilder();
-
-	inline void addSegment(const std::string& pipeline, const std::string& key, ResultFormatSettings* format) {
-		segments->push_back(new ResultSegmentSettings(pipeline, key, format));
-	}
-
-	template<class T> inline RenderResultSegmentHandle<T> addSegmentWithHandle(const std::string& pipeline, ResultFormatSettings* format) {
-		std::string segKey = getUnusedKey();
-		addSegment(pipeline, segKey, format);
-		return RenderResultSegmentHandle<T>(segKey);
-	}
-
-	inline uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
-#ifdef TORASU_CHECK_RENDER_NULL_RCTX
-		if (rctx == nullptr) throw std::logic_error("Can't enqueue render without a render-context");
-#endif
-		return ei->enqueueRender(rnd, rctx, getResultSetttings(), li, prio);
-	}
-
-	inline uint64_t enqueueRender(RenderableSlot rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
-		return enqueueRender(rnd.get(), rctx, ei, li, prio);
-	}
-
-	inline uint64_t enqueueRender(Renderable* rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
-		if (rctx == nullptr) rctx = rh->rctx;
-		return rh->ei->enqueueRender(rnd, rctx, getResultSetttings(), rh->li, prio);
-	}
-
-	inline uint64_t enqueueRender(RenderableSlot rnd, RenderHelper* rh, RenderContext* rctx = nullptr, int64_t prio=0) {
-		return enqueueRender(rnd.get(), rh, rctx, prio);
-	}
-
-	inline RenderResult* runRender(Renderable* rnd, RenderContext* rctx, ExecutionInterface* ei, LogInstruction li, int64_t prio=0) {
-		uint64_t renderId = enqueueRender(rnd, rctx, ei, li, prio);
-		return ei->fetchRenderResult(renderId);
-	}
-};
-
 template<class T> inline T* getPropertyValue(RenderableProperties* props, std::string key, bool* incorrectType=nullptr) {
 	auto& holder = (*props)[key];
 	if (holder.get() == nullptr) {
@@ -295,7 +266,7 @@ template<class T> inline T* getPropertyValue(RenderableProperties* props, std::s
 
 }
 
-inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string> rProps, torasu::ExecutionInterface* ei, LogInstruction li, RenderContext* rctx = nullptr) {
+inline RenderableProperties* getProperties(Renderable* rnd, const std::set<std::string> rProps, torasu::ExecutionInterface* ei, LogInstruction li, RenderContext* rctx = nullptr) {
 	auto* rp = new RenderableProperties();
 
 	std::unique_ptr<RenderContext> dummyRctx;
@@ -304,37 +275,35 @@ inline RenderableProperties* getProperties(Renderable* rnd, std::set<std::string
 		rctx = dummyRctx.get();
 	}
 
-	ResultSettings rs;
-	int32_t segmentKey = 0;
-	for (std::string propKey : rProps) {
-		ResultSegmentSettings* segSettings = new ResultSegmentSettings(TORASU_PROPERTY_PREFIX + propKey, std::to_string(segmentKey), nullptr);
-		rs.push_back(segSettings);
-		segmentKey++;
+	std::vector<std::pair<torasu::ExecutionInterface::ResultPair*, const char*>> resultMapping;
+	std::vector<torasu::ResultSettings*> settingsStore;
+	std::vector<torasu::ExecutionInterface::ResultPair> resPair(rProps.size());
+	size_t i = 0;
+	for (const auto& propKey : rProps) {
+		ResultSettings* segSettings = new ResultSettings(propKey.c_str(), nullptr);
+		settingsStore.push_back(segSettings);
+		auto& rp = resPair[i];
+		rp.renderId = ei->enqueueRender(rnd, rctx, segSettings, li, 0);
+		resultMapping.push_back({&rp, propKey.c_str()});
+		i++;
 	}
 
-	uint64_t rendId = ei->enqueueRender(rnd, rctx, &rs, li, 0);
-	std::unique_ptr<RenderResult> result(ei->fetchRenderResult(rendId));
+	ei->fetchRenderResults(resPair.data(), i);
 
-	for (ResultSegmentSettings* segSettings : rs) {
+	for (ResultSettings* segSettings : settingsStore) {
 		delete segSettings;
 	}
 
-	if (result->getResults() == nullptr) {
-		throw std::runtime_error("Error when rendering properties: Renderable failed to return result-map!");
-	}
-
-	segmentKey = 0;
-	for (std::string propKey : rProps) {
-		auto* segResult = (*result->getResults())[std::to_string(segmentKey)];
+	for (const auto& prop : resultMapping) {
+		auto* segResult = prop.first->result;
 		if (segResult->getResult() != nullptr) {
-			auto& dr = (*rp)[propKey];
+			auto& dr = (*rp)[prop.second];
 			if (segResult->canFreeResult()) {
 				dr.initialize(segResult->ejectResult(), true);
 			} else {
 				dr.initialize(segResult->getResult(), false);
 			}
 		}
-		segmentKey++;
 	}
 
 	return rp;

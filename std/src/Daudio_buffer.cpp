@@ -49,7 +49,7 @@ DataDump* Daudio_buffer::dumpResource() {
 	throw std::logic_error("dumpResource() not implemented for Daudio_buffer");
 }
 
-std::string Daudio_buffer::getIdent() const {
+torasu::Identifier Daudio_buffer::getType() const {
 	return IDENT;
 }
 //                                                                                                                         Only delete old ref if not from instantiation

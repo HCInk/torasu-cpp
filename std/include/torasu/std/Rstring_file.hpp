@@ -13,8 +13,6 @@ namespace torasu::tstd {
 class Rstring_file : public torasu::tools::SimpleRenderable {
 private:
 	torasu::tools::ManagedRenderableSlot srcRnd;
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
 
 public:
 	/**
@@ -23,6 +21,9 @@ public:
 	 */
 	explicit Rstring_file(torasu::tools::RenderableSlot src);
 	~Rstring_file();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

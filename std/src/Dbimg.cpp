@@ -36,7 +36,7 @@ void Dbimg::clear() {
 	std::fill(data32, data32+(width*height), 0x00);
 }
 
-std::string Dbimg::getIdent() const {
+torasu::Identifier Dbimg::getType() const {
 	return IDENT;
 }
 

@@ -14,17 +14,15 @@ namespace torasu::tstd {
 
 class Rnet_file : public tools::SimpleRenderable {
 private:
-	std::string pipeline = std::string(TORASU_STD_PL_FILE);
-
 	tools::ManagedSlot<StringSlot> urlRnd;
 	tools::ManagedSlot<StringSlot> headersRnd;
-
-protected:
-	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
 
 public:
 	explicit Rnet_file(StringSlot url, StringSlot headers = StringSlot());
 	~Rnet_file();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

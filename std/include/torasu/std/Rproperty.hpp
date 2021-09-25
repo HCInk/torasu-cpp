@@ -15,12 +15,12 @@ private:
 	std::string fromProperty;
 	std::string servedPipeline;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline);
 	~Rproperty();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

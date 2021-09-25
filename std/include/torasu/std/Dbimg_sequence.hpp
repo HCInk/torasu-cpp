@@ -25,7 +25,7 @@ public:
 	Dbimg* addFrame(double pts, Dbimg_FORMAT format);
 	std::multimap<double, torasu::tstd::Dbimg*, std::less<double>>& getFrames();
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	DataDump* dumpResource() override;
 	Dbimg_sequence* clone() const override;
 };

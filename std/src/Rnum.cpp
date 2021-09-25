@@ -9,16 +9,20 @@ using namespace std;
 
 namespace torasu::tstd {
 
-Rnum::Rnum(double val) : SimpleRenderable("STD::RNUM", true, false) {
+Rnum::Rnum(double val) : SimpleRenderable(true, false) {
 	valdr = new Dnum(val);
 }
 
-Rnum::Rnum(Dnum val) : SimpleRenderable("STD::RNUM", true, false) {
+Rnum::Rnum(Dnum val) : SimpleRenderable(true, false) {
 	valdr = new Dnum(val);
 }
 
 Rnum::~Rnum() {
 	delete valdr;
+}
+
+Identifier Rnum::getType() {
+	return "STD::RNUM";
 }
 
 DataResource* Rnum::getData() {
@@ -34,9 +38,9 @@ void Rnum::setData(DataResource* data) {
 	}
 }
 
-ResultSegment* Rnum::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rnum::render(RenderInstruction* ri) {
 
-	if (resSettings->getPipeline().compare(pipeline) == 0) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 		return new ResultSegment(ResultSegmentStatus_OK, valdr, false, new RenderContextMask());
 	} else {
 		return new ResultSegment(ResultSegmentStatus_INVALID_SEGMENT, new RenderContextMask());

@@ -15,12 +15,12 @@ class Rsin : public tools::SimpleRenderable {
 private:
 	tools::ManagedSlot<NumSlot> valRnd;
 
-protected:
-	ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) override;
-
 public:
 	explicit Rsin(NumSlot val);
 	~Rsin();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;

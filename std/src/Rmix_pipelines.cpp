@@ -1,5 +1,7 @@
 #include "../include/torasu/std/Rmix_pipelines.hpp"
 
+#include <torasu/render_tools.hpp>
+
 namespace torasu::tstd {
 
 //
@@ -23,7 +25,7 @@ torasu::json Dmix_pipelines_conf::makeJson() {
 	return json;
 }
 
-std::string Dmix_pipelines_conf::getIdent() const {
+torasu::Identifier Dmix_pipelines_conf::getType() const {
 	return "STD::DMIX_PIPELINES_CONF";
 }
 
@@ -122,7 +124,7 @@ Dmix_pipelines_conf::~Dmix_pipelines_conf() {
 //
 
 Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes)
-	: SimpleRenderable("STD::RMIX_PIPELINES", true, true), defRnd(def) {
+	: SimpleRenderable(true, true), defRnd(def) {
 
 	std::vector<Dmix_pipelines_conf::PipelineMappingUnmanaged> entries;
 	size_t id = 0;
@@ -140,10 +142,15 @@ Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializ
 
 Rmix_pipelines::~Rmix_pipelines() {}
 
-torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	std::string pipeline = resSettings->getPipeline();
+Identifier Rmix_pipelines::getType() {
+	return "STD::RMIX_PIPELINES";
+}
 
-	auto found = conf.mappingsByPl.find(pipeline);
+torasu::ResultSegment* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
+	torasu::tools::RenderHelper rh(ri);
+	auto pipeline = ri->getResultSettings()->getPipeline();
+
+	auto found = conf.mappingsByPl.find(pipeline.str);
 
 	Renderable* rnd;
 
@@ -165,17 +172,7 @@ torasu::ResultSegment* Rmix_pipelines::renderSegment(torasu::ResultSegmentSettin
 		}
 	}
 
-	auto* ei = ri->getExecutionInterface();
-	auto rid = ei->enqueueRender(rnd, ri->getRenderContext(), ri->getResultSettings(), ri->getLogInstruction(), 0);
-
-	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(rid));
-
-	// XXX Proper ejection
-	auto* results = rr.get()->getResults();
-	torasu::ResultSegment* ejectedSeg = results->begin()->second;
-	results->erase(results->begin());
-
-	return ejectedSeg;
+	return rh.runRender(rnd, ri->getResultSettings());
 }
 
 #define DEFUALT_KEY "def"

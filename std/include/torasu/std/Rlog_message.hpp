@@ -9,10 +9,7 @@
 
 namespace torasu::tstd {
 
-class Rlog_message : public torasu::tools::NamedIdentElement,
-	public torasu::tools::SimpleDataElement,
-	public torasu::tools::ReadylessElement,
-	public torasu::Renderable {
+class Rlog_message : public torasu::tools::SimpleRenderable {
 private:
 	torasu::LogMessage message;
 	torasu::tools::ManagedRenderableSlot srcRnd;
@@ -21,8 +18,9 @@ public:
 	Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src);
 	Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src);
 	~Rlog_message();
+	Identifier getType() override;
 
-	RenderResult* render(RenderInstruction* ri) override;
+	torasu::ResultSegment* render(RenderInstruction* ri) override;
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;

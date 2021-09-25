@@ -3,12 +3,16 @@
 namespace torasu::tstd {
 
 Rrctx_value::Rrctx_value(std::string valueKey, std::string pipelineName)
-	: SimpleRenderable("STD::RRCTX_VALUE", true, false), mapping(valueKey, pipelineName) {}
+	: SimpleRenderable(true, false), mapping(valueKey, pipelineName) {}
 
 Rrctx_value::~Rrctx_value() {}
 
-torasu::ResultSegment* Rrctx_value::renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) {
-	if (resSettings->getPipeline() == mapping.getB()) {
+Identifier Rrctx_value::getType() {
+	return "STD::RRCTX_VALUE";
+}
+
+torasu::ResultSegment* Rrctx_value::render(torasu::RenderInstruction* ri) {
+	if (ri->getResultSettings()->getPipeline().str == mapping.getB()) {
 
 		auto* rctx = ri->getRenderContext();
 

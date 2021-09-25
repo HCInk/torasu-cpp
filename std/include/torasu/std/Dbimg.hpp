@@ -25,7 +25,7 @@ public:
 
 	void clear();
 
-	std::string getIdent() const override;
+	Identifier getType() const override;
 	DataDump* dumpResource() override;
 	Dbimg* clone() const override;
 

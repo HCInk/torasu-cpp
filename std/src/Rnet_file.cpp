@@ -32,10 +32,14 @@ inline std::vector<std::string> split(std::string base, std::string delimiter) {
 namespace torasu::tstd {
 
 Rnet_file::Rnet_file(StringSlot url, StringSlot headers)
-	: SimpleRenderable("STD::RNET_FILE", false, true),
+	: SimpleRenderable(false, true),
 	  urlRnd(url),  headersRnd(headers) {}
 
 Rnet_file::~Rnet_file() {}
+
+Identifier Rnet_file::getType() {
+	return "STD::RNET_FILE";
+}
 
 size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* s) {
 	size_t new_len = size*nmemb;
@@ -45,27 +49,25 @@ size_t Rnet_file_WRITE_FUNC(void* ptr, size_t size, size_t nmemb,  std::string* 
 	return size*nmemb;
 }
 
-ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rnet_file::render(RenderInstruction* ri) {
 
-	if (resSettings->getPipeline().compare(pipeline) == 0) {
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_FILE) {
 
 		// Getting url
 
 		tools::RenderHelper rh(ri);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_STRING, nullptr);
 
-		torasu::tools::RenderInstructionBuilder rib;
-		auto segHandle = rib.addSegmentWithHandle<torasu::tstd::Dstring>(TORASU_STD_PL_STRING, nullptr);
-
-		auto renderId = rib.enqueueRender(urlRnd, &rh);
-		auto renderIdHeaders = headersRnd.get() != nullptr ? rib.enqueueRender(headersRnd, &rh) : 0;
+		auto renderId = rh.enqueueRender(urlRnd, &resSetting);
+		auto renderIdHeaders = headersRnd.get() != nullptr ? rh.enqueueRender(headersRnd, &resSetting) : 0;
 
 		std::string url;
 		{
-			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));
+			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderId));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
+			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
-			if (fetchedRes.getResult() == nullptr) {
+			if (!fetchedRes) {
 				rh.lrib.logCause(LogLevel::WARN, "Error fetching url!", fetchedRes.takeInfoTag());
 				return rh.buildResult(torasu::ResultSegmentStatus_INTERNAL_ERROR);
 			}
@@ -75,11 +77,11 @@ ResultSegment* Rnet_file::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		std::string headers = "";
 		if (headersRnd.get() != nullptr) {
-			std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderIdHeaders));
+			std::unique_ptr<torasu::ResultSegment> rndRes(rh.fetchRenderResult(renderIdHeaders));
 
-			auto fetchedRes = segHandle.getFrom(rndRes.get(), &rh);
+			auto fetchedRes = rh.evalResult<tstd::Dstring>(rndRes.get());
 
-			if (fetchedRes.getResult() != nullptr) {
+			if (fetchedRes) {
 				headers = fetchedRes.getResult()->getString();
 			} else {
 				if (rh.mayLog(WARN)) {

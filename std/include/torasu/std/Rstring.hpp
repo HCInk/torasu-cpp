@@ -15,12 +15,12 @@ class Rstring : public torasu::tools::SimpleRenderable {
 private:
 	Dstring* str;
 
-protected:
-	torasu::ResultSegment* renderSegment(torasu::ResultSegmentSettings* resSettings, torasu::RenderInstruction* ri) override;
-
 public:
 	explicit Rstring(std::string str);
 	~Rstring();
+	Identifier getType() override;
+
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

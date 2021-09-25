@@ -12,8 +12,6 @@ namespace torasu::tstd {
 class Dstring : public torasu::DataPackable {
 
 private:
-	const std::string ident = std::string("STD::DSTRING");
-
 	std::string string;
 
 protected:
@@ -28,7 +26,7 @@ public:
 	const std::string& getString() const;
 
 	torasu::DataResource::CompareResult compare(const DataResource* other) const override;
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dstring* clone() const override;
 };
 

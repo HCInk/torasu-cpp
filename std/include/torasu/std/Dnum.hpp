@@ -12,8 +12,6 @@ namespace torasu::tstd {
 class Dnum : public torasu::DataPackable {
 
 private:
-	const std::string ident = std::string("STD::DNUM");
-
 	double num;
 
 protected:
@@ -33,7 +31,7 @@ public:
 
 	double getNum();
 
-	std::string getIdent() const override;
+	torasu::Identifier getType() const override;
 	Dnum* clone() const override;
 
 };

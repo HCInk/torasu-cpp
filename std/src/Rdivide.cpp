@@ -14,39 +14,34 @@ using namespace std;
 namespace torasu::tstd {
 
 Rdivide::Rdivide(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RDIVIDE"), false, true),
-	  a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
-Rdivide::~Rdivide() {
+Rdivide::~Rdivide() {}
 
+Identifier Rdivide::getType() {
+	return "STD::RDIVIDE";
 }
 
-ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rdivide::render(RenderInstruction* ri) {
 
-	if (numPipeline.compare(resSettings->getPipeline()) == 0) {
+	tools::RenderHelper rh(ri);
+	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(numPipeline, NULL);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
-
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
-
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
 		std::optional<double> calcResult;
 
-		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB);
+		auto a = rh.evalResult<Dnum>(resA);
+		auto b = rh.evalResult<Dnum>(resB);
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 			calcResult = a.getResult()->getNum() / b.getResult()->getNum();
 		}
 
@@ -65,35 +60,31 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
 		}
 
-	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {
+	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		if ( !( resSettings->getResultFormatSettings() != NULL
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings())) )) {
+		if ( !( ri->getResultSettings()->getFromat() != nullptr
+				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(ri->getResultSettings()->getFromat())) )) {
 			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
 		}
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, fmt);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
 
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
+		auto rendA = rh.enqueueRender(a.get(), &resSetting);
+		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
-		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB);
+		auto a = rh.evalResult<Dbimg>(resA);
+		auto b = rh.evalResult<Dbimg>(resB);
 
 		Dbimg* result = NULL;
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 
 			result = new Dbimg(*fmt);
 
@@ -129,11 +120,10 @@ ResultSegment* Rdivide::renderSegment(ResultSegmentSettings* resSettings, Render
 		delete resA;
 		delete resB;
 
-		if (result != NULL) {
-			return new ResultSegment(ResultSegmentStatus_OK, result, true);
+		if (result != nullptr) {
+			return rh.buildResult(result);
 		} else {
-			Dbimg* errRes = new Dbimg(*fmt);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return rh.buildResult(new Dbimg(*fmt), ResultSegmentStatus_OK_WARN);
 		}
 
 	} else {

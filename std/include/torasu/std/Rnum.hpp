@@ -14,20 +14,18 @@ namespace torasu::tstd {
 
 class Rnum : public tools::SimpleRenderable {
 private:
-	std::string pipeline = std::string(TORASU_STD_PL_NUM);
-
 	DataResource* valdr;
-
-protected:
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri);
 
 public:
 	explicit Rnum(double val);
 	explicit Rnum(Dnum val);
-	virtual ~Rnum();
+	~Rnum();
+	Identifier getType() override;
 
-	virtual DataResource* getData();
-	virtual void setData(DataResource* data);
+	torasu::ResultSegment* render(torasu::RenderInstruction* ri) override;
+
+	DataResource* getData() override;
+	void setData(DataResource* data) override;
 };
 
 class NumSlot : public torasu::tools::RenderableSlot {

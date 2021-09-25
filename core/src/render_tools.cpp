@@ -4,35 +4,6 @@ using namespace std;
 
 namespace torasu::tools {
 
-RenderInstructionBuilder::RenderInstructionBuilder() {
-	segments = new vector<ResultSegmentSettings*>();
-}
-
-RenderInstructionBuilder::~RenderInstructionBuilder() {
-	for (ResultSegmentSettings* segment : *segments) {
-		delete segment;
-	}
-
-	delete segments;
-
-	if (rs != NULL) {
-		delete rs;
-	}
-}
-
-void RenderInstructionBuilder::buildResultSettings() {
-	if (rs != NULL) {
-		delete rs;
-	}
-
-	rs = new ResultSettings();
-
-	for (ResultSegmentSettings* segment : *segments) {
-		rs->push_back(segment);
-	}
-
-}
-
 //
 // Render Helper
 //
@@ -40,8 +11,11 @@ void RenderInstructionBuilder::buildResultSettings() {
 RenderHelper::RenderHelper(RenderInstruction* ri)
 	: ei(ri->getExecutionInterface()), li(ri->getLogInstruction()), rctx(ri->getRenderContext()), resMask(new RenderContextMask()), lrib(li) {}
 
-RenderHelper::RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx)
-	: ei(ei), li(li), rctx(rctx), resMask(new RenderContextMask()), lrib(li) {}
+RenderHelper::RenderHelper(ReadyInstruction* ri)
+	: ei(ri->ei), li(ri->li), rctx(ri->rctx), resMask(new RenderContextMask()), lrib(li) {}
+
+RenderHelper::RenderHelper(ExecutionInterface* ei, LogInstruction li, RenderContext* rctx, ResultSettings* rs)
+	: ei(ei), li(li), rctx(rctx), rs(rs), resMask(new RenderContextMask()), lrib(li) {}
 
 RenderHelper::~RenderHelper() {
 	if (resMask != nullptr) delete resMask;

@@ -36,9 +36,7 @@ struct SimpleNumeric {
 
 		// Creating instruction
 
-		tools::RenderInstructionBuilder rib;
-
-		auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+		torasu::ResultSettings rs("STD::PNUM", NULL);
 
 		//	Create interface
 		
@@ -51,15 +49,15 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		RenderResult* rr = rib.runRender(&rnum, &rctx, ei, li);
+		ResultSegment* rr = ei->fetchRenderResult(ei->enqueueRender(&rnum, &rctx, &rs, li, 0));
 
 		// Finding results
 
-		CHECK( rr->getStatus() == ResultStatus::ResultStatus_OK );
+		CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 		
-		if (rr->getStatus() == ResultStatus::ResultStatus_OK) {
+		if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
 				
-			auto result = handle.getFrom(rr);
+			tools::CastedRenderSegmentResult<tstd::Dnum> result(rr);
 
 			CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 			
@@ -87,9 +85,7 @@ struct SimpleNumeric {
 
 		// Creating instruction
 
-		tools::RenderInstructionBuilder rib;
-
-		auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+		torasu::ResultSettings rs("STD::PNUM", NULL);
 
 		//	Create interface
 		
@@ -102,15 +98,15 @@ struct SimpleNumeric {
 
 		RenderContext rctx;
 
-		std::unique_ptr<RenderResult> rr(rib.runRender(&tree, &rctx, ei.get(), li));
+		std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(ei->enqueueRender(&tree, &rctx, &rs, li, 0)));
 
 		// Finding results
 
-		CHECK( rr->getStatus() == ResultStatus::ResultStatus_OK );
+		CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 		
-		if (rr->getStatus() == ResultStatus::ResultStatus_OK) {
+		if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
 				
-			auto result = handle.getFrom(rr.get());
+			tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
 			CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 			
@@ -141,9 +137,8 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 
 	// Creating instruction
 
-	tools::RenderInstructionBuilder rib;
 
-	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+	torasu::ResultSettings rs("STD::PNUM", NULL);
 
 	// Running render based on instruction
 
@@ -153,20 +148,21 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 	for (size_t i = 0; i < bursts; i++) {
 
 		for (size_t rn = 0; rn < perBurst; rn++) {
-			rids[rn] = rib.enqueueRender(&tree, &rctx, ei, li);
+			rids[rn] = ei->enqueueRender(&tree, &rctx, &rs, li, 0);
 		}
 		
 
 		for (size_t rn = 0; rn < perBurst; rn++) {
-			std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rids[rn]));
+			std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(rids[rn]));
+
 
 			// Finding results
 
-			CHECK( rr->getStatus() == ResultStatus::ResultStatus_OK );
+			CHECK( rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 			
-			if (rr->getStatus() == ResultStatus::ResultStatus_OK) {
+			if (rr->getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK) {
 					
-				auto result = handle.getFrom(rr.get());
+				tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
 				CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 				
@@ -195,13 +191,11 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 
 	// Creating instruction
 
-	tools::RenderInstructionBuilder rib;
-
-	auto handle = rib.addSegmentWithHandle<Dnum>("STD::PNUM", NULL);
+	torasu::ResultSettings rs("STD::PNUM", NULL);
 
 	// Running render based on instruction
 
-	auto func = [&tree, ei, li, &rib, &handle, bursts, perBurst](){
+	auto func = [&tree, ei, li, &rs, bursts, perBurst](){
 
 		std::vector<size_t> rids(perBurst);
 
@@ -209,20 +203,20 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 		for (size_t i = 0; i < bursts; i++) {
 
 			for (size_t rn = 0; rn < perBurst; rn++) {
-				rids[rn] = rib.enqueueRender(&tree, &rctx, ei, li);
+				rids[rn] = ei->enqueueRender(&tree, &rctx, &rs, li, 0);
 			}
 			
 
 			for (size_t rn = 0; rn < perBurst; rn++) {
-				std::unique_ptr<RenderResult> rr(ei->fetchRenderResult(rids[rn]));
+				std::unique_ptr<ResultSegment> rr(ei->fetchRenderResult(rids[rn]));
 
 				// Finding results
 
-				CHECK( rr->getStatus() == ResultStatus::ResultStatus_OK );
+				CHECK( rr->getStatus() == torasu::ResultSegmentStatus_OK );
 				
-				if (rr->getStatus() == ResultStatus::ResultStatus_OK) {
+				if (rr->getStatus() == torasu::ResultSegmentStatus_OK) {
 						
-					auto result = handle.getFrom(rr.get());
+					tools::CastedRenderSegmentResult<tstd::Dnum> result(rr.get());
 
 					CHECK( result.getStatus() == ResultSegmentStatus::ResultSegmentStatus_OK );
 					
@@ -453,8 +447,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
-		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 10);
 
@@ -471,8 +464,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
-		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 3);
 
@@ -488,8 +480,7 @@ public:
 
 		auto srr = torasu::tstd::simpleRender<torasu::tstd::Dnum>(&fallback, TORASU_STD_PL_NUM, nullptr);
 
-		CHECK(srr.segStat == ResultSegmentStatus::ResultSegmentStatus_OK);
-		CHECK(srr.rStat == ResultStatus::ResultStatus_OK);
+		CHECK(srr.rStat == ResultSegmentStatus::ResultSegmentStatus_OK);
 		CHECK(srr.result != nullptr);
 		CHECK(srr.result->getNum() == 10);
 

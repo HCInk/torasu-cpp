@@ -14,38 +14,35 @@ using namespace std;
 namespace torasu::tstd {
 
 Rsubtract::Rsubtract(NumSlot a, NumSlot b)
-	: SimpleRenderable(std::string("STD::RSUBTRACT"), false, true), a(a), b(b) {}
+	: SimpleRenderable(false, true), a(a), b(b) {}
 
-Rsubtract::~Rsubtract() {
+Rsubtract::~Rsubtract() {}
 
+Identifier Rsubtract::getType() {
+	return "STD::RSUBTRACT";
 }
 
-ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) {
+ResultSegment* Rsubtract::render(RenderInstruction* ri) {
+	torasu::tools::RenderHelper rh(ri);
+	auto* resSettings = ri->getResultSettings();
+	auto pipeline = resSettings->getPipeline();
+	if (pipeline == TORASU_STD_PL_NUM) {
 
-	if (numPipeline.compare(resSettings->getPipeline()) == 0) {
+		torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+		auto rendA = rh.enqueueRender(a, &rs);
+		auto rendB = rh.enqueueRender(b, &rs);
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dnum> resHandle = rib.addSegmentWithHandle<Dnum>(numPipeline, NULL);
-
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
-
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
-
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
 		std::optional<double> calcResult;
 
-		tools::CastedRenderSegmentResult<Dnum> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dnum> b = resHandle.getFrom(resB);
+		tools::CastedRenderSegmentResult<tstd::Dnum> a = rh.evalResult<tstd::Dnum>(resA);
+		tools::CastedRenderSegmentResult<tstd::Dnum> b = rh.evalResult<tstd::Dnum>(resB);
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 			calcResult = a.getResult()->getNum() - b.getResult()->getNum();
 		}
 
@@ -58,41 +55,35 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 
 		if (calcResult.has_value()) {
 			Dnum* mulRes = new Dnum(calcResult.value());
-			return new ResultSegment(ResultSegmentStatus_OK, mulRes, true);
+			return rh.buildResult(mulRes);
 		} else {
 			Dnum* errRes = new Dnum(0);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return rh.buildResult(errRes, ResultSegmentStatus_OK_WARN);
 		}
 
-	} else if (visPipeline.compare(resSettings->getPipeline()) == 0) {
+	} else if (pipeline == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		if ( !( resSettings->getResultFormatSettings() != NULL
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getResultFormatSettings())) )) {
+		if ( !( resSettings->getFromat() != NULL
+				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getFromat())) )) {
 			return new ResultSegment(ResultSegmentStatus_INVALID_FORMAT);
 		}
 
-		tools::RenderInstructionBuilder rib;
-		tools::RenderResultSegmentHandle<Dbimg> resHandle = rib.addSegmentWithHandle<Dbimg>(visPipeline, fmt);
+		torasu::ResultSettings rs(TORASU_STD_PL_VIS, fmt);
 
-		// Sub-Renderings
-		auto ei = ri->getExecutionInterface();
-		auto li = ri->getLogInstruction();
-		auto rctx = ri->getRenderContext();
+		auto rendA = rh.enqueueRender(a, &rs);
+		auto rendB = rh.enqueueRender(b, &rs);
 
-		auto rendA = rib.enqueueRender(a, rctx, ei, li);
-		auto rendB = rib.enqueueRender(b, rctx, ei, li);
-
-		RenderResult* resA = ei->fetchRenderResult(rendA);
-		RenderResult* resB = ei->fetchRenderResult(rendB);
+		ResultSegment* resA = rh.fetchRenderResult(rendA);
+		ResultSegment* resB = rh.fetchRenderResult(rendB);
 
 		// Calculating Result from Results
 
-		tools::CastedRenderSegmentResult<Dbimg> a = resHandle.getFrom(resA);
-		tools::CastedRenderSegmentResult<Dbimg> b = resHandle.getFrom(resB);
+		tools::CastedRenderSegmentResult<Dbimg> a = rh.evalResult<tstd::Dbimg>(resA);
+		tools::CastedRenderSegmentResult<Dbimg> b = rh.evalResult<tstd::Dbimg>(resB);
 
 		Dbimg* result = NULL;
 
-		if (a.getResult()!=NULL && b.getResult()!=NULL) {
+		if (a && b) {
 
 			result = new Dbimg(*fmt);
 
@@ -106,7 +97,7 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 			uint8_t* srcB = b.getResult()->getImageData();
 			uint8_t* dest = result->getImageData();
 
-			bool doBench = li.level <= LogLevel::DEBUG;
+			bool doBench = rh.mayLog(torasu::DEBUG);
 			std::chrono::_V2::steady_clock::time_point bench;
 			if (doBench) bench = std::chrono::steady_clock::now();
 
@@ -131,19 +122,19 @@ ResultSegment* Rsubtract::renderSegment(ResultSegmentSettings* resSettings, Rend
 				i--;
 			}
 
-			if (doBench) li.logger->log(LogLevel::DEBUG,
-											"Sub Time = " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bench).count()) + "[ms]");
+			if (doBench) rh.li.logger->log(LogLevel::DEBUG,
+											   "Sub Time = " + std::to_string(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - bench).count()) + "[ms]");
 
 		}
 
 		delete resA;
 		delete resB;
 
-		if (result != NULL) {
-			return new ResultSegment(ResultSegmentStatus_OK, result, true);
+		if (result != nullptr) {
+			return rh.buildResult(result);
 		} else {
 			Dbimg* errRes = new Dbimg(*fmt);
-			return new ResultSegment(ResultSegmentStatus_OK_WARN, errRes, true);
+			return rh.buildResult(errRes, torasu::ResultSegmentStatus_OK_WARN);
 		}
 
 	} else {

@@ -76,7 +76,7 @@ Dmatrix& Dmatrix::operator=(const Dmatrix& other) {
 	return *this;
 }
 
-std::string Dmatrix::getIdent() const {
+torasu::Identifier Dmatrix::getType() const {
 	return "STD::DMATRIX";
 }
 

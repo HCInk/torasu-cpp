@@ -11,27 +11,6 @@
 namespace torasu::tools {
 
 /**
- * Element that lets you declare a fixed type-ident
- * that will constantly be provided over Element#getType()
- *
- * @brief  Element with a fixed type-ident
- */
-class NamedIdentElement : public virtual Element {
-
-private:
-	std::string typeIdent;
-
-protected:
-	explicit NamedIdentElement(std::string typeIdent);
-
-public:
-	virtual ~NamedIdentElement();
-
-	// Auto-managed
-	std::string getType() override;
-};
-
-/**
  * Element that lets you remaps all methods of an Element
  * for setting Data / Elements to setData() and setElement().
  * It also provides sensible defaults/fallbacks for those.
@@ -62,34 +41,15 @@ public:
 				 torasu::ElementMap elements) override;
 };
 
-/**
- * Renderable which calls for every segment in the ResultSettings renderSegment(),
- * which then has to process the given segement and return the matching ResultSegment.
- * Those ResultSegment will then be packed into the RenderResult together with others automatically by this class.
- *
- * @brief  Individualizes multiple segments in the ResultSettings into one call per segment
- */
-class IndividualizedSegnentRenderable : public virtual Renderable {
-protected:
-	IndividualizedSegnentRenderable();
-	// Implement to handle the processing of render-segments
-	virtual ResultSegment* renderSegment(ResultSegmentSettings* resSettings, RenderInstruction* ri) = 0;
-
-public:
-	virtual ~IndividualizedSegnentRenderable();
-	RenderResult* render(RenderInstruction* ri) override;
-};
-
-
 class NoneReadyState : public ReadyState {
 private:
-	std::vector<std::string>* operations;
+	std::vector<Identifier>* operations;
 	RenderContextMask* rctxm;
 public:
-	explicit NoneReadyState(const std::vector<std::string>& operations);
+	explicit NoneReadyState(const std::vector<Identifier>& operations);
 	NoneReadyState(const NoneReadyState& orig);
 	~NoneReadyState();
-	const std::vector<std::string>* getOperations() const override;
+	const std::vector<Identifier>* getOperations() const override;
 	const RenderContextMask* getContextMask() const override;
 	size_t size() const override;
 	NoneReadyState* clone() const override;
@@ -109,17 +69,16 @@ public:
 };
 
 /**
- * Class that combines the NamedIdentElement, SimpleDataElement and IndividualizedSegnentRenderable
+ * Class that combines the NamedIdentElement, SimpleDataElement, ReadylessElement
  *
  * @brief  Collection of tools to simplify the implementation of Renderables with a low complexity
  */
-class SimpleRenderable : public NamedIdentElement,
-	public SimpleDataElement,
-	public IndividualizedSegnentRenderable,
-	public ReadylessElement {
+class SimpleRenderable : public SimpleDataElement,
+	public ReadylessElement,
+	public Renderable {
 
 protected:
-	explicit SimpleRenderable(std::string typeIdent, bool acceptData, bool acceptElements);
+	explicit SimpleRenderable(bool acceptData, bool acceptElements);
 
 public:
 	virtual ~SimpleRenderable();
