@@ -29,7 +29,7 @@ private:
 		return tag;
 	}
 public:
-	const torasu::LogInstruction& linstr;
+	const torasu::LogInstruction linstr;
 	bool hasError = false;
 
 	explicit LogInfoRefBuilder(const torasu::LogInstruction& linstr)
@@ -84,7 +84,7 @@ public:
 
 	LogId logCauseSummary(LogLevel level, std::string message) {
 		auto* causesBuilt = build();
-		causes->clear();
+		if (causes != nullptr) causes->clear();
 		return logCause(level, message, causesBuilt);
 	}
 
