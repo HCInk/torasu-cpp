@@ -305,15 +305,21 @@ void LIcore_logger::log(LogEntry* entry) {
 				prefSize = prefix.size();
 				prefix += " \t";
 
-				foundGroup = resolveStack->top();
-				if (foundGroup != nullptr) {
+				if (!resolveStack->empty()) { // There still may be no group (for example in case of a top-level-tag)
+					foundGroup = resolveStack->top();
+					if (foundGroup != nullptr) {
+						if (isTag) foundGroup->tagged[entry->groupStack[0]] = entryHolder.get();
+						foundGroup->logs.push_back(entryHolder.release());
+						prefix += foundGroup->name;
+					} else {
+						prefix += "(UNKNOWN)";
+					}
+					prefix += ": ";
+				} else {
+					foundGroup = logstore.getRoot();
 					if (isTag) foundGroup->tagged[entry->groupStack[0]] = entryHolder.get();
 					foundGroup->logs.push_back(entryHolder.release());
-					prefix += foundGroup->name;
-				} else {
-					prefix += "(UNKNOWN)";
 				}
-				prefix += ": ";
 			} else {
 				foundGroup = logstore.getRoot();
 				foundGroup->logs.push_back(entryHolder.release());
