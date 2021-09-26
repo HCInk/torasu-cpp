@@ -55,11 +55,11 @@ torasu::RenderResult* Rstring_file::render(torasu::RenderInstruction* ri) {
 
 		auto res = rh.evalResult<tstd::Dfile>(rr.get());
 
-		if (res) {
+		if (!res) {
 			if (rh.mayLog(torasu::WARN))
 				rh.lrib.logCause(torasu::WARN, "Failed to provide source for file.", res.takeInfoTag());
 
-			return new torasu::RenderResult(torasu::RenderResultStatus_INTERNAL_ERROR);
+			return rh.buildResult(torasu::RenderResultStatus_INTERNAL_ERROR);
 		}
 
 		std::string str(reinterpret_cast<char*>(res.getResult()->getFileData()), res.getResult()->getFileSize());

@@ -45,7 +45,15 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	auto mainResult = rh.evalResult<torasu::DataResource>(resrr.get(), false);
 
 	torasu::RenderResultStatus status = mainResult.getStatus();
-	std::unique_ptr<torasu::DataResource> payload(resrr->ejectOrClone());
+	std::unique_ptr<torasu::DataResource> payload;
+	if (mainResult) {
+		payload = std::unique_ptr<torasu::DataResource>(resrr->ejectOrClone());
+	} else {
+		if (rh.mayLog(WARN)) {
+			rh.lrib.logCause(WARN, "Failed to render main-renderable.", valueResult.takeInfoTag());
+		}
+		rh.lrib.hasError = true;
+	}
 	const RenderContextMask* payloadMask = mainResult.getResultMask();
 	const RenderContextMask* valMask = valueResult.getResultMask();
 
