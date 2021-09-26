@@ -654,7 +654,14 @@ RenderResult* EIcore_runner_object::run(std::function<void()>* outCleanupFunctio
 
 	RenderInstruction ri(rctx, rs, this, li, rdyHandle != nullptr ? rdyHandle->state : nullptr);
 
-	RenderResult* res = rnd->render(&ri);
+	RenderResult* res;
+	try {
+		res = rnd->render(&ri);;
+	} catch (const std::exception& ex) {
+		torasu::tools::LogInfoRefBuilder lirb(li);
+		lirb.logCause(torasu::ERROR, "Error rendering: " + std::string(ex.what()));
+		res = new torasu::RenderResult(torasu::RenderResultStatus_INTERNAL_ERROR, lirb.build());
+	}
 
 	*outCleanupFunction = [rdyHandle]() {
 		if (rdyHandle != nullptr) delete rdyHandle;
