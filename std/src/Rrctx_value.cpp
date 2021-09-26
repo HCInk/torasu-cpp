@@ -18,7 +18,7 @@ torasu::RenderResult* Rrctx_value::render(torasu::RenderInstruction* ri) {
 
 		auto rctxKey = mapping.getA();
 		auto found = rctx->find(rctxKey);
-		auto* foundData = found->second;
+		auto* foundData = found != rctx->end() ? found->second : nullptr;
 
 		auto* resultMask = new RenderContextMask();
 		(*resultMask->maskMap)[rctxKey] = new DataResourceMask::DataResourceMaskSingle(foundData != nullptr ? foundData->clone() : nullptr);
