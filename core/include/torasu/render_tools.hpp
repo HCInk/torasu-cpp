@@ -278,9 +278,11 @@ inline RenderableProperties* getProperties(Renderable* rnd, const std::set<std::
 	std::vector<std::pair<torasu::ExecutionInterface::ResultPair*, const char*>> resultMapping;
 	std::vector<torasu::ResultSettings*> settingsStore;
 	std::vector<torasu::ExecutionInterface::ResultPair> resPair(rProps.size());
+	std::vector<std::string> pipelineNames(rProps.size());
 	size_t i = 0;
 	for (const auto& propKey : rProps) {
-		ResultSettings* segSettings = new ResultSettings(propKey.c_str(), nullptr);
+		pipelineNames[i] = TORASU_PROPERTY_PREFIX + propKey;
+		ResultSettings* segSettings = new ResultSettings(pipelineNames[i].c_str(), nullptr);
 		settingsStore.push_back(segSettings);
 		auto& rp = resPair[i];
 		rp.renderId = ei->enqueueRender(rnd, rctx, segSettings, li, 0);
@@ -304,6 +306,7 @@ inline RenderableProperties* getProperties(Renderable* rnd, const std::set<std::
 				dr.initialize(segResult->getResult(), false);
 			}
 		}
+		delete segResult;
 	}
 
 	return rp;
