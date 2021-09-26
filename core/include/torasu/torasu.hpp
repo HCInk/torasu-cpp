@@ -266,11 +266,12 @@ public:
 	}
 
 	DataResourceMaskSingle* clone() const override {
-		return new DataResourceMaskSingle(dr->clone());
+		return new DataResourceMaskSingle(dr != nullptr ? dr->clone() : nullptr);
 	}
 
 	MaskCompareResult check(const DataResource* obj) const override {
-		return dr->compare(obj) == EQUAL ? MCR_INSIDE : MCR_OUTSIDE;
+		return dr != nullptr ? (dr->compare(obj) == EQUAL ? MCR_INSIDE : MCR_OUTSIDE)
+			   : (obj == nullptr ? MCR_INSIDE : MCR_OUTSIDE);
 	}
 
 	DataResourceMask* merge(const DataResourceMask* other) const override {
