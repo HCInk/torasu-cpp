@@ -75,13 +75,13 @@ RenderResult* Rmultiply::render(RenderInstruction* ri) {
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
-		RenderResult* resA = rh.fetchRenderResult(rendA);
-		RenderResult* resB = rh.fetchRenderResult(rendB);
+		unique_ptr<RenderResult> resA(rh.fetchRenderResult(rendA));
+		unique_ptr<RenderResult> resB(rh.fetchRenderResult(rendB));
 
 		// Calculating Result from Results
 
-		auto a = rh.evalResult<Dbimg>(resA);
-		auto b = rh.evalResult<Dbimg>(resB);
+		auto a = rh.evalResult<Dbimg>(resA.get());
+		auto b = rh.evalResult<Dbimg>(resB.get());
 
 
 		if (a && b) {
