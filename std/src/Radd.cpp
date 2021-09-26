@@ -59,7 +59,7 @@ RenderResult* Radd::render(RenderInstruction* ri) {
 		Dbimg_FORMAT* fmt;
 		{
 			auto* fmtSettings = ri->getResultSettings()->getFromat();
-			if ( fmtSettings != nullptr || (fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
+			if ( fmtSettings == nullptr || !(fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
 				return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 			}
 		}
