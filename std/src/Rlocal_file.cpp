@@ -43,7 +43,7 @@ torasu::RenderResult* Rlocal_file::render(torasu::RenderInstruction* ri) {
 		torasu::tools::log_checked(ri->getLogInstruction(), LogLevel::DEBUG,
 								   "Loaded local-file \"" + path + "\" (" + std::to_string(dfile->getFileSize()) + "byte)");
 
-		return new RenderResult(RenderResultStatus_OK, dfile, true);
+		return new RenderResult(RenderResultStatus_OK, dfile, true, new RenderContextMask());
 
 	} else {
 		return new RenderResult(RenderResultStatus_INVALID_SEGMENT);
