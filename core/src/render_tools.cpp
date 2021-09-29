@@ -9,7 +9,7 @@ namespace torasu::tools {
 //
 
 RenderHelper::RenderHelper(RenderInstruction* ri)
-	: ei(ri->getExecutionInterface()), li(ri->getLogInstruction()), rctx(ri->getRenderContext()), resMask(new RenderContextMask()), lrib(li) {}
+	: ei(ri->getExecutionInterface()), li(ri->getLogInstruction()), rctx(ri->getRenderContext()), rs(ri->getResultSettings()), resMask(new RenderContextMask()), lrib(li) {}
 
 RenderHelper::RenderHelper(ReadyInstruction* ri)
 	: ei(ri->ei), li(ri->li), rctx(ri->rctx), resMask(new RenderContextMask()), lrib(li) {}
