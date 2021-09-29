@@ -890,7 +890,7 @@ public:
 	bool freeMapContents = true;
 
 	RenderContextMask() : maskMap(new std::map<std::string, DataResourceMask*>()) {}
-	RenderContextMask(const RenderContextMask& orig) : maskMap(orig.maskMap) {
+	RenderContextMask(const RenderContextMask& orig) : maskMap(new auto(*orig.maskMap)) {
 		for (auto& entry : *maskMap)
 			entry.second = entry.second != nullptr ? entry.second->clone() : nullptr;
 	}
