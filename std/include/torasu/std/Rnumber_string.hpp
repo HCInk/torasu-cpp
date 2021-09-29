@@ -15,13 +15,17 @@ namespace torasu::tstd {
 class Rnumber_string : public torasu::tools::SimpleRenderable {
 private:
 	torasu::tools::ManagedSlot<torasu::tstd::NumSlot> srcRnd;
+	torasu::tools::ManagedSlot<torasu::tstd::NumSlot> decimalsRnd;
+	torasu::tools::ManagedSlot<torasu::tstd::NumSlot> minDigitsRnd;
 
 public:
 	/**
 	 * @brief  Provides a number as a string
 	 * @param  src:	The number-source for the string
+	 * @param  decimals: Number of decimal-places
+	 * @param  minDigits: Minimum number of digits (will be padded with zeros)
 	 */
-	explicit Rnumber_string(torasu::tstd::NumSlot src);
+	explicit Rnumber_string(torasu::tstd::NumSlot src, torasu::tstd::NumSlot decimals = 0.0, torasu::tstd::NumSlot minDigits = 1.0);
 	~Rnumber_string();
 	Identifier getType() override;
 
