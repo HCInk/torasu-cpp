@@ -78,6 +78,7 @@
 #include <torasu/std/Rstring_concat.hpp>
 #include <torasu/std/Rstring_map.hpp>
 #include <torasu/std/Rstring_replace.hpp>
+#include <torasu/std/Rnumber_string.hpp>
 
 #include <torasu/std/Rlocal_file.hpp>
 #include <torasu/std/Rnet_file.hpp>
