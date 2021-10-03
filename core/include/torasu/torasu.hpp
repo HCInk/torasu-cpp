@@ -27,6 +27,9 @@
 // Error if objects which support manual initialisation via a seperate functions are initialized twice
 #define TORASU_CHECK_DOUBLE_INIT
 
+// Error if the format array has not been set
+#define TORASU_CHECK_RENDER_NULL_FORMAT true
+
 int TORASU_check_core();
 
 namespace torasu {
@@ -818,10 +821,21 @@ public:
 class ResultSettings {
 private:
 	Identifier pipeline;
-	ResultFormatSettings* format;
+	ResultFormatSettings* const* formats;
 public:
-	inline ResultSettings(Identifier pipeline, ResultFormatSettings* format)
-		: pipeline(pipeline), format(format) {}
+	/**
+	 * @brief  Create ResultSettings for a render-task
+	 * @param  pipeline: Identifier of pipeline
+	 * @param  formats[]: Format vector (null-terminated), the earlier the higher the priority
+	 * 					  - note that the priority may still be ignored by a renderable,
+	 * 						 for example when another suggested format is more fitting
+	 */
+	inline ResultSettings(Identifier pipeline, ResultFormatSettings* const formats[])
+		: pipeline(pipeline), formats(formats) {
+#if TORASU_CHECK_RENDER_NULL_FORMAT
+		if (formats == nullptr) throw std::logic_error("ResultSettings: format-list may not be null!");
+#endif
+	}
 
 	~ResultSettings() {}
 
@@ -829,8 +843,8 @@ public:
 		return pipeline;
 	}
 
-	inline ResultFormatSettings* getFromat() const {
-		return format;
+	inline ResultFormatSettings* const* getFormats() const {
+		return formats;
 	}
 };
 

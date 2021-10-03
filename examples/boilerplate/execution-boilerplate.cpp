@@ -19,7 +19,7 @@ void boilerplate_execution_async(torasu::Renderable* tree, torasu::ExecutionInte
 	tools::LogInfoRefBuilder lrib(li);
 
 	// Enqueueing the render with generated instruction
-	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 	auto rndId = ei->enqueueRender(tree, rctx, &rs, li, 0);
 
 	// Fetching the Render-Result
@@ -42,7 +42,7 @@ void boilerplate_execution_sync(torasu::Renderable* tree, torasu::ExecutionInter
 	tools::LogInfoRefBuilder lrib(li);
 
 	// Rendering / Fetching the Render-Result
-	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 	std::unique_ptr<torasu::RenderResult> rr(ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, li, 0)));
 	tools::CastedRenderSegmentResult<torasu::tstd::Dnum> result(rr.get(), &lrib);
 

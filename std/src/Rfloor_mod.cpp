@@ -23,7 +23,7 @@ torasu::RenderResult* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
-		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 
 		auto valRid = rh.enqueueRender(valRnd, &resSetting);
 		auto facRid = rh.enqueueRender(facRnd, &resSetting);

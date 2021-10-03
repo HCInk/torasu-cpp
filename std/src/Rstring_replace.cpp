@@ -41,7 +41,7 @@ torasu::RenderResult* Rstring_replace::render(torasu::RenderInstruction* ri) {
 
 		// Sub-renderings
 
-		torasu::ResultSettings resultSettings(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings resultSettings(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
 
 		auto renderIdSrc = rh.enqueueRender(srcRnd, &resultSettings);
 		auto renderIdBefore = rh.enqueueRender(beforeRnd, &resultSettings);

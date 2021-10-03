@@ -30,7 +30,7 @@ torasu::RenderResult* Rstring_map::render(torasu::RenderInstruction* ri) {
 		std::vector<std::string> keyArr(resCount);
 		std::vector<torasu::ExecutionInterface::ResultPair> rpArr(resCount);
 
-		ResultSettings rs(TORASU_STD_PL_STRING, nullptr);
+		ResultSettings rs(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
 
 		size_t i = 0;
 		for (auto& entry : map) {

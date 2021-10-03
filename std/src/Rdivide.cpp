@@ -27,7 +27,7 @@ RenderResult* Rdivide::render(RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
-		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
@@ -62,12 +62,11 @@ RenderResult* Rdivide::render(RenderInstruction* ri) {
 
 	} else if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		if ( !( ri->getResultSettings()->getFromat() != nullptr
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(ri->getResultSettings()->getFromat())) )) {
+		if (!(fmt = rh.getFormat<Dbimg_FORMAT>())) {
 			return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 		}
 
-		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
+		torasu::tools::ResultSettingsSingleFmt resSetting(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
 

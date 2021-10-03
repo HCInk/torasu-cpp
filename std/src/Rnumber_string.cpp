@@ -24,7 +24,7 @@ torasu::RenderResult* Rnumber_string::render(torasu::RenderInstruction* ri) {
 	if (pipeline == TORASU_STD_PL_STRING) {
 		tools::RenderHelper rh(ri);
 
-		torasu::ResultSettings numSetting(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings numSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 		auto ridSrc = rh.enqueueRender(srcRnd, &numSetting);
 		auto ridDec = rh.enqueueRender(decimalsRnd, &numSetting);
 		auto ridDig = rh.enqueueRender(minDigitsRnd, &numSetting);

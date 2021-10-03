@@ -23,7 +23,7 @@ torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	auto li = rh.li;
 	if (li.level <= ERROR) {
-		torasu::ResultSettings rs(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings rs(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
 		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(msgRnd.get(), &rs));
 
 		auto msgRes = rh.evalResult<torasu::tstd::Dstring>(rr.get());

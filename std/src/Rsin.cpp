@@ -25,7 +25,7 @@ RenderResult* Rsin::render(RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_NUM) {
 
-		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(valRnd, &resSetting));
 		auto val = rh.evalResult<tstd::Dnum>(rr.get());
 

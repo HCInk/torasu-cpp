@@ -24,7 +24,7 @@ torasu::RenderResult* Rstring_file::render(torasu::RenderInstruction* ri) {
 	if (pipeline == TORASU_STD_PL_FILE) {
 		tools::RenderHelper rh(ri);
 
-		torasu::ResultSettings strSetting(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings strSetting(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
 		std::unique_ptr<RenderResult> rr(rh.runRender(srcRnd, &strSetting));
 
 		auto res = rh.evalResult<tstd::Dstring>(rr.get());
@@ -50,7 +50,7 @@ torasu::RenderResult* Rstring_file::render(torasu::RenderInstruction* ri) {
 	} else if (pipeline == TORASU_STD_PL_STRING) {
 		tools::RenderHelper rh(ri);
 
-		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, nullptr);
+		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, torasu::tools::NO_FORMAT);
 		std::unique_ptr<torasu::RenderResult> rr(rh.runRender(srcRnd.get(), &fileSetting));
 
 		auto res = rh.evalResult<tstd::Dfile>(rr.get());

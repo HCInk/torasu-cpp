@@ -63,7 +63,7 @@ template<class T> SimpleResult<T> simpleRender(Renderable* tree, std::string pl,
 		logInstr = LogInstruction(*li);
 	}
 
-	torasu::ResultSettings rs(pl.c_str(), format);
+	torasu::tools::ResultSettingsSingleFmt rs(pl.c_str(), format);
 	RenderResult* rr = ei->fetchRenderResult(ei->enqueueRender(tree, rctx, &rs, logInstr, 0));
 
 	// Finding results

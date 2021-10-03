@@ -28,7 +28,7 @@ RenderResult* Rsubtract::render(RenderInstruction* ri) {
 	auto pipeline = resSettings->getPipeline();
 	if (pipeline == TORASU_STD_PL_NUM) {
 
-		torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings rs(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 		auto rendA = rh.enqueueRender(a, &rs);
 		auto rendB = rh.enqueueRender(b, &rs);
 
@@ -63,12 +63,11 @@ RenderResult* Rsubtract::render(RenderInstruction* ri) {
 
 	} else if (pipeline == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		if ( !( resSettings->getFromat() != NULL
-				&& (fmt = dynamic_cast<Dbimg_FORMAT*>(resSettings->getFromat())) )) {
+		if (!(fmt = rh.getFormat<Dbimg_FORMAT>())) {
 			return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 		}
 
-		torasu::ResultSettings rs(TORASU_STD_PL_VIS, fmt);
+		torasu::tools::ResultSettingsSingleFmt rs(TORASU_STD_PL_VIS, fmt);
 
 		auto rendA = rh.enqueueRender(a, &rs);
 		auto rendB = rh.enqueueRender(b, &rs);

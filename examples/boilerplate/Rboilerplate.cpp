@@ -27,7 +27,7 @@ torasu::RenderResult* Rboilerplate::render(torasu::RenderInstruction* ri) {
 	if (pipeline == TORASU_STD_PL_NUM) {
 		tools::RenderHelper rh(ri);
 
-		torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings rs(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 
 		auto renderId = rh.enqueueRender(exampleRnd, &rs);
 

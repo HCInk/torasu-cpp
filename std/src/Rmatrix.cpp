@@ -74,7 +74,7 @@ RenderResult* Rmatrix::render(RenderInstruction* ri) {
 
 		torasu::tools::RenderHelper rh(ri);
 
-		ResultSettings numSetting(TORASU_STD_PL_NUM, nullptr);
+		ResultSettings numSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 
 		std::map<size_t, torasu::ExecutionInterface::ResultPair*> resultMap;
 		std::vector<torasu::ExecutionInterface::ResultPair> pairVec(vals.size());

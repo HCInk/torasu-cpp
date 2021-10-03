@@ -56,7 +56,7 @@ RenderResult* Rnet_file::render(RenderInstruction* ri) {
 		// Getting url
 
 		tools::RenderHelper rh(ri);
-		torasu::ResultSettings resSetting(TORASU_STD_PL_STRING, nullptr);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
 
 		auto renderId = rh.enqueueRender(urlRnd, &resSetting);
 		auto renderIdHeaders = headersRnd.get() != nullptr ? rh.enqueueRender(headersRnd, &resSetting) : 0;

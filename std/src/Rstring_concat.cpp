@@ -25,8 +25,8 @@ torasu::RenderResult* Rstring_concat::render(torasu::RenderInstruction* ri) {
 	tools::RenderHelper rh(ri);
 	if (ri->getResultSettings()->getPipeline() == TORASU_STD_PL_STRING) {
 
-		torasu::ResultSettings stringType(TORASU_STD_PL_STRING, nullptr);
-		torasu::ResultSettings mapType(TORASU_STD_PL_MAP, nullptr);
+		torasu::ResultSettings stringType(TORASU_STD_PL_STRING, torasu::tools::NO_FORMAT);
+		torasu::ResultSettings mapType(TORASU_STD_PL_MAP, torasu::tools::NO_FORMAT);
 
 		std::unique_ptr<torasu::RenderResult> mapRes(rh.runRender(listRnd, &mapType));
 

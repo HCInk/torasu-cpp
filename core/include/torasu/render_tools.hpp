@@ -17,6 +17,9 @@
 
 namespace torasu::tools {
 
+/** @brief  Format vector to use if no format should be given */
+static ResultFormatSettings* const NO_FORMAT[] = {nullptr};
+
 //
 // RenderTools
 //
@@ -149,14 +152,46 @@ public:
 	 * @note   Only use when ResultSettings are provided
 	 * @retval The casted format, if cast was successful / nullptr, If no format has been provided or the format is not matching
 	 */
-	template<class T> inline const T* getFormat() const {
-		const auto* fmt = rs->getFromat();
-		if (fmt == nullptr) return nullptr;
-		return dynamic_cast<T*>(fmt);
+	template<class T> inline T* getFormat() const {
+		for (auto*const* fmts = rs->getFormats(); *fmts != nullptr; fmts++) {
+			T* fmt = dynamic_cast<T*>(*fmts);
+			if (fmt != nullptr) return fmt;
+		}
+		return nullptr;
+	}
+
+	template<class P, class S> struct FormatPair {
+		P* primary = nullptr;
+		S* secondary = nullptr;
+	};
+
+	/**
+	 * @brief  Does the same as RenderHelper::getFormat(),
+	 * 			but w/ primary/secondary format,
+	 * 			will stop scanning once primary format as been found
+	 * @retval The pair of casted formats, formats not found are set to nullptr just like in RenderHelper::getFormat()
+	 * 			- When the primary format was provided, but the secondary format was provided with a higher priority, both will be set
+	 */
+	template<class P, class S> inline FormatPair<P,S> getFormats() const {
+		FormatPair<P,S> pair;
+		for (auto*const* fmts = rs->getFormats(); *fmts != nullptr; fmts++) {
+			pair.primary = dynamic_cast<P*>(*fmts);
+			if (pair.primary != nullptr) break;
+			if (pair.secondary == nullptr) pair.secondary = dynamic_cast<S*>(*fmts);
+		}
+		return pair;
 	}
 
 };
 
+class ResultSettingsSingleFmt : public ResultSettings {
+	ResultFormatSettings* formats[2];
+public:
+	inline ResultSettingsSingleFmt(Identifier pipeline, ResultFormatSettings* format)
+		: ResultSettings(pipeline, formats), formats{format, nullptr} {}
+
+	~ResultSettingsSingleFmt() {}
+};
 
 template<class T> class CastedRenderSegmentResult {
 private:
@@ -282,7 +317,7 @@ inline RenderableProperties* getProperties(Renderable* rnd, const std::set<std::
 	size_t i = 0;
 	for (const auto& propKey : rProps) {
 		pipelineNames[i] = TORASU_PROPERTY_PREFIX + propKey;
-		ResultSettings* segSettings = new ResultSettings(pipelineNames[i].c_str(), nullptr);
+		ResultSettings* segSettings = new ResultSettings(pipelineNames[i].c_str(), torasu::tools::NO_FORMAT);
 		settingsStore.push_back(segSettings);
 		auto& rp = resPair[i];
 		rp.renderId = ei->enqueueRender(rnd, rctx, segSettings, li, 0);

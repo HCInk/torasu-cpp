@@ -32,7 +32,7 @@ RenderResult* Rmultiply::render(RenderInstruction* ri) {
 	auto selPipleine = ri->getResultSettings()->getPipeline();
 
 	if (selPipleine == TORASU_STD_PL_NUM) {
-		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, nullptr);
+		torasu::ResultSettings resSetting(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 		auto rendA = rh.enqueueRender(a.get(), &resSetting);
 		auto rendB = rh.enqueueRender(b.get(), &resSetting);
 
@@ -61,14 +61,11 @@ RenderResult* Rmultiply::render(RenderInstruction* ri) {
 
 	} else if (selPipleine == TORASU_STD_PL_VIS) {
 		Dbimg_FORMAT* fmt;
-		{
-			auto* fmtSettings = ri->getResultSettings()->getFromat();
-			if ( fmtSettings == nullptr || !(fmt = dynamic_cast<Dbimg_FORMAT*>(fmtSettings)) ) {
-				return new RenderResult(RenderResultStatus_INVALID_FORMAT);
-			}
+		if (!(fmt = rh.getFormat<Dbimg_FORMAT>())) {
+			return new RenderResult(RenderResultStatus_INVALID_FORMAT);
 		}
 
-		torasu::ResultSettings resSetting(TORASU_STD_PL_VIS, fmt);
+		torasu::tools::ResultSettingsSingleFmt resSetting(TORASU_STD_PL_VIS, fmt);
 
 		// Sub-Renderings
 

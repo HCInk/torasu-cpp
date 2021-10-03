@@ -101,7 +101,7 @@ void simpleRenderExample1() {
 
 	// Creating instruction
 
-	torasu::ResultSettings rs(TORASU_STD_PL_NUM, nullptr);
+	torasu::ResultSettings rs(TORASU_STD_PL_NUM, torasu::tools::NO_FORMAT);
 
 	// Running render based on instruction
 

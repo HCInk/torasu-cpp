@@ -74,7 +74,7 @@ torasu::RenderResult* Rjson_prop::render(torasu::RenderInstruction* ri) {
 		// Load input/parameters
 		//
 
-		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, nullptr);
+		torasu::ResultSettings fileSetting(TORASU_STD_PL_FILE, torasu::tools::NO_FORMAT);
 		auto renderId = rh.enqueueRender(jsonRnd, &fileSetting);
 
 		std::unique_ptr<torasu::RenderResult> rndRes(rh.fetchRenderResult(renderId));

@@ -36,7 +36,7 @@ struct SimpleNumeric {
 
 		// Creating instruction
 
-		torasu::ResultSettings rs("STD::PNUM", NULL);
+		torasu::ResultSettings rs("STD::PNUM", torasu::tools::NO_FORMAT);
 
 		//	Create interface
 		
@@ -85,7 +85,7 @@ struct SimpleNumeric {
 
 		// Creating instruction
 
-		torasu::ResultSettings rs("STD::PNUM", NULL);
+		torasu::ResultSettings rs("STD::PNUM", torasu::tools::NO_FORMAT);
 
 		//	Create interface
 		
@@ -138,7 +138,7 @@ void numericBurstTest(ExecutionInterface* ei, size_t bursts, size_t perBurst) {
 	// Creating instruction
 
 
-	torasu::ResultSettings rs("STD::PNUM", NULL);
+	torasu::ResultSettings rs("STD::PNUM", torasu::tools::NO_FORMAT);
 
 	// Running render based on instruction
 
@@ -191,7 +191,7 @@ void numericBurstTestAsync(ExecutionInterface* ei, size_t bursts, size_t perBurs
 
 	// Creating instruction
 
-	torasu::ResultSettings rs("STD::PNUM", NULL);
+	torasu::ResultSettings rs("STD::PNUM", torasu::tools::NO_FORMAT);
 
 	// Running render based on instruction
 
