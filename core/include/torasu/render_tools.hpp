@@ -182,6 +182,28 @@ public:
 		return pair;
 	}
 
+	enum PassMode {
+		/** @brief Indicates that this pass was triggered because the pipeline is not handled,
+		 * so the default renderable will be used to provide the result */
+		PassMode_DEFAULT,
+		/** @brief Indicates that this pass was triggered because this renderable was selected
+		 * to be rendered, for example by a paramenter in the RenderContext */
+		PassMode_SELECTED
+	};
+
+	/**
+	 * @brief  Pass the render to another renderable build from its result the result
+	 * @param  rnd: The renderable to be run
+	 * @param  mode: Mode to be used when passing
+	 * @param  rctx: RenderContext to use instead of default (nullptr: use default)
+	 * @retval The render result, built using buildResult
+	 */
+	inline torasu::RenderResult* passRender(torasu::Renderable* rnd, PassMode mode, torasu::RenderContext* rctx = nullptr) {
+		std::unique_ptr<torasu::RenderResult> result(runRender(rnd, rs, rctx));
+		collectMask(result->getResultMask());
+		return buildResult(result->ejectOrClone(), result->getStatus());
+	}
+
 };
 
 class ResultSettingsSingleFmt : public ResultSettings {
@@ -258,6 +280,11 @@ public:
 
 	inline T* ejectResult() {
 		return rs ? dynamic_cast<T*>(rs->ejectResult()) : nullptr;
+	}
+
+	inline T* ejectOrCloneResult() {
+		if (result == nullptr) return nullptr;
+		return rs->canFreeResult() ? dynamic_cast<T*>(rs->ejectResult()) : result->clone();
 	}
 
 	inline RenderResultStatus getStatus() const {
