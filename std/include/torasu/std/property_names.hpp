@@ -3,6 +3,7 @@
 
 #include <torasu/torasu.hpp>
 
+#define TORASU_STD_PROP_IT_LENGTH "STD::IT_LEN"
 #define TORASU_STD_PROP_DURATION "STD::DUR"
 #define TORASU_STD_PROP_IMG_WIDTH "STD::WIDTH"
 #define TORASU_STD_PROP_IMG_HEIGHT "STD::HEIGHT"

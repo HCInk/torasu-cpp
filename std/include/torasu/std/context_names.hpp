@@ -1,6 +1,11 @@
 #ifndef STD_INCLUDE_TORASU_STD_CONTEXT_NAMES_HPP_
 #define STD_INCLUDE_TORASU_STD_CONTEXT_NAMES_HPP_
 
+/** Ratio of the imagery to be rendered width/height
+ * type: torasu::tstd::Dnum
+ */
+#define TORASU_STD_CTX_IT "STD::IT"
+
 /** Time in seconds
  * type: torasu::tstd::Dnum
  */
