@@ -1008,7 +1008,7 @@ public:
 		for (const auto& entry : *b.maskMap) {
 			auto found = a.maskMap->find(entry.first);
 			if (found == aEnd) { // In only b
-				maskMap[found->first] = found->second->clone();
+				maskMap[entry.first] = entry.second->clone();
 			}
 		}
 
