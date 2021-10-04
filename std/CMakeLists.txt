@@ -56,7 +56,8 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_map.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_concat.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_file.cpp
-		${CMAKE_CURRENT_LIST_DIR}/src/Rnumber_string.cpp)
+		${CMAKE_CURRENT_LIST_DIR}/src/Rnumber_string.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/Rlist.cpp)
 	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
 	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
