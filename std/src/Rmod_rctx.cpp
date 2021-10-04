@@ -22,7 +22,7 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 	torasu::tools::RenderHelper rh(ri);
 
 	const std::string pipeline(data.getB());
-	ResultSettings sourceSettings(pipeline.c_str(), nullptr);
+	ResultSettings sourceSettings(pipeline.c_str(), torasu::tools::NO_FORMAT);
 	std::unique_ptr<torasu::RenderResult> valrr(rh.runRender(valueRnd.get(), &sourceSettings));
 	auto valueResult = rh.evalResult<torasu::DataResource>(valrr.get(), false);
 
