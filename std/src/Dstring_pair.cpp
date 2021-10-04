@@ -46,12 +46,12 @@ Dstring_pair* Dstring_pair::clone() const {
 	return new Dstring_pair(*this);
 }
 
-std::string Dstring_pair::getA() {
+const std::string& Dstring_pair::getA() {
 	ensureLoaded();
 	return a;
 }
 
-std::string Dstring_pair::getB() {
+const std::string& Dstring_pair::getB() {
 	ensureLoaded();
 	return b;
 }

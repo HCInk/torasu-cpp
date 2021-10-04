@@ -27,8 +27,8 @@ public:
 	torasu::Identifier getType() const override;
 	Dstring_pair* clone() const override;
 
-	std::string getA();
-	std::string getB();
+	const std::string& getA();
+	const std::string& getB();
 };
 
 } // namespace torasu::tstd
