@@ -13,13 +13,29 @@ class Dbimg;
 class Dbimg_FORMAT;
 
 class Dbimg : public DataResource {
+public:
+	/** @brief  CropInfo describes how the canvas has been cut or extended to each side */
+	struct CropInfo {
+		/** @breif crop in px at left side, postive for pixels removed, negative fox pixels expanded */
+		int32_t edgeLeft = 0;
+		/** @breif crop in px at right side, postive for pixels removed, negative fox pixels expanded */
+		int32_t edgeRight = 0;
+		/** @breif crop in px at top, postive for pixels removed, negative fox pixels expanded */
+		int32_t edgeTop = 0;
+		/** @breif crop in px at bottom, postive for pixels removed, negative fox pixels expanded */
+		int32_t edgeBottom = 0;
+	};
 private:
 	uint8_t* data;
+	/** @brief resolution of image data (including modifications of the crop) */
 	uint32_t width, height;
+	/** @brief CropInfo, contains current cropping state of the image and that other cropping-modes are available
+	 * 			- if not provided it will mean that no other cropping-modes are available */
+	CropInfo* cropInfo = nullptr;
 
 public:
 	explicit Dbimg(Dbimg_FORMAT format);
-	Dbimg(uint32_t width, uint32_t height);
+	Dbimg(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo = nullptr);
 	Dbimg(const Dbimg& copy);
 	~Dbimg();
 
@@ -37,6 +53,10 @@ public:
 		return height;
 	}
 
+	inline const Dbimg::CropInfo* getCropInfo() const {
+		return cropInfo;
+	}
+
 	inline uint8_t* getImageData() const {
 		return data;
 	}
@@ -44,12 +64,18 @@ public:
 
 class Dbimg_FORMAT : public ResultFormatSettings, public DataPackable {
 private:
+	/** @brief Resultion of image-core (excluding any modifications of crops) */
 	uint32_t width, height;
+	/** @brief CropInfo, if provided it indicates that cropping is available
+	 * 			- the contained data indicates that crop to be required,
+	 * 				if the content is smaller the resulting crop may be tightened to leave out parts where no content is*/
+	Dbimg::CropInfo* cropInfo = nullptr;
 
 public:
-	Dbimg_FORMAT(uint32_t width, uint32_t height);
+	Dbimg_FORMAT(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo = nullptr);
 	explicit Dbimg_FORMAT(const torasu::json& jsonParsed);
 	explicit Dbimg_FORMAT(const std::string& jsonStripped);
+	~Dbimg_FORMAT();
 
 	inline uint32_t getWidth() const {
 		return width;
@@ -57,6 +83,10 @@ public:
 
 	inline uint32_t getHeight() const {
 		return height;
+	}
+
+	inline const Dbimg::CropInfo* getCropInfo() const {
+		return cropInfo;
 	}
 
 	void load() override;

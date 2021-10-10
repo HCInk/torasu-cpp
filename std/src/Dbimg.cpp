@@ -14,21 +14,21 @@ namespace torasu::tstd {
 
 Dbimg::Dbimg(Dbimg_FORMAT format) : Dbimg(format.getWidth(), format.getHeight()) {}
 
-Dbimg::Dbimg(uint32_t width, uint32_t height) {
+Dbimg::Dbimg(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo) {
 	this->width = width;
 	this->height = height;
+	this->cropInfo = cropInfo;
 	this->data = new uint8_t[width*height*4];
 }
 
-Dbimg::Dbimg(const Dbimg& copy) {
-	this->width = copy.width;
-	this->height = copy.height;
-	this->data = new uint8_t[width*height*4];
+Dbimg::Dbimg(const Dbimg& copy)
+	: Dbimg(copy.width, copy.height, new Dbimg::CropInfo(*copy.cropInfo)) {
 	std::copy(copy.data, copy.data+(width*height*4), this->data);
 }
 
 Dbimg::~Dbimg() {
 	delete[] data;
+	if (cropInfo != nullptr) delete cropInfo;
 }
 
 void Dbimg::clear() {
@@ -52,10 +52,13 @@ Dbimg* Dbimg::clone() const {
 //	Dbimg_FORMAT
 //
 
-Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height)  : ResultFormatSettings(IDENT), width(width), height(height) {}
+Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height, Dbimg::CropInfo* cropInfo)  : ResultFormatSettings(IDENT), width(width), height(height), cropInfo(cropInfo) {}
 
 Dbimg_FORMAT::Dbimg_FORMAT(const torasu::json& jsonParsed) : ResultFormatSettings(IDENT), DataPackable(jsonParsed) {}
 Dbimg_FORMAT::Dbimg_FORMAT(const std::string& jsonStripped) : ResultFormatSettings(IDENT), DataPackable(jsonStripped) {}
+Dbimg_FORMAT::~Dbimg_FORMAT() {
+	if (cropInfo != nullptr) delete cropInfo;
+}
 
 void Dbimg_FORMAT::load() {
 	auto json = getJson();
