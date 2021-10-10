@@ -17,13 +17,13 @@ public:
 	/** @brief  CropInfo describes how the canvas has been cut or extended to each side */
 	struct CropInfo {
 		/** @breif crop in px at left side, postive for pixels removed, negative fox pixels expanded */
-		int32_t edgeLeft = 0;
+		int32_t left = 0;
 		/** @breif crop in px at right side, postive for pixels removed, negative fox pixels expanded */
-		int32_t edgeRight = 0;
+		int32_t right = 0;
 		/** @breif crop in px at top, postive for pixels removed, negative fox pixels expanded */
-		int32_t edgeTop = 0;
+		int32_t top = 0;
 		/** @breif crop in px at bottom, postive for pixels removed, negative fox pixels expanded */
-		int32_t edgeBottom = 0;
+		int32_t bottom = 0;
 	};
 private:
 	uint8_t* data;
