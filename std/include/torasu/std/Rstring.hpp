@@ -24,6 +24,8 @@ public:
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;
+
+	static const torasu::ElementFactory* const FACTORY;
 };
 
 class StringSlot : public torasu::tools::RenderableSlot {

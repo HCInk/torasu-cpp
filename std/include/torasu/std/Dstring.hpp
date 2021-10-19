@@ -28,6 +28,8 @@ public:
 	torasu::DataResource::CompareResult compare(const DataResource* other) const override;
 	torasu::Identifier getType() const override;
 	Dstring* clone() const override;
+
+	static const torasu::DataPackableFactory* const FACTORY;
 };
 
 } // namespace torasu::tstd

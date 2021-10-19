@@ -13,6 +13,10 @@
 
 using namespace std;
 
+namespace {
+auto IDENT = "STD::RMULTIPLY";
+} // namespace
+
 namespace torasu::tstd {
 
 Rmultiply::Rmultiply(NumSlot a, NumSlot b)
@@ -21,7 +25,7 @@ Rmultiply::Rmultiply(NumSlot a, NumSlot b)
 Rmultiply::~Rmultiply() {}
 
 Identifier Rmultiply::getType() {
-	return "STD::RMULTIPLY";
+	return IDENT;
 }
 
 RenderResult* Rmultiply::render(RenderInstruction* ri) {
@@ -152,5 +156,42 @@ void Rmultiply::setElement(std::string key, Element* elem) {
 	if (torasu::tools::trySetRenderableSlot("b", &b, false, key, elem)) return;
 	throw torasu::tools::makeExceptSlotDoesntExist(key);
 }
+
+namespace {
+
+static const ElementFactory::SlotDescriptor SLOT_INDEX[] = {
+{id: "a", label: {name: "Operand A", description: "Multiplier on the left side"}, optional: false, renderable: true},
+{id: "b", label: {name: "Operand B", description: "Multiplier on the right side"}, optional: false, renderable: true},
+};
+
+static class : public torasu::ElementFactory {
+	torasu::Identifier getType() const override {
+		return IDENT;
+	}
+
+	torasu::UserLabel getLabel() const override {
+		return {
+		name: "Multiply"
+			,
+		description: "Multiplies two values"
+		};
+	}
+
+	torasu::Element* create(torasu::DataResource** data, const torasu::ElementMap& elements) const override {
+		std::unique_ptr<Rmultiply> elem(new Rmultiply(0.0, 0.0));
+		for (auto element : elements) {
+			elem->setElement(element.first, element.second);
+		}
+		return elem.release();
+	}
+
+	SlotIndex getSlotIndex() const override {
+		return {slotIndex: SLOT_INDEX, slotCount: sizeof(SLOT_INDEX)/sizeof(ElementFactory::SlotDescriptor)};
+	}
+} FACTORY_INSTANCE;
+
+} // namespace
+
+const torasu::ElementFactory* const Rmultiply::FACTORY = &FACTORY_INSTANCE;
 
 } // namespace torasu::tstd

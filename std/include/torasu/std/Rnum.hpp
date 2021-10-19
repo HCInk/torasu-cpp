@@ -26,6 +26,8 @@ public:
 
 	DataResource* getData() override;
 	void setData(DataResource* data) override;
+
+	static const torasu::ElementFactory* const FACTORY;
 };
 
 class NumSlot : public torasu::tools::RenderableSlot {

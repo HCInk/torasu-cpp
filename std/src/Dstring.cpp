@@ -4,6 +4,10 @@
 
 #include <torasu/json.hpp>
 
+namespace {
+auto IDENT = "STD::DSTRING";
+} // namespace
+
 using namespace std;
 using json = torasu::json;
 
@@ -40,7 +44,7 @@ torasu::DataResource::CompareResult Dstring::compare(const DataResource* other) 
 }
 
 torasu::Identifier Dstring::getType() const {
-	return "STD::DSTRING";
+	return IDENT;
 }
 
 void Dstring::load() {
@@ -59,5 +63,28 @@ torasu::json Dstring::makeJson() {
 Dstring* Dstring::clone() const {
 	return new Dstring(*this);
 }
+namespace {
+
+static class : public torasu::DataPackableFactory {
+	torasu::Identifier getType() const override {
+		return IDENT;
+	}
+
+	torasu::UserLabel getLabel() const override {
+		return {
+		name: "Plain Text"
+			,
+		description: "Standard type for plain-text (utf8-string)"
+		};
+	}
+
+	torasu::DataResource* create(const torasu::json* json) const override {
+		return new Dstring(*json);
+	}
+} FACTORY_INSTANCE;
+
+} // namespace
+
+const torasu::DataPackableFactory* const Dstring::FACTORY = &FACTORY_INSTANCE;
 
 } // namespace torasu::tstd

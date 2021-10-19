@@ -7,6 +7,10 @@
 using namespace std;
 using json = torasu::json;
 
+namespace {
+auto IDENT = "STD::DNUM";
+} // namespace
+
 namespace torasu::tstd {
 
 Dnum::Dnum() : num(0) {}
@@ -33,7 +37,7 @@ double Dnum::getNum() {
 }
 
 torasu::Identifier Dnum::getType() const {
-	return "STD::DNUM";
+	return IDENT;
 }
 
 void Dnum::load() {
@@ -52,5 +56,29 @@ torasu::json Dnum::makeJson() {
 Dnum* Dnum::clone() const {
 	return new Dnum(*this);
 }
+
+namespace {
+
+static class : public torasu::DataPackableFactory {
+	torasu::Identifier getType() const override {
+		return IDENT;
+	}
+
+	torasu::UserLabel getLabel() const override {
+		return {
+		name: "Number"
+			,
+		description: "Standard Number in TORASU"
+		};
+	}
+
+	torasu::DataResource* create(const torasu::json* json) const override {
+		return new Dnum(*json);
+	}
+} FACTORY_INSTANCE;
+
+} // namespace
+
+const torasu::DataPackableFactory* const Dnum::FACTORY = &FACTORY_INSTANCE;
 
 } // namespace torasu::tstd

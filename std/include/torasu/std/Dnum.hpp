@@ -34,6 +34,7 @@ public:
 	torasu::Identifier getType() const override;
 	Dnum* clone() const override;
 
+	static const torasu::DataPackableFactory* const FACTORY;
 };
 
 } // namespace torasu::tstd

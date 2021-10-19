@@ -19,6 +19,7 @@ if(NOT TARGET torasustd)
 
 	set(TORASU_STD_SRC
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-std.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/torasu-std-index.cpp
 		# Interfaces
 		${CMAKE_CURRENT_LIST_DIR}/src/LIcore_logger.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/EIcore_runner.cpp

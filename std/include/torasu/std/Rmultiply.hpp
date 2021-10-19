@@ -26,6 +26,8 @@ public:
 
 	torasu::ElementMap getElements() override;
 	void setElement(std::string key, Element* elem) override;
+
+	static const torasu::ElementFactory* const FACTORY;
 };
 
 } // namespace torasu::tstd
