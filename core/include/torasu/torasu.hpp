@@ -84,6 +84,15 @@ class ReadyInstruction;
 // UPSTREAM (READY)
 class ReadyState;
 
+// DISCOVERY
+struct UserLabel;
+class DiscoveryInterface;
+/** @breif function, which returns a discovery-interface for a torasu-module */
+typedef const DiscoveryInterface* (*DiscoveryFunction)(void);
+class FactoryBase;
+class DataResourceFactory;
+class ElementFactory;
+
 //
 // DATA
 //
@@ -139,19 +148,19 @@ public:
 		}
 	}
 
-	inline DDDataPointer const getData() {
+	inline DDDataPointer const getData() const {
 		return data;
 	}
 
-	inline int const getSize() {
+	inline int const getSize() const {
 		return size;
 	}
 
-	inline bool isJson() {
+	inline bool isJson() const {
 		return json;
 	}
 
-	inline DataDump* newReference() {
+	inline DataDump* newReference() const {
 		return new DataDump(data, size, nullptr, json);
 	}
 };
@@ -1272,6 +1281,103 @@ public:
 
 	/** @brief Clone the object */
 	virtual ReadyState* clone() const = 0;
+};
+
+//
+// DISCOVERY
+//
+
+struct UserLabel {
+	const char* name = nullptr;
+	const char* description = nullptr;
+};
+
+/**
+ * @brief  Interface to be returned by a module's DiscoveryFunction,
+ * 		used to find contents of a certain torasu-module,
+ * 		like information, factories and such.
+ */
+class DiscoveryInterface {
+public:
+	struct FactoryIndex {
+		/** @brief  Pointer to array of DataResourceFactory,
+		  * with length of dataFactoryCount */
+		const DataResourceFactory* const* dataFactoryIndex;
+		size_t dataFactoryCount;
+		/** @brief  Pointer to array of ElementFactory,
+		  * with length of elementFactoryCount */
+		const ElementFactory* const* elementFactoryIndex;
+		size_t elementFactoryCount;
+	};
+
+	/** @retval Index of Factories for types this module provides */
+	virtual const FactoryIndex* getFactoryIndex() const = 0;
+	/** @retval Label for this Module */
+	virtual UserLabel getLabel() const = 0;
+
+};
+
+/**
+ * @brief  Base class for all factories
+ */
+class FactoryBase {
+public:
+	/** @retval Type-Identifier of the Object to be created */
+	virtual Identifier getType() const = 0;
+	/** @retval Label for user to see on object that is created in this Factory  */
+	virtual UserLabel getLabel() const = 0;
+};
+
+/**
+ * @brief  Factory for creating DataResources from a data-dump
+ */
+class DataResourceFactory : public FactoryBase {
+public:
+	/**
+	 * @brief  Create a DataResource-instance
+	 * @param  dump: The dump previosly created by via DataResource.dumpResource()
+	 * @retval The created DataResource (managed by caller)
+	 */
+	virtual DataResource* create(const DataDump* dump) const = 0;
+};
+
+/**
+ * @brief  Factory for creating Elements from data and/or other Elements
+ */
+class ElementFactory : public FactoryBase {
+public:
+	/**
+	 * @brief  Create an Element-instance
+	 * @param  data: Double-pointer to Element-data, will be set to nullptr when consumed
+	 * @param  elements: Element map containing elements to be set
+	 * @retval The created Element (managed by caller)
+	 */
+	virtual Element* create(DataResource** data, const ElementMap& elements) const = 0;
+
+	/** @brief  Describes an Element-slot */
+	struct SlotDescriptor {
+		/** @brief  Key of Slot, used to set in e.g. setElement(key, elem) */
+		Identifier id;
+		/** @brief  Label of the Slot for the user */
+		UserLabel label;
+		/** @brief  true if the slot may be left empty,
+		  * false if it always has to be occupied with an Element */
+		bool optional;
+		/** @brief  true if it accepts any kind of Renderables,
+		  * false if it reqires a special type of Element */
+		bool renderable;
+	};
+
+	/** @brief  Index of all slots in the current Element */
+	struct SlotIndex {
+		/** @brief  Pointer to array of SlotDescriptor,
+		  * with length of slotCount */
+		const SlotDescriptor* slotIndex;
+		const size_t slotCount;
+	};
+
+	/** @retval  Index of all slots in the current Element */
+	virtual SlotIndex getSlotIndex() const = 0;
 };
 
 } /* namespace torasu */
