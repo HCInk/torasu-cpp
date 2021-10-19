@@ -65,6 +65,16 @@ DataDump* DataPackable::dumpResource() {
 }
 
 /*
+ * DP Factory
+*/
+
+DataResource* DataPackableFactory::create(const DataDump* dump) const {
+	const char* str = dump->getData().s;
+	torasu::json json = json::parse(str, str+dump->getSize());
+	return create(&json);
+}
+
+/*
  * DP Universal
 */
 

@@ -83,6 +83,18 @@ public:
 
 };
 
+class DataPackableFactory : public DataResourceFactory {
+public:
+	/**
+	 * @brief  Create a DataPackable-instance
+	 * @param  json: The json of the element
+	 * @retval The created DataPackable (managed by caller)
+	 */
+	virtual DataResource* create(const torasu::json* json) const = 0;
+
+	DataResource* create(const DataDump* dump) const override;
+};
+
 class DPUniversal : public DataPackable {
 private:
 	std::string ident;
