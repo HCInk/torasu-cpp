@@ -369,6 +369,57 @@ void progressExample() {
 
 }
 
+extern "C" {
+	const torasu::DiscoveryInterface* TORASU_DISCOVERY_torasu_core();
+	const torasu::DiscoveryInterface* TORASU_DISCOVERY_torasu_std();
+}
+
+void discoveryExample() {
+	cout << "//" << endl
+		 << "// Discovery Example" << endl
+		 << "//" << endl;
+
+	torasu::DiscoveryFunction discoveryFunctions[] = {
+		TORASU_DISCOVERY_torasu_core,
+		TORASU_DISCOVERY_torasu_std
+	};
+
+	for (auto discoveryFunction : discoveryFunctions) {
+		const torasu::DiscoveryInterface* torasuModule = discoveryFunction();
+		auto moduleLabel = torasuModule->getLabel();
+		cout << "Module: " << moduleLabel.name << endl
+			 << " >> " << moduleLabel.description << endl;
+
+		auto moduleFactories = *torasuModule->getFactoryIndex();
+		cout << "  Data-Types: " << moduleFactories.dataFactoryCount << endl;
+		for (size_t i = 0; i < moduleFactories.dataFactoryCount; i++) {
+			auto* factory = moduleFactories.dataFactoryIndex[i];
+			auto factoryLabel = factory->getLabel();
+			cout << "  - " << factoryLabel.name << " (" << factory->getType().str << ")" << endl
+				 << "   >> " << factoryLabel.description << endl;
+		}
+		cout << "  Elements: " << moduleFactories.elementFactoryCount << endl;
+		for (size_t i = 0; i < moduleFactories.elementFactoryCount; i++) {
+			auto* factory = moduleFactories.elementFactoryIndex[i];
+			auto factoryLabel = factory->getLabel();
+			cout << "  - " << factoryLabel.name << " (" << factory->getType().str << ")" << endl
+				 << "   >> " << factoryLabel.description << endl;
+
+			auto slots = factory->getSlotIndex();
+			if (slots.slotCount > 0) {
+				for (size_t iSlot = 0; iSlot < slots.slotCount; iSlot++) {
+					auto slot = slots.slotIndex[iSlot];
+					cout << "   - " << slot.label.name << " (" << slot.id.str << ")" << endl;
+					if (slot.label.description != nullptr) cout << "     >> " << slot.label.description << endl;
+				}
+			} else {
+				cout << "   (no slots)" << endl;
+			}
+		}
+
+	}
+}
+
 } // namespace torasu::texample
 
 using namespace torasu::texample;
@@ -403,9 +454,11 @@ int main(int argc, char** argv) {
 
 	// renderErrorExample();
 
-	progressExample();
+	// progressExample();
 
 	// taskDistTest();
+
+	discoveryExample();
 
 	return 0;
 }
