@@ -18,6 +18,7 @@ if(NOT TARGET torasu)
 
 	set(TORASU_CORE_SRC
 		${CMAKE_CURRENT_LIST_DIR}/src/torasu-cpp-core.cpp
+		${CMAKE_CURRENT_LIST_DIR}/src/torasu-core-index.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/DataPackable.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/render_tools.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/SimpleRenderable.cpp
