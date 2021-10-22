@@ -104,7 +104,7 @@ RenderResult* Rmultiply::render(RenderInstruction* ri) {
 			auto li = ri->getLogInstruction();
 
 			bool doBench = li.level <= LogLevel::DEBUG;
-			std::chrono::_V2::steady_clock::time_point bench;
+			std::chrono::time_point<std::chrono::steady_clock> bench;
 			if (doBench) bench = std::chrono::steady_clock::now();
 
 			for (size_t i = 0; i < dataSize; i++) {

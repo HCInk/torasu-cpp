@@ -7,6 +7,16 @@ if (NOT MINGW AND NOT APPLE)
 	set(TORASU_DEBUG_ASAN true)
 endif()
 
+option(BUILD_TORASU_STATIC "Build TORASU-Libraries with static linking" OFF)
+
+if (EMSCRIPTEN)
+	message( STATUS "Linking static with emscripten" )
+	set(BUILD_TORASU_STATIC ON)
+	set(TORASU_DEBUG_ASAN OFF)
+	add_compile_options("SHELL:-pthread -s USE_PTHREADS")
+	add_link_options("SHELL:-pthread -s USE_PTHREADS")
+endif()
+
 include(core/CMakeLists.txt)
 include(std/CMakeLists.txt)
 include(examples/CMakeLists.txt)

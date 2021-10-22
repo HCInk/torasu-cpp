@@ -59,14 +59,20 @@ if(NOT TARGET torasustd)
 		${CMAKE_CURRENT_LIST_DIR}/src/Rstring_file.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rnumber_string.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Rlist.cpp)
-	add_library(torasustd SHARED ${TORASU_STD_SRC})
 
-	set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+	if (BUILD_TORASU_STATIC)
+		add_library(torasustd STATIC ${TORASU_STD_SRC})
+	else()
+		add_library(torasustd SHARED ${TORASU_STD_SRC})
+	endif()
 
 	# Linking libraries
 
-	target_link_libraries(torasustd torasu curl)
-
+	if (NOT EMSCRIPTEN)
+		set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+		target_link_libraries(torasustd curl)
+	endif()
+	target_link_libraries(torasustd torasu)
 	# Installation
 
 	install(TARGETS torasustd DESTINATION lib)

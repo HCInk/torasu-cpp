@@ -52,7 +52,7 @@ Dbimg* Dbimg::clone() const {
 //	Dbimg_FORMAT
 //
 
-Dbimg_FORMAT::Dbimg_FORMAT(u_int32_t width, u_int32_t height, Dbimg::CropInfo* cropInfo)  : ResultFormatSettings(IDENT), width(width), height(height), cropInfo(cropInfo) {}
+Dbimg_FORMAT::Dbimg_FORMAT(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo)  : ResultFormatSettings(IDENT), width(width), height(height), cropInfo(cropInfo) {}
 
 Dbimg_FORMAT::Dbimg_FORMAT(const torasu::json& jsonParsed) : ResultFormatSettings(IDENT), DataPackable(jsonParsed) {}
 Dbimg_FORMAT::Dbimg_FORMAT(const std::string& jsonStripped) : ResultFormatSettings(IDENT), DataPackable(jsonStripped) {}

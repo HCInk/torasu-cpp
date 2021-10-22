@@ -1,7 +1,10 @@
 #include "../include/torasu/std/Rnet_file.hpp"
 
-#include <curl/curl.h>
-
+#if __EMSCRIPTEN__
+	#include <emscripten/fetch.h>
+#else
+	#include <curl/curl.h>
+#endif
 #include <torasu/render_tools.hpp>
 #include <torasu/log_tools.hpp>
 
@@ -91,15 +94,58 @@ RenderResult* Rnet_file::render(RenderInstruction* ri) {
 
 		}
 
-		// Running Download
+		auto headerList = split(headers, "\n");
 
+		// Running Download
+		size_t size = 0;
+		Dfile* file = nullptr;
+#if __EMSCRIPTEN__
+		// XXX Untested
+		size_t headerCount = headerList.size();
+		const char* headerArray[headerCount*2+1];
+		std::vector<std::string> headerStringsVec(headerCount*2);
+		{
+			std::string* headersRaw = headerList.data();
+			std::string* headerStrings = headerStringsVec.data();
+			size_t headerArrIndex = 0;
+			for (size_t i = 0; i < headerCount; i++) {
+				std::string rawHeader = headersRaw[i];
+				size_t found = rawHeader.find(": ");
+				if (found >= rawHeader.size()) continue;
+				auto& key = headerStrings[headerArrIndex] = rawHeader.substr(0, found);
+				headerArray[headerArrIndex] = key.c_str();
+				headerArrIndex++;
+				auto& value = headerStrings[headerArrIndex] = rawHeader.substr(found+2);
+				headerArray[headerArrIndex] = value.c_str();
+				headerArrIndex++;
+			}
+			headerArray[headerArrIndex] = 0x00;
+		}
+
+		emscripten_fetch_attr_t attr;
+		emscripten_fetch_attr_init(&attr);
+		strcpy(attr.requestMethod, "GET");
+		attr.attributes = EMSCRIPTEN_FETCH_LOAD_TO_MEMORY | EMSCRIPTEN_FETCH_SYNCHRONOUS;
+		attr.requestHeaders = headerArray;
+		emscripten_fetch_t* fetch = emscripten_fetch(&attr, url.c_str()); // Blocks here until the operation is complete.
+		if (fetch->status == 200) {
+			// printf("Finished downloading %llu bytes from URL %s.\n", fetch->numBytes, fetch->url);
+			// The data is now available at fetch->data[0] through fetch->data[fetch->numBytes-1];
+
+			size = fetch->numBytes;
+			file = new Dfile(size);
+			copy(fetch->data, fetch->data+size, file->getFileData());
+		} else {
+			printf("Downloading %s failed, HTTP failure status code: %d.\n", fetch->url, fetch->status);
+			throw std::runtime_error("Downloading " + std::string(fetch->url) + " failed, HTTP failure status code: " + std::to_string(fetch->status));
+		}
+		emscripten_fetch_close(fetch);
+#else
 		CURL* curl;
 		CURLcode res;
 		curl = curl_easy_init();
 		if (!curl)
 			throw std::runtime_error("Failed to init curl!");
-
-		auto headerList = split(headers, "\n");
 
 		struct curl_slist* curlHeaders = nullptr;
 
@@ -123,11 +169,12 @@ RenderResult* Rnet_file::render(RenderInstruction* ri) {
 		if (res != CURLcode::CURLE_OK)
 			throw std::runtime_error("Aborted due to CURL error - code: " + std::to_string(res));
 
-		size_t size = dataout.size();
+		size = dataout.size();
 		const char* data = dataout.data();
-
-		Dfile* file = new Dfile(size);
+		file = new Dfile(size);
 		copy(data, data+size, file->getFileData());
+#endif
+
 
 		torasu::tools::log_checked(rh.li, LogLevel::DEBUG,
 								   "Loaded net-file \"" + url + "\" (" + std::to_string(size) + "byte)");

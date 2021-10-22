@@ -24,7 +24,9 @@ if(NOT TARGET torasu-cpp-examples)
 		${CMAKE_CURRENT_LIST_DIR}/boilerplate/execution-boilerplate.cpp)
 	add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
 	
-	set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+	if (NOT EMSCRIPTEN)
+		set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+	endif()
 
 	# Includes for current target
 
@@ -50,7 +52,9 @@ if(NOT TARGET torasu-cpp-examples)
  	${CMAKE_CURRENT_LIST_DIR}/test/torasu-cpp-test.cpp)
 	add_executable(torasu-cpp-test ${TORASU_TEST_SRC})
 
-	set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+	if (NOT EMSCRIPTEN)
+		set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+	endif()
 
 	if(APPLE)
 

@@ -23,8 +23,11 @@ if(NOT TARGET torasu)
 		${CMAKE_CURRENT_LIST_DIR}/src/render_tools.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/SimpleRenderable.cpp
 		${CMAKE_CURRENT_LIST_DIR}/src/Dlog_entry.cpp)
+if (BUILD_TORASU_STATIC)
+	add_library(torasu STATIC ${TORASU_CORE_SRC})
+else()
 	add_library(torasu SHARED ${TORASU_CORE_SRC})
-
+endif()
 	# Installation
 
 	install(TARGETS torasu DESTINATION lib)

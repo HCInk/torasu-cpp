@@ -45,6 +45,17 @@ if [ -n "$1" ]; then
 			sudo make install
     	fi
 
+	
+	elif [ "$1" == "wasminstall" ]; then
+	
+		echo "Installing TORASU [WASM]..."
+			
+		mkdir -p build/cross/wasm
+		cd build/cross/wasm
+		emcmake cmake -Wno-dev -DCMAKE_BUILD_TYPE=Release ../../../
+		build_runMake
+		echo "Installing wasm-artifacts..."
+		make install
 
 	elif [ "$1" == "delbuild" ]; then
 	
@@ -70,6 +81,7 @@ if [ -n "$1" ]; then
 		echo "Available arguments: "
 		echo "	install [nosudo] 	- Installs Libraries and Include files"
 		echo "	dbginstall [nosudo] - Installs Libraries and Include files in debug-mode"
+		echo "  wasminstall - Installs Libraries and Include files as web-assembly-artifacts"
 		echo "	delbuild 	- Deletes all buld files (build/)"
 		echo "	wincross 	- Builds windows binary into build/cross/win/"
 		echo "	delcross 	- Removes cross build-folder (build/cross/)"
