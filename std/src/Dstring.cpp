@@ -72,9 +72,8 @@ static class : public torasu::DataPackableFactory {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "Plain Text"
-			,
-		description: "Standard type for plain-text (utf8-string)"
+			.name = "Plain Text",
+			.description = "Standard type for plain-text (utf8-string)"
 		};
 	}
 

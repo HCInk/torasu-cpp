@@ -12,9 +12,8 @@ public:
 
 	UserLabel getLabel() const override {
 		return {
-		name: "Unknown-Mask"
-			,
-		description: "Mask which indicates that matches cant be verfied for any item"
+			.name = "Unknown-Mask",
+			.description = "Mask which indicates that matches cant be verfied for any item"
 			" - nither positively or negatively"
 		};
 	}
@@ -32,9 +31,8 @@ public:
 
 	UserLabel getLabel() const override {
 		return {
-		name: "Single-Mask"
-			,
-		description: "Mask which only matches only one exact value"
+			.name = "Single-Mask",
+			.description = "Mask which only matches only one exact value"
 		};
 	}
 
@@ -55,14 +53,11 @@ static torasu::DataResourceFactory* dataFactories[] = {
 
 static torasu::DiscoveryInterface::FactoryIndex factoryIndex = {
 	// Data Factories
-dataFactoryIndex:
-	dataFactories,
-dataFactoryCount:
-	sizeof(dataFactories)/sizeof(torasu::DataResourceFactory),
+	.dataFactoryIndex = dataFactories,
+	.dataFactoryCount = sizeof(dataFactories)/sizeof(torasu::DataResourceFactory),
 	// Element Factories
-elementFactoryIndex:
-	nullptr,
-	elementFactoryCount: 0,
+	.elementFactoryIndex = nullptr,
+	.elementFactoryCount = 0,
 };
 
 static class : public torasu::DiscoveryInterface {
@@ -73,9 +68,8 @@ static class : public torasu::DiscoveryInterface {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "TORASU-Core"
-			,
-		description: "Core components needed for torasu function properly"
+			.name = "TORASU-Core",
+			.description = "Core components needed for torasu function properly"
 		};
 	}
 

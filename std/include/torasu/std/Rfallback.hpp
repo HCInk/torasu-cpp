@@ -22,8 +22,8 @@ public:
 
 	RenderResult* render(RenderInstruction* ri) override;
 
-	torasu::ElementMap getElements();
-	void setElement(std::string key, torasu::Element* elem);
+	torasu::ElementMap getElements() override;
+	void setElement(std::string key, torasu::Element* elem) override;
 
 };
 

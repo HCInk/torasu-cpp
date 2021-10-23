@@ -160,8 +160,8 @@ void Rmultiply::setElement(std::string key, Element* elem) {
 namespace {
 
 static const ElementFactory::SlotDescriptor SLOT_INDEX[] = {
-{id: "a", label: {name: "Operand A", description: "Multiplier on the left side"}, optional: false, renderable: true},
-{id: "b", label: {name: "Operand B", description: "Multiplier on the right side"}, optional: false, renderable: true},
+	{.id = "a", .label = {.name = "Operand A", .description = "Multiplier on the left side"}, .optional = false, .renderable = true},
+	{.id = "b", .label = {.name = "Operand B", .description = "Multiplier on the right side"}, .optional = false, .renderable = true},
 };
 
 static class : public torasu::ElementFactory {
@@ -171,9 +171,8 @@ static class : public torasu::ElementFactory {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "Multiply"
-			,
-		description: "Multiplies two values"
+			.name = "Multiply",
+			.description = "Multiplies two values"
 		};
 	}
 
@@ -186,7 +185,7 @@ static class : public torasu::ElementFactory {
 	}
 
 	SlotIndex getSlotIndex() const override {
-		return {slotIndex: SLOT_INDEX, slotCount: sizeof(SLOT_INDEX)/sizeof(ElementFactory::SlotDescriptor)};
+		return {.slotIndex = SLOT_INDEX, .slotCount = sizeof(SLOT_INDEX)/sizeof(ElementFactory::SlotDescriptor)};
 	}
 } FACTORY_INSTANCE;
 

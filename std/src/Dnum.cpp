@@ -66,9 +66,8 @@ static class : public torasu::DataPackableFactory {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "Number"
-			,
-		description: "Standard Number in TORASU"
+			.name = "Number",
+			.description = "Standard Number in TORASU"
 		};
 	}
 

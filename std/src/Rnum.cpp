@@ -61,9 +61,8 @@ static class : public torasu::ElementFactory {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "Number"
-			,
-		description: "A defines number-value"
+			.name = "Number",
+			.description = "A defines number-value"
 		};
 	}
 
@@ -77,7 +76,7 @@ static class : public torasu::ElementFactory {
 	}
 
 	SlotIndex getSlotIndex() const override {
-		return {slotIndex: nullptr, slotCount: 0};
+		return {.slotIndex = nullptr, .slotCount = 0};
 	}
 } FACTORY_INSTANCE;
 

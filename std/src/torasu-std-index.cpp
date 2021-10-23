@@ -18,15 +18,11 @@ static const torasu::ElementFactory* elementFactories[] = {
 
 static torasu::DiscoveryInterface::FactoryIndex factoryIndex = {
 	// Data Factories
-dataFactoryIndex:
-	dataFactories,
-dataFactoryCount:
-	sizeof(dataFactories)/sizeof(torasu::DataResourceFactory),
+	.dataFactoryIndex = dataFactories,
+	.dataFactoryCount = sizeof(dataFactories)/sizeof(torasu::DataResourceFactory),
 	// Element Factories
-elementFactoryIndex:
-	elementFactories,
-elementFactoryCount:
-	sizeof(elementFactories)/sizeof(torasu::ElementFactory),
+	.elementFactoryIndex = elementFactories,
+	.elementFactoryCount = sizeof(elementFactories)/sizeof(torasu::ElementFactory),
 };
 
 static class : public torasu::DiscoveryInterface {
@@ -37,9 +33,8 @@ static class : public torasu::DiscoveryInterface {
 
 	torasu::UserLabel getLabel() const override {
 		return {
-		name: "TORASU-Standard"
-			,
-		description: "Standardised items for torasu to be used in various situations"
+			.name = "TORASU-Standard",
+			.description = "Standardised items for torasu to be used in various situations"
 		};
 	}
 

@@ -38,7 +38,7 @@ namespace torasu {
 typedef std::function<void(void)> Callback;
 
 // DATA
-class Identifier;
+struct Identifier;
 class DataDump;
 class DataResource;
 class DataResourceMask;
