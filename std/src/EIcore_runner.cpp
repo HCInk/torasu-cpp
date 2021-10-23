@@ -886,6 +886,26 @@ void EIcore_runner_object::fetchRenderResults(ResultPair* requests, size_t reque
 
 }
 
+torasu::RenderResult* EIcore_runner_object::tryFetchRenderResult(uint64_t renderId) {
+	bool lockSubTasks = parent != nullptr ? runner->concurrentSubCalls : runner->concurrentInterface;
+	if (lockSubTasks) subTasksLock.lock();
+	auto it = subTasks->begin()+renderId;
+	EIcore_runner_object* task = *it;
+
+	torasu::RenderResult* result = nullptr;
+	if (task->result != nullptr) {
+		std::unique_lock resultLocked(task->resultLock);
+		result = task->result;
+		if (result != nullptr) {
+			*it = nullptr;
+			delete task;
+		}
+	}
+
+	if (lockSubTasks) subTasksLock.unlock();
+	return result;
+}
+
 void EIcore_runner_object::lock(LockId lockId) {
 	if (runner->concurrentTree) {
 		if (recordBench) bench.stop();

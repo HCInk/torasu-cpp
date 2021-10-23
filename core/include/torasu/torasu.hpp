@@ -719,6 +719,13 @@ public:
 	virtual void fetchRenderResults(ResultPair* requests, size_t requestCount) = 0;
 
 	/**
+	 * @brief  Fetch render-result if available, returns nullptr if not available
+	 * @param  renderId: Render-id created in enqueueRender
+	 * @retval The generated render-result, will need to be managed/freed by caller
+	 */
+	virtual torasu::RenderResult* tryFetchRenderResult(uint64_t renderId) = 0;
+
+	/**
 	 * @brief  Lock a section of a running render-process ( unlock with unlock(LockId) )
 	 * @param  lockId: The id of the lock, in case there are multiple
 	 */

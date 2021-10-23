@@ -226,6 +226,7 @@ public:
 
 	uint64_t enqueueRender(Renderable* rnd, RenderContext* rctx, ResultSettings* rs, LogInstruction li, int64_t prio) override;
 	void fetchRenderResults(ResultPair* requests, size_t requestCount) override;
+	torasu::RenderResult* tryFetchRenderResult(uint64_t renderId) override;
 	void lock(LockId lockId) override;
 	void unlock(LockId lockId) override;
 
