@@ -142,6 +142,18 @@ public:
 
 	EIcore_runner_object* createInterface(std::vector<int64_t>* prioStack=NULL);
 
+	// Housekeeping
+
+	struct Metrics {
+		size_t queueSize;
+		size_t cacheItemCount;
+		size_t cacheMemoryUsed;
+		size_t cacheMemoryMax;
+	};
+	Metrics getMetrics();
+
+	void clearCache();
+
 	friend class EIcore_runner_object;
 	friend class EIcore_runner_elemhandler;
 };
@@ -308,6 +320,12 @@ public:
 	static double now();
 	void add(CacheHandle* handle);
 	void remove(CacheHandle* handle);
+
+	// Housekeeping
+	void clearCache();
+	size_t getItemCount();
+	size_t getMemoryUsed();
+	size_t getMemoryMax();
 };
 
 class EIcore_runner_elemhandler : public ElementExecutionOpaque {

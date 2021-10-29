@@ -439,6 +439,21 @@ EIcore_runner_object* EIcore_runner::createInterface(std::vector<int64_t>* prioS
 	return new EIcore_runner_object(this, newInterfaceId, li, selectedPrioStack);
 }
 
+// EIcore_runner: Housekeeping
+
+EIcore_runner::Metrics EIcore_runner::getMetrics() {
+	return {
+		.queueSize = taskQueue.size(),
+		.cacheItemCount = cache->getItemCount(),
+		.cacheMemoryUsed = cache->getMemoryUsed(),
+		.cacheMemoryMax = cache->getMemoryMax(),
+	};
+}
+
+void EIcore_runner::clearCache() {
+	cache->clearCache();
+}
+
 //
 // EIcore_runner_object
 //
@@ -1184,6 +1199,31 @@ void EIcore_runner_cacheinterface::remove(CacheHandle* handle) {
 
 	handles.erase(handle);
 
+}
+
+void EIcore_runner_cacheinterface::clearCache() {
+	std::set<CacheHandle*> removedHandles;
+	for (auto* handle : handles) {
+		if (handle->tryDereference()) {
+			removedHandles.insert(handle);
+		}
+	}
+	for (auto* removedHandle : removedHandles) {
+		totalUsed -= removedHandle->size;
+		handles.erase(removedHandle);
+		delete removedHandle;
+	}
+}
+
+size_t EIcore_runner_cacheinterface::getItemCount() {
+	return handles.size();
+}
+size_t EIcore_runner_cacheinterface::getMemoryUsed() {
+	return totalUsed;
+}
+
+size_t EIcore_runner_cacheinterface::getMemoryMax() {
+	return maxMem;
 }
 
 //
