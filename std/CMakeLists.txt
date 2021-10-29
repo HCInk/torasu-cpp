@@ -68,7 +68,9 @@ if(NOT TARGET torasustd)
 
 	# Linking libraries
 
-	if (NOT EMSCRIPTEN)
+	if (EMSCRIPTEN)
+		set_target_properties(torasustd PROPERTIES LINK_FLAGS "-s FETCH=1")
+	else()
 		set_target_properties(torasustd PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
 		target_link_libraries(torasustd curl)
 	endif()
