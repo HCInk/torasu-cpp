@@ -75,6 +75,7 @@ public:
 	Dbimg_FORMAT(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo = nullptr);
 	explicit Dbimg_FORMAT(const torasu::json& jsonParsed);
 	explicit Dbimg_FORMAT(const std::string& jsonStripped);
+	Dbimg_FORMAT(const Dbimg_FORMAT& copy);
 	~Dbimg_FORMAT();
 
 	inline uint32_t getWidth() const {

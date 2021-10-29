@@ -22,7 +22,7 @@ Dbimg::Dbimg(uint32_t width, uint32_t height, Dbimg::CropInfo* cropInfo) {
 }
 
 Dbimg::Dbimg(const Dbimg& copy)
-	: Dbimg(copy.width, copy.height, new Dbimg::CropInfo(*copy.cropInfo)) {
+	: Dbimg(copy.width, copy.height, copy.cropInfo != nullptr ? new Dbimg::CropInfo(*copy.cropInfo) : nullptr) {
 	std::copy(copy.data, copy.data+(width*height*4), this->data);
 }
 
@@ -56,6 +56,11 @@ Dbimg_FORMAT::Dbimg_FORMAT(uint32_t width, uint32_t height, Dbimg::CropInfo* cro
 
 Dbimg_FORMAT::Dbimg_FORMAT(const torasu::json& jsonParsed) : ResultFormatSettings(IDENT), DataPackable(jsonParsed) {}
 Dbimg_FORMAT::Dbimg_FORMAT(const std::string& jsonStripped) : ResultFormatSettings(IDENT), DataPackable(jsonStripped) {}
+
+Dbimg_FORMAT::Dbimg_FORMAT(const Dbimg_FORMAT& copy)
+	: ResultFormatSettings(IDENT), DataPackable(copy), width(copy.width), height(copy.height),
+	  cropInfo(copy.cropInfo != nullptr ? new Dbimg::CropInfo(*copy.cropInfo) : nullptr) {}
+
 Dbimg_FORMAT::~Dbimg_FORMAT() {
 	if (cropInfo != nullptr) delete cropInfo;
 }
