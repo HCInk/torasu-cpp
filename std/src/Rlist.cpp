@@ -77,7 +77,7 @@ void Rlist::setElement(std::string key, torasu::Element* elem) {
 	}
 
 	if (elem == nullptr) {
-		slots[id] = nullptr;
+		slots.erase(id);
 		return;
 	}
 
@@ -87,7 +87,7 @@ void Rlist::setElement(std::string key, torasu::Element* elem) {
 		throw torasu::tools::makeExceptSlotOnlyRenderables(key);
 	}
 
-	length = slots.rbegin()->first;
+	length = slots.rbegin()->first+1;
 }
 
 torasu::DataResource* Rlist::getData() {
