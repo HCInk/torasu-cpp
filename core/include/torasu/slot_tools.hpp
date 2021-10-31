@@ -17,6 +17,11 @@ public:
 	/* implicit */ inline Slot(T* elem)
 		: elem(elem) {}
 
+	/** @brief  Convert slot to ElementSlot */
+	inline operator Slot<torasu::Element>() {
+		return Slot<torasu::Element>(elem, owned);
+	}
+
 	inline Slot(T* elem, bool owned)
 		: elem(elem), owned(owned) {}
 
