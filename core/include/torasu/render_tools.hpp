@@ -201,7 +201,7 @@ public:
 	inline torasu::RenderResult* passRender(torasu::Renderable* rnd, PassMode mode, torasu::RenderContext* rctx = nullptr) {
 		std::unique_ptr<torasu::RenderResult> result(runRender(rnd, rs, rctx));
 		collectMask(result->getResultMask());
-		return buildResult(result->ejectOrClone(), result->getStatus());
+		return buildResult(result->getResult() != nullptr ? result->ejectOrClone() : nullptr, result->getStatus());
 	}
 
 };
