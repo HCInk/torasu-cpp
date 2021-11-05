@@ -150,7 +150,11 @@ void EIcore_runner::spawnThread(bool collapse) {
 	threads.push_back({});
 	EIcore_runner_thread& threadHandle = threads.back();
 	threadHandle.thread = new std::thread([this, &threadHandle, collapse]() {
-		this->run(&threadHandle, collapse);
+		try {
+			this->run(&threadHandle, collapse);
+		} catch (const std::exception& ex) {
+			std::cerr << "Runner thread crashed: " << ex.what() << std::endl;
+		}
 	});
 #if LOG_THREADS
 	std::cout << "(SPWAN) Create thread " << std::to_address(threadHandle.thread) << std::endl;
