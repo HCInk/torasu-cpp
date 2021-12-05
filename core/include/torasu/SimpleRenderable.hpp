@@ -108,7 +108,7 @@ inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSl
 	if (givenKey.compare(slotKey) == 0) {
 		if (givenElement == nullptr) {
 			if (supportNull) {
-				if (ownsCurrent != nullptr || *ownsCurrent) {
+				if (ownsCurrent != nullptr && *ownsCurrent) {
 					*ownsCurrent = false;
 					delete rndSlot;
 				}
@@ -119,7 +119,7 @@ inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSl
 			}
 		}
 		if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(givenElement)) {
-			if (ownsCurrent != nullptr || *ownsCurrent) {
+			if (ownsCurrent != nullptr && *ownsCurrent) {
 				*ownsCurrent = false;
 				delete rndSlot;
 			}
