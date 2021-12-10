@@ -25,7 +25,8 @@ if(NOT TARGET torasu-cpp-examples)
 	add_executable(torasu-cpp-examples ${TORASU_EXAMPLES_SRC})
 	
 	if (NOT EMSCRIPTEN)
-		set_target_properties(torasu-cpp-examples PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+		set_property(TARGET torasu-cpp-examples PROPERTY INSTALL_RPATH "/usr/local/lib")
+		set_property(TARGET torasu-cpp-examples PROPERTY BUILD_RPATH "." "/usr/local/lib")
 	endif()
 
 	# Includes for current target
@@ -53,7 +54,8 @@ if(NOT TARGET torasu-cpp-examples)
 	add_executable(torasu-cpp-test ${TORASU_TEST_SRC})
 
 	if (NOT EMSCRIPTEN)
-		set_target_properties(torasu-cpp-test PROPERTIES LINK_FLAGS "-Wl,-rpath,./")
+		set_property(TARGET torasu-cpp-test PROPERTY INSTALL_RPATH "/usr/local/lib")
+		set_property(TARGET torasu-cpp-test PROPERTY BUILD_RPATH "." "/usr/local/lib")
 	endif()
 
 	if(APPLE)
