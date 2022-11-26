@@ -787,13 +787,18 @@ uint64_t EIcore_runner_object::enqueueRender(Renderable* rnd, RenderContext* rct
 	obj->setRenderContext(rctx);
 	obj->setResultSettings(rs);
 
+	if (rnd == nullptr) {
+		obj->result = new RenderResult(torasu::RenderResultStatus_INVALID_SEGMENT);
+		obj->status = RUNNING;
+	}
+
 	auto stm = getSubTaskMemory(newRenderId);
 	(*stm)[newRenderId] = obj;
 	subTaskSize = newRenderId+1;
 
 	if (lockSubTasks) subTasksLock.unlock();
 
-	if (runner->useQueue) runner->enqueue(obj);
+	if (runner->useQueue && obj->status == PENDING) runner->enqueue(obj);
 
 	return newRenderId;
 }
