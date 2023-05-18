@@ -52,7 +52,7 @@ inline std::string jsonToStr(const torasu::json& json) {
 
 namespace torasu::tstd {
 
-Rjson_prop::Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional)
+Rjson_prop::Rjson_prop(std::string path, torasu::RenderableSlot jsonRnd, bool optional)
 	: SimpleRenderable(true, true),
 	  config(new torasu::tstd::Dstring_pair(path, optional ? "opt" : "def")),
 	  jsonRnd(jsonRnd) {}
@@ -199,14 +199,14 @@ torasu::RenderResult* Rjson_prop::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rjson_prop::getElements() {
 	torasu::ElementMap elems;
 
-	elems["json"] = jsonRnd.get();
+	elems["json"] = jsonRnd;
 
 	return elems;
 }
 
-void Rjson_prop::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("json", &jsonRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rjson_prop::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "json") return torasu::tools::trySetRenderableSlot(&jsonRnd, elem);
+	return nullptr;
 }
 
 torasu::DataResource* Rjson_prop::getData() {

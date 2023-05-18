@@ -5,7 +5,7 @@
 
 namespace torasu::tstd {
 
-Rfallback::Rfallback(std::vector<torasu::tools::RenderableSlot> slots)
+Rfallback::Rfallback(std::vector<torasu::RenderableSlot> slots)
 	: SimpleRenderable(false, true) {
 
 	int i = 0;
@@ -136,29 +136,30 @@ RenderResult* Rfallback::render(RenderInstruction* ri) {
 torasu::ElementMap Rfallback::getElements() {
 	torasu::ElementMap elems;
 	for (auto& slot : slots) {
-		elems[std::to_string(slot.first)] = slot.second.get();
+		elems[std::to_string(slot.first)] = slot.second;
 	}
 	return elems;
 }
 
-void Rfallback::setElement(std::string key, torasu::Element* elem) {
+const torasu::OptElementSlot Rfallback::setElement(std::string key, const ElementSlot* elem) {
 	size_t id;
 	try {
 		id = std::stoul(key);
 	} catch (const std::exception& ex) {
-		throw torasu::tools::makeExceptSlotDoesntExist(key);
+		return nullptr;
 	}
 
-	if (elem == nullptr) {
+	if (elem == nullptr || elem->get() == nullptr) {
 		slots[id] = nullptr;
-		return;
+		return nullptr;
 	}
 
-	if (auto* rnd = dynamic_cast<Renderable*>(elem)) {
-		slots[id] = rnd;
-	} else {
-		throw torasu::tools::makeExceptSlotOnlyRenderables(key);
+	if (auto* rnd = dynamic_cast<Renderable*>(elem->get())) {
+		slots[id] = RenderableSlot(rnd, elem->isOwned());
 	}
+
+	const auto found = slots.find(id);
+	return found != slots.end() ? found->second.asElementSlot() : nullptr;
 }
 
 } // namespace torasu::tstd

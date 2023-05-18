@@ -34,7 +34,7 @@ public:
 
 	// Overwrite when accepting elements
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const ElementSlot* elem) override;
 
 	// Auto-managed, overwrite to get more granular control over mass-setting of element linkage and data
 	void setData(DataResource* data,
@@ -85,89 +85,27 @@ public:
 
 };
 
-/**
- * @brief  Create exception that an element only accepts renderables
- * @param  key: The key of the element slot that was requested
- * @retval The generated exception
- */
-inline std::exception makeExceptSlotOnlyRenderables(const std::string& key) {
-	throw std::invalid_argument(std::string("Element slot \"") + key + std::string("\" only accepts Renderables!"));
-}
-
-/**
- * @brief  Shorthand to make setting renderable-slots easier
- * @param  slotKey: Slot key of the slot to be put into
- * @param  rndSlot: Slot address the Renderable should be put into
- * @param  supportNull: If the slot can be set to null (if not an exception will be thrown, when null-assignments happen)
- * @param  givenKey: The key that is getting set (and which is getting set)
- * @param  givenElement: The given element to be set
- * @param  ownsCurrent: Bool wether the element is owned: On a match true will delete the current element and set the value to false
- * @retval If the element has been set into the slot
- */
-inline bool trySetRenderableSlot(const char* slotKey, torasu::Renderable** rndSlot, bool supportNull, const std::string& givenKey, torasu::Element* givenElement, bool* ownsCurrent = nullptr) {
-	if (givenKey.compare(slotKey) == 0) {
-		if (givenElement == nullptr) {
-			if (supportNull) {
-				if (ownsCurrent != nullptr && *ownsCurrent) {
-					*ownsCurrent = false;
-					delete rndSlot;
-				}
-				*rndSlot = nullptr;
-				return true;
-			} else {
-				throw std::invalid_argument(std::string("Element slot \"") + slotKey + std::string("\" may not be empty!"));
-			}
-		}
-		if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(givenElement)) {
-			if (ownsCurrent != nullptr && *ownsCurrent) {
-				*ownsCurrent = false;
-				delete rndSlot;
-			}
-			*rndSlot = rnd;
-			return true;
-		} else {
-			throw makeExceptSlotOnlyRenderables(slotKey);
-		}
+template<class T> inline const torasu::ElementSlot trySetRenderableSlot(torasu::tools::ManagedSlot<T>* slot, const torasu::ElementSlot* given) {
+	if (given == nullptr) {
+		*slot = RenderableSlot(nullptr, false);
+	} else if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(given->get())) {
+		*slot = RenderableSlot(rnd, given->isOwned());
 	}
-	return false;
+	return slot->asElementSlot();
 }
 
-/**
- * @brief  Shorthand to make setting renderable-slots easier
- * @param  slotKey: Slot key of the slot to be put into
- * @param  rndSlot: Slot the Renderable should be put into
- * @param  supportNull: If the slot can be set to null (if not an exception will be thrown, when null-assignments happen)
- * @param  givenKey: The key that is getting set (and which is getting set)
- * @param  givenElement: The given element to be set
- * @retval If the element has been set into the slot
- */
-inline bool trySetRenderableSlot(const char* slotKey, torasu::tools::RenderableSlot* rndSlot, bool supportNull, const std::string& givenKey, torasu::Element* givenElement) {
-	if (givenKey.compare(slotKey) == 0) {
-		if (givenElement == nullptr) {
-			if (supportNull) {
-				*rndSlot = nullptr;
-				return true;
-			} else {
-				throw std::invalid_argument(std::string("Element slot \"") + slotKey + std::string("\" may not be empty!"));
-			}
-		}
-		if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(givenElement)) {
-			*rndSlot = rnd;
-			return true;
-		} else {
-			throw makeExceptSlotOnlyRenderables(slotKey);
-		}
+template<class T, class K> inline const torasu::OptElementSlot trySetRenderableSlot(std::map<K, torasu::tools::ManagedSlot<T>>* slotMap, const K& key, const torasu::ElementSlot* given) {
+	if (given == nullptr) {
+		slotMap->erase(key);
+		return nullptr;
+	} else if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(given->get())) {
+		torasu::tools::ManagedSlot<T>& slot = (*slotMap)[key];
+		slot = RenderableSlot(rnd, given->isOwned());
+		return slot.asElementSlot();
+	} else {
+		const auto found = slotMap->find(key);
+		return found != slotMap->end() ? found->second.asElementSlot() : nullptr;
 	}
-	return false;
-}
-
-/**
- * @brief  Create exception that an element slot doesnt exist
- * @param  key: The key of the element slot that was requested
- * @retval The generated exception
- */
-inline std::exception makeExceptSlotDoesntExist(const std::string& key) {
-	return std::invalid_argument(std::string("The element slot \"") + key + "\" does not exist!");
 }
 
 } // namespace torasu::tools

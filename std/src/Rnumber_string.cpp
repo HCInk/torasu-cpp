@@ -90,18 +90,18 @@ torasu::RenderResult* Rnumber_string::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rnumber_string::getElements() {
 	torasu::ElementMap elemMap;
 
-	elemMap["src"] = srcRnd.get();
-	elemMap["dec"] = decimalsRnd.get();
-	elemMap["dig"] = minDigitsRnd.get();
+	elemMap["src"] = srcRnd;
+	elemMap["dec"] = decimalsRnd;
+	elemMap["dig"] = minDigitsRnd;
 
 	return elemMap;
 }
 
-void Rnumber_string::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("src", &srcRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("dec", &decimalsRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("dig", &minDigitsRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rnumber_string::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "src") return torasu::tools::trySetRenderableSlot(&srcRnd, elem);
+	if (key == "dec") return torasu::tools::trySetRenderableSlot(&decimalsRnd, elem);
+	if (key == "dig") return torasu::tools::trySetRenderableSlot(&minDigitsRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

@@ -65,18 +65,14 @@ torasu::ElementMap Rstring_map::getElements() {
 	torasu::ElementMap elemMap;
 
 	for (auto& mapping : map) {
-		elemMap[mapping.first] = mapping.second.get();
+		elemMap[mapping.first] = mapping.second;
 	}
 
 	return elemMap;
 }
 
-void Rstring_map::setElement(std::string key, Element* elem) {
-	if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
-		map[key] = rnd;
-	} else {
-		throw torasu::tools::makeExceptSlotOnlyRenderables(key);
-	}
+const torasu::OptElementSlot Rstring_map::setElement(std::string key, const ElementSlot* elem) {
+	return torasu::tools::trySetRenderableSlot(&map, key, elem);
 }
 
 } // namespace torasu::tstd

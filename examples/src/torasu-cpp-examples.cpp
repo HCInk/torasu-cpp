@@ -224,8 +224,8 @@ void inlineMathExample() {
 }
 
 void slotFunction(
-	torasu::tools::ElementSlot elemA, torasu::tools::ElementSlot elemB, torasu::tools::ElementSlot elemC,
-	torasu::tools::RenderableSlot rndD, torasu::tools::RenderableSlot rndE, torasu::tools::RenderableSlot rndF,
+	torasu::ElementSlot elemA, torasu::ElementSlot elemB, torasu::ElementSlot elemC,
+	torasu::RenderableSlot rndD, torasu::RenderableSlot rndE, torasu::RenderableSlot rndF,
 	torasu::tstd::NumSlot rndNumA, torasu::tstd::NumSlot rndNumB, torasu::tstd::NumSlot rndNumC,
 	torasu::tstd::StringSlot rndStrA, torasu::tstd::StringSlot rndStrB, torasu::tstd::StringSlot rndStrC) {
 	torasu::tools::ManagedElementSlot mA(elemA);

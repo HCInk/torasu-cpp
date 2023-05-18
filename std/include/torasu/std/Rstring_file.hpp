@@ -19,14 +19,14 @@ public:
 	 * @brief  Provides a string as a file
 	 * @param  src:	The string-source for the file
 	 */
-	explicit Rstring_file(torasu::tools::RenderableSlot src);
+	explicit Rstring_file(torasu::RenderableSlot src);
 	~Rstring_file();
 	Identifier getType() override;
 
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 };
 
 } // namespace torasu::tstd

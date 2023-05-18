@@ -55,15 +55,15 @@ torasu::RenderResult* Rfloor_mod::render(torasu::RenderInstruction* ri) {
 
 torasu::ElementMap Rfloor_mod::getElements() {
 	torasu::ElementMap elems;
-	elems["val"] = valRnd.get();
-	elems["fac"] = facRnd.get();
+	elems["val"] = valRnd;
+	elems["fac"] = facRnd;
 	return elems;
 }
 
-void Rfloor_mod::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("val", &valRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("fac", &facRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rfloor_mod::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "val") return torasu::tools::trySetRenderableSlot(&valRnd, elem);
+	if (key == "fac") return torasu::tools::trySetRenderableSlot(&facRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

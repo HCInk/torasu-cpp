@@ -28,14 +28,14 @@ public:
 	 * @param  gen: The generator, which gets rendered for every list item.
 	 * 					It's result will be concatted into the result string
 	 */
-	explicit Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools::RenderableSlot gen);
+	explicit Rstring_concat(torasu::RenderableSlot list, torasu::RenderableSlot gen);
 	~Rstring_concat();
 	Identifier getType() override;
 
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 };
 
 } // namespace torasu::tstd

@@ -78,7 +78,7 @@ public:
 		return ei->enqueueRender(rend, rctx != nullptr ? rctx : this->rctx, rs, li, prio);
 	}
 
-	inline uint64_t enqueueRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+	inline uint64_t enqueueRender(torasu::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
 		return enqueueRender(rend.get(), rs, rctx, prio);
 	}
 
@@ -96,7 +96,7 @@ public:
 		return fetchRenderResult(enqueueRender(rend, rs, rctx, prio));
 	}
 
-	inline torasu::RenderResult* runRender(torasu::tools::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
+	inline torasu::RenderResult* runRender(torasu::RenderableSlot rend, torasu::ResultSettings* rs, torasu::RenderContext* rctx = nullptr, int64_t prio = 0) {
 		return runRender(rend.get(), rs, rctx, prio);
 	}
 

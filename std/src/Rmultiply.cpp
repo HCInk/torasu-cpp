@@ -142,19 +142,19 @@ RenderResult* Rmultiply::render(RenderInstruction* ri) {
 
 }
 
-map<string, Element*> Rmultiply::getElements() {
-	map<string, Element*> elems;
+torasu::ElementMap Rmultiply::getElements() {
+	torasu::ElementMap elems;
 
-	elems["a"] = a.get();
-	elems["b"] = b.get();
+	elems["a"] = a;
+	elems["b"] = b;
 
 	return elems;
 }
 
-void Rmultiply::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("a", &a, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("b", &b, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rmultiply::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "a") return NumSlot::trySetRenderableSlot(&a, elem, 1);
+	if (key == "b") return NumSlot::trySetRenderableSlot(&b, elem, 1);
+	return nullptr;
 }
 
 namespace {
@@ -177,9 +177,9 @@ static class : public torasu::ElementFactory {
 	}
 
 	torasu::Element* create(torasu::DataResource** data, const torasu::ElementMap& elements) const override {
-		std::unique_ptr<Rmultiply> elem(new Rmultiply(0.0, 0.0));
+		std::unique_ptr<Rmultiply> elem(new Rmultiply(1, 1));
 		for (auto element : elements) {
-			elem->setElement(element.first, element.second);
+			elem->setElement(element.first, &element.second);
 		}
 		return elem.release();
 	}

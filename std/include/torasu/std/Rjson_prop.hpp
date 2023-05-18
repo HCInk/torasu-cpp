@@ -18,14 +18,14 @@ private:
 	torasu::tools::ManagedRenderableSlot jsonRnd;
 
 public:
-	Rjson_prop(std::string path, torasu::tools::RenderableSlot jsonRnd, bool optional=false);
+	Rjson_prop(std::string path, torasu::RenderableSlot jsonRnd, bool optional=false);
 	~Rjson_prop();
 	Identifier getType() override;
 
 	RenderResult* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

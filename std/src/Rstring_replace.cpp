@@ -104,17 +104,17 @@ torasu::RenderResult* Rstring_replace::render(torasu::RenderInstruction* ri) {
 
 torasu::ElementMap Rstring_replace::getElements() {
 	torasu::ElementMap elems;
-	elems["src"] = srcRnd.get();
-	elems["old"] = beforeRnd.get();
-	elems["new"] = afterRnd.get();
+	elems["src"] = srcRnd;
+	elems["old"] = beforeRnd;
+	elems["new"] = afterRnd;
 	return elems;
 }
 
-void Rstring_replace::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("src", &srcRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("old", &beforeRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("new", &afterRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rstring_replace::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "src") return torasu::tools::trySetRenderableSlot(&srcRnd, elem);
+	if (key == "old") return torasu::tools::trySetRenderableSlot(&beforeRnd, elem);
+	if (key == "new") return torasu::tools::trySetRenderableSlot(&afterRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

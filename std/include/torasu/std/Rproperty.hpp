@@ -16,14 +16,14 @@ private:
 	std::string servedPipeline;
 
 public:
-	Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline);
+	Rproperty(RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline);
 	~Rproperty();
 	Identifier getType() override;
 
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 };
 
 } // namespace torasu::tstd

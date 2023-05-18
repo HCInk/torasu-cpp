@@ -8,7 +8,7 @@ namespace torasu::tstd {
 //	Rmod_rctx
 //
 
-Rmod_rctx::Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline)
+Rmod_rctx::Rmod_rctx(torasu::RenderableSlot main, torasu::RenderableSlot value, std::string rctxKey, std::string valuePipeline)
 	: SimpleRenderable(true, true),
 	  data(rctxKey, valuePipeline), mainRnd(main), valueRnd(value) {}
 
@@ -79,15 +79,15 @@ torasu::RenderResult* Rmod_rctx::render(torasu::RenderInstruction* ri) {
 
 torasu::ElementMap Rmod_rctx::getElements() {
 	torasu::ElementMap elems;
-	elems["main"] = mainRnd.get();
-	elems["val"] = valueRnd.get();
+	elems["main"] = mainRnd;
+	elems["val"] = valueRnd;
 	return elems;
 }
 
-void Rmod_rctx::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("main", &mainRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("val", &valueRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rmod_rctx::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "main") return torasu::tools::trySetRenderableSlot(&mainRnd, elem);
+	if (key == "val") return torasu::tools::trySetRenderableSlot(&valueRnd, elem);
+	return nullptr;
 }
 
 torasu::DataResource* Rmod_rctx::getData() {

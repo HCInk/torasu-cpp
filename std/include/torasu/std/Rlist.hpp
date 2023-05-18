@@ -31,14 +31,14 @@ public:
 	 * @param  iteratorKey: key in rctx to use for iteration
 	 * @param  lengthPipeline: pipeline on which the length should be provided on
 	 */
-	Rlist(std::initializer_list<tools::RenderableSlot> list, std::string iteratorKey = TORASU_STD_CTX_IT, std::string lengthPipeline = TORASU_PROPERTY(TORASU_STD_PROP_IT_LENGTH));
+	Rlist(std::initializer_list<RenderableSlot> list, std::string iteratorKey = TORASU_STD_CTX_IT, std::string lengthPipeline = TORASU_PROPERTY(TORASU_STD_PROP_IT_LENGTH));
 	~Rlist();
 	Identifier getType() override;
 
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

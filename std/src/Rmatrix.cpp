@@ -40,13 +40,13 @@ torasu::ElementMap Rmatrix::getElements() {
 	torasu::ElementMap elements;
 
 	for (auto& elem : vals) {
-		elements["n" + std::to_string(elem.first)] = elem.second.get();
+		elements["n" + std::to_string(elem.first)] = elem.second;
 	}
 
 	return elements;
 }
 
-void Rmatrix::setElement(std::string key, Element* elem) {
+const torasu::OptElementSlot Rmatrix::setElement(std::string key, const ElementSlot* elem) {
 
 	if (key.length() >= 2 && key.substr(0, 1) == "n") {
 
@@ -56,16 +56,12 @@ void Rmatrix::setElement(std::string key, Element* elem) {
 		try {
 			index = std::stoul(numStr);
 		} catch (std::invalid_argument& ex) {
-			throw torasu::tools::makeExceptSlotDoesntExist(key);
+			return nullptr;
 		}
 
-		if (Renderable* rnd = dynamic_cast<Renderable*>(elem)) {
-			vals[index] = rnd;
-		} else {
-			throw torasu::tools::makeExceptSlotOnlyRenderables(key);
-		}
+		return trySetRenderableSlot(&vals, index, elem);
 	}
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+	return nullptr;
 }
 
 RenderResult* Rmatrix::render(RenderInstruction* ri) {

@@ -2,12 +2,12 @@
 
 namespace torasu::tstd {
 
-Rlog_message::Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src)
+Rlog_message::Rlog_message(torasu::LogMessage message, torasu::RenderableSlot src)
 	: SimpleRenderable(true, true),
 	  message(message),
 	  srcRnd(src) {}
 
-Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src)
+Rlog_message::Rlog_message(torasu::LogLevel level, std::string message, torasu::RenderableSlot src)
 	: SimpleRenderable(true, true),
 	  message(level, message),
 	  srcRnd(src) {}
@@ -46,13 +46,13 @@ void Rlog_message::setData(DataResource* data) {
 
 torasu::ElementMap Rlog_message::getElements() {
 	torasu::ElementMap elmap;
-	elmap["src"] = srcRnd.get();
+	elmap["src"] = srcRnd;
 	return elmap;
 }
 
-void Rlog_message::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("src", &srcRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rlog_message::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "src") return torasu::tools::trySetRenderableSlot(&srcRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

@@ -36,9 +36,9 @@ void SimpleDataElement::setData(DataResource* data) {
 	}
 }
 
-void SimpleDataElement::setElement(std::string key, Element* elem) {
+const torasu::OptElementSlot SimpleDataElement::setElement(std::string key, const ElementSlot* elem) {
 	if (!acceptElements) {
-		throw std::invalid_argument("This element does not accept any elements!");
+		return nullptr;
 	} else {
 		throw std::logic_error("SimpleDataElement-impl-err: setElement(key, elem) is not defined,"
 							   "even though elements are set to be accepted.");
@@ -52,7 +52,7 @@ void SimpleDataElement::setData(DataResource* data,
 		torasu::ElementMap previousElements = getElements();
 
 		for (auto elemEntry : elements) {
-			setElement(elemEntry.first, elemEntry.second);
+			setElement(elemEntry.first, &elemEntry.second);
 			previousElements.erase(elemEntry.first);
 		}
 

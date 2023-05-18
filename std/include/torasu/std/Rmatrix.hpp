@@ -34,7 +34,7 @@ public:
 	DataResource* getData() override;
 	void setData(DataResource* data) override;
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 };
 
 } // namespace torasu::tstd

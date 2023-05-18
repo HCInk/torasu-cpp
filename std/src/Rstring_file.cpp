@@ -10,7 +10,7 @@
 
 namespace torasu::tstd {
 
-Rstring_file::Rstring_file(torasu::tools::RenderableSlot src)
+Rstring_file::Rstring_file(torasu::RenderableSlot src)
 	: SimpleRenderable(false, true), srcRnd(src) {}
 
 Rstring_file::~Rstring_file() {}
@@ -73,14 +73,14 @@ torasu::RenderResult* Rstring_file::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rstring_file::getElements() {
 	torasu::ElementMap elemMap;
 
-	elemMap["src"] = srcRnd.get();
+	elemMap["src"] = srcRnd;
 
 	return elemMap;
 }
 
-void Rstring_file::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("src", &srcRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rstring_file::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "src") return torasu::tools::trySetRenderableSlot(&srcRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

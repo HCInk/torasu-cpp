@@ -5,42 +5,6 @@
 
 namespace torasu::tools {
 
-template<class T> class Slot {
-protected:
-	T* elem;
-	bool owned = false;
-
-public:
-	inline Slot()
-		: elem(nullptr) {}
-
-	/* implicit */ inline Slot(T* elem)
-		: elem(elem) {}
-
-	/** @brief  Convert slot to ElementSlot */
-	inline operator Slot<torasu::Element>() {
-		return Slot<torasu::Element>(elem, owned);
-	}
-
-	inline Slot(T* elem, bool owned)
-		: elem(elem), owned(owned) {}
-
-	inline T& operator*() {
-		return *elem;
-	}
-
-	inline T* get() const {
-		return elem;
-	}
-
-	inline bool isOwned() const {
-		return owned;
-	}
-
-	virtual ~Slot() {}
-
-};
-
 template<class T> class ManagedSlot : public T {
 public:
 	ManagedSlot() {}
@@ -54,13 +18,15 @@ public:
 		return *this;
 	}
 
+	inline const ElementSlot asElementSlot() const {
+		return ElementSlot(T::elem, T::owned);
+	}
+
 	~ManagedSlot() {
 		if (T::owned) delete T::elem;
 	}
 };
 
-typedef Slot<torasu::Element> ElementSlot;
-typedef Slot<torasu::Renderable> RenderableSlot;
 typedef ManagedSlot<ElementSlot> ManagedElementSlot;
 typedef ManagedSlot<RenderableSlot> ManagedRenderableSlot;
 

@@ -46,13 +46,13 @@ torasu::RenderResult* Rerror::render(torasu::RenderInstruction* ri) {
 
 torasu::ElementMap Rerror::getElements() {
 	torasu::ElementMap em;
-	em["msg"] = msgRnd.get();
+	em["msg"] = msgRnd;
 	return em;
 }
 
-void Rerror::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("msg", &msgRnd, true, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rerror::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "msg") return torasu::tools::trySetRenderableSlot(&msgRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

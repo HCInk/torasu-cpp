@@ -28,21 +28,21 @@ public:
 	static const torasu::ElementFactory* const FACTORY;
 };
 
-class StringSlot : public torasu::tools::RenderableSlot {
+class StringSlot : public torasu::RenderableSlot {
 public:
 	inline StringSlot() {}
 
 	/* implicit */ inline StringSlot(Renderable* rnd)
-		: torasu::tools::RenderableSlot(rnd) {}
+		: torasu::RenderableSlot(rnd) {}
 
-	/* implicit */ inline StringSlot(torasu::tools::RenderableSlot rnd)
-		: torasu::tools::RenderableSlot(rnd) {}
+	/* implicit */ inline StringSlot(torasu::RenderableSlot rnd)
+		: torasu::RenderableSlot(rnd) {}
 
 	/* implicit */ inline StringSlot(const char* str)
-		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
+		: torasu::RenderableSlot(new Rstring(str), true) {}
 
 	/* implicit */ inline StringSlot(std::string str)
-		: torasu::tools::RenderableSlot(new Rstring(str), true) {}
+		: torasu::RenderableSlot(new Rstring(str), true) {}
 
 };
 

@@ -30,21 +30,31 @@ public:
 	static const torasu::ElementFactory* const FACTORY;
 };
 
-class NumSlot : public torasu::tools::RenderableSlot {
+class NumSlot : public torasu::RenderableSlot {
 public:
 	inline NumSlot() {}
 
 	/* implicit */ inline NumSlot(Renderable* rnd)
-		: torasu::tools::RenderableSlot(rnd) {}
+		: torasu::RenderableSlot(rnd) {}
 
-	/* implicit */ inline NumSlot(torasu::tools::RenderableSlot rnd)
-		: torasu::tools::RenderableSlot(rnd) {}
+	/* implicit */ inline NumSlot(torasu::RenderableSlot rnd)
+		: torasu::RenderableSlot(rnd) {}
 
 	/* implicit */ inline NumSlot(double num)
-		: torasu::tools::RenderableSlot(new Rnum(num), true) {}
+		: torasu::RenderableSlot(new Rnum(num), true) {}
 
 	/* implicit */ inline NumSlot(Dnum num)
-		: torasu::tools::RenderableSlot(new Rnum(num), true) {}
+		: torasu::RenderableSlot(new Rnum(num), true) {}
+
+	static inline const std::optional<ElementSlot> trySetRenderableSlot(torasu::tools::ManagedSlot<NumSlot>* slot, const torasu::ElementSlot* given, double defaultValue) {
+		if (given == nullptr) {
+			*slot = defaultValue;
+		} else if (torasu::Renderable* rnd = dynamic_cast<torasu::Renderable*>(given->get())) {
+			*slot = RenderableSlot(rnd, given->isOwned());
+		}
+
+		return slot->asElementSlot();
+	}
 
 };
 

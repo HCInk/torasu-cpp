@@ -145,18 +145,16 @@ RenderResult* Rsubtract::render(RenderInstruction* ri) {
 ElementMap Rsubtract::getElements() {
 	ElementMap elems;
 
-	elems["a"] = a.get();
-	elems["b"] = b.get();
+	elems["a"] = a;
+	elems["b"] = b;
 
 	return elems;
 }
 
-void Rsubtract::setElement(std::string key, Element* elem) {
-
-	if (torasu::tools::trySetRenderableSlot("a", &a, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("b", &b, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
-
+const torasu::OptElementSlot Rsubtract::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "a") return NumSlot::trySetRenderableSlot(&a, elem, 0);
+	if (key == "b") return NumSlot::trySetRenderableSlot(&b, elem, 0);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

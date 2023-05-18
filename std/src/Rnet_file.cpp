@@ -188,16 +188,16 @@ RenderResult* Rnet_file::render(RenderInstruction* ri) {
 torasu::ElementMap Rnet_file::getElements() {
 	torasu::ElementMap elems;
 
-	elems["url"] = urlRnd.get();
-	if (urlRnd.get() != nullptr) elems["headers"] = headersRnd.get();
+	elems["url"] = urlRnd;
+	elems["headers"] = headersRnd;
 
 	return elems;
 }
 
-void Rnet_file::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("url", &urlRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("headers", &headersRnd, true, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rnet_file::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "url") return torasu::tools::trySetRenderableSlot(&urlRnd, elem);
+	if (key == "headers") return torasu::tools::trySetRenderableSlot(&headersRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

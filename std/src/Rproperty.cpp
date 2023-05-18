@@ -9,7 +9,7 @@ namespace torasu::tstd {
 // TODO Format support
 //
 
-Rproperty::Rproperty(tools::RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline)
+Rproperty::Rproperty(RenderableSlot propertySrc, std::string fromProperty, std::string servedPipeline)
 	: SimpleRenderable(false, true),
 	  propertySrc(propertySrc), fromProperty(fromProperty), servedPipeline(servedPipeline) {}
 
@@ -39,14 +39,14 @@ torasu::RenderResult* Rproperty::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rproperty::getElements() {
 	torasu::ElementMap elems;
 
-	elems["psrc"] = propertySrc.get();
+	elems["psrc"] = propertySrc;
 
 	return elems;
 }
 
-void Rproperty::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("psrc", &propertySrc, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rproperty::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "psrc") return torasu::tools::trySetRenderableSlot(&propertySrc, elem);
+	return nullptr;
 }
 
 // TODO Value import-export

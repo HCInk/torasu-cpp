@@ -89,7 +89,7 @@ void Dmix_pipelines_conf::applyMappings(std::vector<PipelineMappingUnmanaged> ne
 
 }
 
-void Dmix_pipelines_conf::updateMapping(size_t id, torasu::Renderable* rnd) {
+void Dmix_pipelines_conf::updateMapping(size_t id, const torasu::RenderableSlot& rnd) {
 	auto foundMapping = mappingsById.find(id);
 
 	if (foundMapping != mappingsById.end()) {
@@ -110,7 +110,7 @@ void Dmix_pipelines_conf::importMappings(const Dmix_pipelines_conf* newMappings)
 	for (auto entry : newMappings->mappingsById) mappings.push_back({
 		entry.second->id,
 		entry.second->pl,
-		torasu::tools::RenderableSlot()
+		torasu::RenderableSlot()
 	});
 	applyMappings(mappings);
 }
@@ -123,7 +123,7 @@ Dmix_pipelines_conf::~Dmix_pipelines_conf() {
 //	Rmix_pipelines
 //
 
-Rmix_pipelines::Rmix_pipelines(torasu::tools::RenderableSlot def, std::initializer_list<MixEntry> mixes)
+Rmix_pipelines::Rmix_pipelines(torasu::RenderableSlot def, std::initializer_list<MixEntry> mixes)
 	: SimpleRenderable(true, true), defRnd(def) {
 
 	std::vector<Dmix_pipelines_conf::PipelineMappingUnmanaged> entries;
@@ -175,41 +175,41 @@ torasu::RenderResult* Rmix_pipelines::render(torasu::RenderInstruction* ri) {
 	return rh.runRender(rnd, ri->getResultSettings());
 }
 
-#define DEFUALT_KEY "def"
+#define DEFAULT_KEY "def"
 #define ELEM_KEY_PFX "e"
 #define ELEM_KEY_PFX_LEN 1
 
 torasu::ElementMap Rmix_pipelines::getElements() {
 	torasu::ElementMap elems;
-	elems[DEFUALT_KEY] = defRnd.get();
+	elems[DEFAULT_KEY] = defRnd;
 
 	for (auto& entry : conf.mappingsById)
-		elems[ELEM_KEY_PFX + std::to_string(entry.first)] = entry.second->rnd.get();
+		elems[ELEM_KEY_PFX + std::to_string(entry.first)] = entry.second->rnd;
 
 	return elems;
 }
 
-void Rmix_pipelines::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot(DEFUALT_KEY, &defRnd, true, key, elem)) return;
+const torasu::OptElementSlot Rmix_pipelines::setElement(std::string key, const ElementSlot* elem) {
+	if (key == DEFAULT_KEY) return torasu::tools::trySetRenderableSlot(&defRnd, elem);
 
-	if (key.substr(0, ELEM_KEY_PFX_LEN) != ELEM_KEY_PFX) throw torasu::tools::makeExceptSlotDoesntExist(key);
+	if (key.substr(0, ELEM_KEY_PFX_LEN) != ELEM_KEY_PFX) return nullptr;
 	size_t id;
 	try {
 		id = std::stoul(key.substr(ELEM_KEY_PFX_LEN));
 	} catch (const std::exception& ex) {
-		throw torasu::tools::makeExceptSlotDoesntExist(key);
+		return nullptr;
 	}
 
 	if (elem == nullptr) {
 		conf.updateMapping(id, nullptr);
-		return;
 	}
 
-	if (auto* rnd = dynamic_cast<Renderable*>(elem)) {
-		conf.updateMapping(id, rnd);
-	} else {
-		throw torasu::tools::makeExceptSlotOnlyRenderables(key);
+	if (auto* rnd = dynamic_cast<Renderable*>(elem->get())) {
+		conf.updateMapping(id, RenderableSlot(rnd, elem->isOwned()));
 	}
+
+	auto found = conf.mappingsById.find(id);
+	return (found != conf.mappingsById.end()) ? found->second->rnd.asElementSlot() : nullptr;
 }
 
 torasu::DataResource* Rmix_pipelines::getData() {

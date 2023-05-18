@@ -11,7 +11,7 @@ namespace torasu::tstd {
 
 const char* Rstring_concat::RCTX_KEY_VALUE = "STD::STR_CONCAT_PARAM";
 
-Rstring_concat::Rstring_concat(torasu::tools::RenderableSlot list, torasu::tools::RenderableSlot gen)
+Rstring_concat::Rstring_concat(torasu::RenderableSlot list, torasu::RenderableSlot gen)
 	: SimpleRenderable(false, true), listRnd(list), genRnd(gen) {
 }
 
@@ -92,16 +92,16 @@ torasu::RenderResult* Rstring_concat::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rstring_concat::getElements() {
 	torasu::ElementMap elemMap;
 
-	elemMap["list"] = listRnd.get();
-	elemMap["gen"] = genRnd.get();
+	elemMap["list"] = listRnd;
+	elemMap["gen"] = genRnd;
 
 	return elemMap;
 }
 
-void Rstring_concat::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("list", &listRnd, false, key, elem)) return;
-	if (torasu::tools::trySetRenderableSlot("gen", &genRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rstring_concat::setElement(std::string key, const ElementSlot* elem) {
+	if (key == "list") return torasu::tools::trySetRenderableSlot(&listRnd, elem);
+	if (key == "gen") return torasu::tools::trySetRenderableSlot(&genRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

@@ -45,16 +45,15 @@ RenderResult* Rsin::render(RenderInstruction* ri) {
 
 }
 
-map<string, Element*> Rsin::getElements() {
-	map<string, Element*> elems;
-
-	elems["v"] = valRnd.get();
+torasu::ElementMap Rsin::getElements() {
+	torasu::ElementMap elems;
+	elems["v"] = valRnd;
 	return elems;
 }
 
-void Rsin::setElement(std::string key, Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("v", &valRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rsin::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "v") return torasu::tools::trySetRenderableSlot(&valRnd, elem);
+	return nullptr;
 }
 
 } // namespace torasu::tstd

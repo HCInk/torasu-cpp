@@ -16,14 +16,14 @@ private:
 	std::map<size_t, torasu::tools::ManagedRenderableSlot> slots;
 
 public:
-	explicit Rfallback(std::vector<torasu::tools::RenderableSlot> slots);
+	explicit Rfallback(std::vector<torasu::RenderableSlot> slots);
 	~Rfallback();
 	Identifier getType() override;
 
 	RenderResult* render(RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, torasu::Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 };
 

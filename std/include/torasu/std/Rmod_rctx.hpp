@@ -18,14 +18,14 @@ private:
 	tools::ManagedRenderableSlot valueRnd;
 
 public:
-	Rmod_rctx(tools::RenderableSlot main, tools::RenderableSlot value, std::string rctxKey, std::string valuePipeline);
+	Rmod_rctx(RenderableSlot main, RenderableSlot value, std::string rctxKey, std::string valuePipeline);
 	~Rmod_rctx();
 	Identifier getType() override;
 
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

@@ -15,8 +15,8 @@ private:
 	torasu::tools::ManagedRenderableSlot srcRnd;
 
 public:
-	Rlog_message(torasu::LogMessage message, torasu::tools::RenderableSlot src);
-	Rlog_message(torasu::LogLevel level, std::string message, torasu::tools::RenderableSlot src);
+	Rlog_message(torasu::LogMessage message, torasu::RenderableSlot src);
+	Rlog_message(torasu::LogLevel level, std::string message, torasu::RenderableSlot src);
 	~Rlog_message();
 	Identifier getType() override;
 
@@ -26,7 +26,7 @@ public:
 	void setData(DataResource* data) override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 };
 

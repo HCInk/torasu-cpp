@@ -9,7 +9,7 @@ namespace torasu::tstd {
 //	Rlist
 //
 
-Rlist::Rlist(std::initializer_list<tools::RenderableSlot> list, std::string rctxKey, std::string valuePipeline)
+Rlist::Rlist(std::initializer_list<RenderableSlot> list, std::string rctxKey, std::string valuePipeline)
 	: SimpleRenderable(true, true), data(rctxKey, valuePipeline) {
 	for (auto& slot : list) {
 		this->slots[length] = slot;
@@ -63,31 +63,32 @@ torasu::RenderResult* Rlist::render(torasu::RenderInstruction* ri) {
 torasu::ElementMap Rlist::getElements() {
 	torasu::ElementMap elems;
 	for (auto& slot : slots) {
-		elems[std::to_string(slot.first)] = slot.second.get();
+		elems[std::to_string(slot.first)] = slot.second;
 	}
 	return elems;
 }
 
-void Rlist::setElement(std::string key, torasu::Element* elem) {
+const torasu::OptElementSlot Rlist::setElement(std::string key, const torasu::ElementSlot* elem) {
 	size_t id;
 	try {
 		id = std::stoul(key);
 	} catch (const std::exception& ex) {
-		throw torasu::tools::makeExceptSlotDoesntExist(key);
+		return nullptr;
 	}
 
 	if (elem == nullptr) {
 		slots.erase(id);
-		return;
+		return nullptr;
 	}
 
-	if (auto* rnd = dynamic_cast<Renderable*>(elem)) {
-		slots[id] = rnd;
-	} else {
-		throw torasu::tools::makeExceptSlotOnlyRenderables(key);
+	if (auto* rnd = dynamic_cast<Renderable*>(elem->get())) {
+		slots[id] = RenderableSlot(rnd, elem->isOwned());
 	}
 
 	length = slots.rbegin()->first+1;
+
+	const auto found = slots.find(id);
+	return found != slots.end() ? found->second.asElementSlot() : nullptr;
 }
 
 torasu::DataResource* Rlist::getData() {

@@ -4,6 +4,7 @@
 #include <string>
 
 #include <torasu/torasu.hpp>
+#include <torasu/slot_tools.hpp>
 #include <torasu/SimpleRenderable.hpp>
 
 #include "Dboilerplate.hpp"
@@ -13,7 +14,7 @@ namespace torasu::texample {
 class Rboilerplate : public torasu::tools::SimpleRenderable {
 private:
 	Dboilerplate* data;
-	Renderable* exampleRnd;
+	torasu::tools::ManagedRenderableSlot exampleRnd;
 
 protected:
 	torasu::RenderResult* render(torasu::RenderInstruction* ri) override;
@@ -24,7 +25,7 @@ public:
 	Identifier getType() override;
 
 	torasu::ElementMap getElements() override;
-	void setElement(std::string key, Element* elem) override;
+	const torasu::OptElementSlot setElement(std::string key, const torasu::ElementSlot* elem) override;
 
 	torasu::DataResource* getData() override;
 	void setData(torasu::DataResource* data) override;

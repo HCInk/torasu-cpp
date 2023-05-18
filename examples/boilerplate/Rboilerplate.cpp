@@ -55,9 +55,9 @@ torasu::ElementMap Rboilerplate::getElements() {
 	return elems;
 }
 
-void Rboilerplate::setElement(std::string key, torasu::Element* elem) {
-	if (torasu::tools::trySetRenderableSlot("ex", &exampleRnd, false, key, elem)) return;
-	throw torasu::tools::makeExceptSlotDoesntExist(key);
+const torasu::OptElementSlot Rboilerplate::setElement(std::string key, const torasu::ElementSlot* elem) {
+	if (key == "ex") return torasu::tools::trySetRenderableSlot(&exampleRnd, elem);
+	return nullptr;
 }
 
 torasu::DataResource* Rboilerplate::getData() {

@@ -17,6 +17,7 @@
 #include <functional>
 #include <mutex>
 #include <memory>
+#include <optional>
 
 // Error if a property has been provided, but hasn't been removed from the requests
 #define TORASU_CHECK_FALSE_EJECTION
@@ -762,7 +763,50 @@ public:
 	virtual ~ElementExecutionOpaque() {}
 };
 
-typedef std::map<std::string, Element*> ElementMap;
+template<class T> class Slot {
+protected:
+	T* elem;
+	bool owned = false;
+
+public:
+	inline Slot()
+		: elem(nullptr) {}
+
+	/* implicit */ inline Slot(T* elem)
+		: elem(elem) {}
+
+	/** @brief  Convert slot to ElementSlot */
+	inline operator Slot<torasu::Element>() {
+		return Slot<torasu::Element>(elem, owned);
+	}
+
+	inline Slot(T* elem, bool owned)
+		: elem(elem), owned(owned) {}
+
+	inline T& operator*() {
+		return *elem;
+	}
+	inline operator bool() {
+		return elem != nullptr;
+	}
+
+	inline T* get() const {
+		return elem;
+	}
+
+	inline bool isOwned() const {
+		return owned;
+	}
+
+	virtual ~Slot() {}
+
+};
+
+typedef Slot<torasu::Element> ElementSlot;
+typedef Slot<torasu::Renderable> RenderableSlot;
+
+typedef std::map<std::string, ElementSlot> ElementMap;
+typedef std::optional<ElementSlot> OptElementSlot;
 
 class Element {
 public:
@@ -783,7 +827,15 @@ public:
 	virtual void setData(DataResource* data,
 						 ElementMap elements) = 0;
 	virtual void setData(DataResource* data) = 0;
-	virtual void setElement(std::string key, Element* elem) = 0;
+	/**
+	 * @brief  Set element-slot by key
+	 * @param  key: Key of slot
+	 * @param  elem: Element to be set (nullptr to reset to default or remove if no default exists)
+	 * @retval Slot in the new state, nullopt if does not exist (or slot could not be created)
+	 * @note When slots with owned elments are provided, ownership of the element is only transfered,
+	 * 			if  this function returns an element-slot with the provided elment
+	 */
+	virtual const OptElementSlot setElement(std::string key, const ElementSlot* elem) = 0;
 
 };
 
