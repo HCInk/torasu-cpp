@@ -167,7 +167,7 @@ RenderResult* Rnet_file::render(RenderInstruction* ri) {
 		curl_easy_cleanup(curl);
 
 		if (res != CURLcode::CURLE_OK)
-			throw std::runtime_error("Aborted due to CURL error - code: " + std::to_string(res));
+			throw std::runtime_error("Aborted due to CURL error - code: " + std::to_string(res) + " url: \"" + url + "\"");
 
 		size = dataout.size();
 		const char* data = dataout.data();
